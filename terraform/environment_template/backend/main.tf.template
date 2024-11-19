@@ -12,7 +12,7 @@ terraform {
 #     bucket         = "prsdb-tfstate-<environment name>"
 #     dynamodb_table = "tfstate-lock-<environment name>"
 #     encrypt        = true
-#     key            = "prsdb-infra-<environment name>"
+#     key            = "prsdb-infra-<environment name>-tfstate"
 #     region         = "eu-west-2"
 #   }
 }
