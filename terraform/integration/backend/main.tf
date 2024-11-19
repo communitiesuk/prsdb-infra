@@ -21,7 +21,7 @@ provider "aws" {
   region = "eu-west-2"
 }
 
-module "terraform-backend" {
-  source           = "../../modules/backend"
+module "terraform_backend" {
+  source           = "../../modules/terraform_backend"
   environment_name = "integration"
 }
