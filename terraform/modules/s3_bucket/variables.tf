@@ -17,11 +17,6 @@ variable "force_destroy" {
   default     = false
 }
 
-variable "restrict_public_buckets" {
-  description = "Value for the restrict_public_buckets option of the public access block. Must be false to share buckets across accounts"
-  default     = true
-}
-
 variable "noncurrent_version_expiration_days" {
   type        = number
   description = "Set to null to skip creating a bucket lifecycle configuration"
