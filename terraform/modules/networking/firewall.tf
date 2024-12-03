@@ -54,7 +54,7 @@ resource "aws_networkfirewall_firewall" "main" {
 locals {
   tcp_protocol_number                    = 6
   udp_protocol_number                    = 17
-  stateless_firewall_rule_group_capacity = 12
+  stateless_firewall_rule_group_capacity = 13
 }
 
 resource "aws_networkfirewall_rule_group" "stateless_main" {
@@ -296,7 +296,7 @@ locals {
     }
   }
 
-  # There is an open bug relating to the order of rule_options which prevents us from using the stateful_rule block, instead we need to assemble a suricata dynamically
+  # There is an open bug relating to the order of rule_options which prevents us from using the stateful_rule block, instead we need to assemble a suricata file dynamically
   # https://github.com/hashicorp/terraform-provider-aws/issues/35147
   # Solution below taken from https://github.com/communitiesuk/delta-common-infrastructure
   subnet_firewall_rules = [

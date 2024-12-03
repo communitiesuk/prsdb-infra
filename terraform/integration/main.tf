@@ -23,7 +23,7 @@ provider "aws" {
 
 locals {
   environment_name = "integration"
-  multi_az = false
+  multi_az         = false
 }
 
 module "networking" {
