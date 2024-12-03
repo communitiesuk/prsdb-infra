@@ -17,7 +17,10 @@ TODO
 - After the `apply` step completes successfully and you can see the s3 bucket and dynamoDB table in the aws console, uncomment the `backend "s3"` block and run `terraform init`
 - You should be prompted to move the terraform state to the remote backend. Once this is done the terraform state is successfully bootstrapped for the new environment
 
-TODO: Add remaining instructions for setting up a new environment
+### Setting up the environment
+
+- In your new `terraform/<environment name>` folder, you can now also remove the `.template` from the end of all of the filenames, replace all instances of the string `<environment name>` with your actual environment name, and more generally look through `main.tf` for any sets of `<>` that require environment-specific input, e.g. the domains of any 3rd party integrations.
+- Once this is done, `cd` into `terraform/<environment name>` and run `terraform init` followed by `terraform plan`. If the output of the plan looks correct, run `terraform apply` to bring up the new environment.
 
 ## tfsec
 
