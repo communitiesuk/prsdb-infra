@@ -28,7 +28,7 @@ locals {
 
 module "networking" {
   source                     = "../modules/networking"
-  vpc_cidr_block             = "10.1.0.0/16"
+  vpc_cidr_block             = "<environment cidr block>"
   environment_name           = local.environment_name
   number_of_isolated_subnets = local.multi_az ? 2 : 1
   integration_domains = [
