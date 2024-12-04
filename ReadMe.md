@@ -19,6 +19,8 @@ TODO
 
 ### Setting up the environment
 
+TODO - Add section on validating SSL certificates before spinning up the rest of the environment
+
 - In your new `terraform/<environment name>` folder, you can now also remove the `.template` from the end of all of the filenames, replace all instances of the string `<environment name>` with your actual environment name, and more generally look through `main.tf` for any sets of `<>` that require environment-specific input, e.g. the domains of any 3rd party integrations.
 - Once this is done, `cd` into `terraform/<environment name>` and run `terraform init` followed by `terraform plan`. If the output of the plan looks correct, run `terraform apply` to bring up the new environment.
 
