@@ -1,3 +1,7 @@
+variable "ssl_certs_created" {
+  description = "Indicates whether ssl certificates have already been manually created"
+}
+
 variable "environment_name" {
   description = "must be one of: integration, test"
   type        = string
@@ -12,9 +16,16 @@ variable "public_subnet_ids" {
   description = "The ids of all the public subnets"
 }
 
+variable "cloudfront_certificate_arn" {
+  type        = string
+  description = "The arn of the certificate to be associated with the cloudfront distribution"
+  default     = null
+}
+
 variable "load_balancer_certificate_arn" {
   type        = string
-  description = "The arn of the certifcate to be associated with the load balancer HTTPS listener"
+  description = "The arn of the certificate to be associated with the load balancer HTTPS listener"
+  default     = null
 }
 
 variable "vpc_id" {
@@ -27,7 +38,24 @@ variable "application_port" {
   description = "The network port the application runs on"
 }
 
-variable "ecs_security_group_id" {
+# TODO: PRSD-574 - Reinstate when ECS has been configured
+# variable "ecs_security_group_id" {
+#   type        = string
+#   description = "The id of the ecs security group for ecs egress"
+# }
+
+variable "cloudfront_domain_name" {
   type        = string
-  description = "The id of the ecs security group for ecs egress"
+  description = "MHCLG delegated domain name for cloudfront"
+}
+
+variable "load_balancer_domain_name" {
+  type        = string
+  description = "MHCLG delegated domain name for alb"
+}
+
+variable "geolocation_allow_list" {
+  type        = list(string)
+  description = "List of allowed locations - geo restrictions disabled when set to null"
+  default     = null
 }
