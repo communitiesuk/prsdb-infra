@@ -51,7 +51,7 @@ resource "aws_lb_target_group" "main" {
 }
 
 resource "aws_lb_listener_rule" "forward" {
-  count = var.ssl_certs_created ? 1 : 0
+  count        = var.ssl_certs_created ? 1 : 0
   listener_arn = aws_lb_listener.https[count.index].arn
 
   action {
