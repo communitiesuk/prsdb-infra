@@ -24,6 +24,7 @@ provider "aws" {
 locals {
   environment_name = "integration"
   multi_az         = false
+  application_port = 8080
 }
 
 module "networking" {
@@ -38,5 +39,17 @@ module "networking" {
     "api.notifications.service.gov.uk",
     "publicapi.payments.service.gov.uk"
   ]
+}
+
+module "frontdoor" {
+  source = "../modules/frontdoor"
+
+  ssl_certs_created = var.ssl_certs_created
+  environment_name  = local.environment_name
+  public_subnet_ids = module.networking.public_subnet[*].id
+  vpc_id            = module.networking.vpc.id
+  application_port  = local.application_port
+  cloudfront_domain_name = "prsdb.communities.gov.uk"
+  load_balancer_domain_name = "alb.prsdb.communities.gov.uk"
 }
 
