@@ -11,7 +11,7 @@ locals {
 }
 
 resource "aws_subnet" "nat_gateway" {
-  count = var.number_of_availability_zones
+  count             = var.number_of_availability_zones
   availability_zone = data.aws_availability_zones.available.names[count.index]
   cidr_block        = cidrsubnet(local.nat_gateway_cidr_10, 2, count.index)
   vpc_id            = aws_vpc.main.id
@@ -20,7 +20,7 @@ resource "aws_subnet" "nat_gateway" {
 
 # tfsec:ignore:aws-ec2-no-public-ip-subnet
 resource "aws_subnet" "public_subnet" {
-  count = var.number_of_availability_zones
+  count                   = var.number_of_availability_zones
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   cidr_block              = cidrsubnet(local.public_cidr_10, 2, count.index)
   vpc_id                  = aws_vpc.main.id
@@ -29,7 +29,7 @@ resource "aws_subnet" "public_subnet" {
 }
 
 resource "aws_subnet" "firewall" {
-  count = var.number_of_availability_zones
+  count             = var.number_of_availability_zones
   availability_zone = data.aws_availability_zones.available.names[count.index]
   cidr_block        = cidrsubnet(local.firewall_cidr_10, 2, count.index)
   vpc_id            = aws_vpc.main.id
@@ -37,7 +37,7 @@ resource "aws_subnet" "firewall" {
 }
 
 resource "aws_subnet" "private_subnet" {
-  count = var.number_of_availability_zones
+  count             = var.number_of_availability_zones
   availability_zone = data.aws_availability_zones.available.names[count.index]
   cidr_block        = cidrsubnet(local.private_cidr_10, 2, count.index)
   vpc_id            = aws_vpc.main.id
