@@ -4,7 +4,7 @@ output "vpc" {
 }
 
 output "nat_gateway_ip" {
-  value = aws_eip.nat_gateway.public_ip
+  value = aws_eip.nat_gateway[*].public_ip
 }
 
 output "public_subnet" {
@@ -18,7 +18,7 @@ output "private_subnet" {
 }
 
 output "isolated_subnets" {
-  value       = aws_subnet.isolated_subnets
+  value       = aws_subnet.isolated_subnet
   description = "var.number_of_isolated_subnets /22 subnets for db and redis - 2 required when using multi-AZ rds"
 }
 

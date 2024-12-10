@@ -11,39 +11,43 @@ locals {
 }
 
 resource "aws_subnet" "nat_gateway" {
-  availability_zone = data.aws_availability_zones.available.names[0]
-  cidr_block        = local.nat_gateway_cidr_10
+  count             = var.number_of_availability_zones
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+  cidr_block        = cidrsubnet(local.nat_gateway_cidr_10, 2, count.index)
   vpc_id            = aws_vpc.main.id
-  tags              = { Name = "nat-gateway-${var.environment_name}" }
+  tags              = { Name = "nat-gateway-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}" }
 }
 
 # tfsec:ignore:aws-ec2-no-public-ip-subnet
 resource "aws_subnet" "public_subnet" {
-  availability_zone       = data.aws_availability_zones.available.names[0]
-  cidr_block              = local.public_cidr_10
+  count                   = var.number_of_availability_zones
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  cidr_block              = cidrsubnet(local.public_cidr_10, 2, count.index)
   vpc_id                  = aws_vpc.main.id
   map_public_ip_on_launch = true
-  tags                    = { Name = "public-subnet-${var.environment_name}" }
+  tags                    = { Name = "public-subnet-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}" }
 }
 
 resource "aws_subnet" "firewall" {
-  availability_zone = data.aws_availability_zones.available.names[0]
-  cidr_block        = local.firewall_cidr_10
+  count             = var.number_of_availability_zones
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+  cidr_block        = cidrsubnet(local.firewall_cidr_10, 2, count.index)
   vpc_id            = aws_vpc.main.id
-  tags              = { Name = "vpc-network-firewall-subnet-${var.environment_name}" }
+  tags              = { Name = "vpc-network-firewall-subnet-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}" }
 }
 
 resource "aws_subnet" "private_subnet" {
-  availability_zone = data.aws_availability_zones.available.names[0]
-  cidr_block        = local.private_cidr_10
+  count             = var.number_of_availability_zones
+  availability_zone = data.aws_availability_zones.available.names[count.index]
+  cidr_block        = cidrsubnet(local.private_cidr_10, 2, count.index)
   vpc_id            = aws_vpc.main.id
-  tags              = { Name = "vpc-private-subnet-${var.environment_name}" }
+  tags              = { Name = "vpc-private-subnet-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}" }
 }
 
-resource "aws_subnet" "isolated_subnets" {
+resource "aws_subnet" "isolated_subnet" {
   count             = var.number_of_isolated_subnets
   availability_zone = data.aws_availability_zones.available.names[count.index]
   cidr_block        = cidrsubnet(local.isolated_cidr_10, 2, count.index)
   vpc_id            = aws_vpc.main.id
-  tags              = { Name = "vpc-isolated-subnet-${data.aws_availability_zones.available.names[count.index]}" }
+  tags              = { Name = "vpc-isolated-subnet-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}" }
 }
