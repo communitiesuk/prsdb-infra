@@ -11,11 +11,10 @@ locals {
 }
 
 resource "aws_subnet" "nat_gateway" {
-  count             = var.number_of_availability_zones
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-  cidr_block        = cidrsubnet(local.nat_gateway_cidr_10, 2, count.index)
+  availability_zone = data.aws_availability_zones.available.names[0]
+  cidr_block        = local.nat_gateway_cidr_10
   vpc_id            = aws_vpc.main.id
-  tags              = { Name = "nat-gateway-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}" }
+  tags              = { Name = "nat-gateway-${var.environment_name}" }
 }
 
 # tfsec:ignore:aws-ec2-no-public-ip-subnet
@@ -29,11 +28,10 @@ resource "aws_subnet" "public_subnet" {
 }
 
 resource "aws_subnet" "firewall" {
-  count             = var.number_of_availability_zones
-  availability_zone = data.aws_availability_zones.available.names[count.index]
-  cidr_block        = cidrsubnet(local.firewall_cidr_10, 2, count.index)
+  availability_zone = data.aws_availability_zones.available.names[0]
+  cidr_block        = local.firewall_cidr_10
   vpc_id            = aws_vpc.main.id
-  tags              = { Name = "vpc-network-firewall-subnet-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}" }
+  tags              = { Name = "vpc-network-firewall-subnet-${var.environment_name}" }
 }
 
 resource "aws_subnet" "private_subnet" {

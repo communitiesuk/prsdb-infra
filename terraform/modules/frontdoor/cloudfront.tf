@@ -58,6 +58,10 @@ resource "aws_cloudfront_distribution" "main" {
   tags = {
     Name = "cloudfront=${var.environment_name}"
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_cloudfront_cache_policy" "main" {

@@ -20,54 +20,49 @@ resource "aws_route_table_association" "public" {
 
 # Firewalled subnets should route internet traffic to the Firewall
 resource "aws_route_table" "private_to_firewall" {
-  count  = var.number_of_availability_zones
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "to-firewall-route-table-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}"
+    Name = "to-firewall-route-table-${var.environment_name}"
   }
 }
 
 resource "aws_route" "private_to_firewall" {
-  count                  = var.number_of_availability_zones
-  route_table_id         = aws_route_table.private_to_firewall[count.index].id
+  route_table_id         = aws_route_table.private_to_firewall.id
   destination_cidr_block = "0.0.0.0/0"
-  vpc_endpoint_id        = one(element(one(aws_networkfirewall_firewall.main.firewall_status).sync_states[*], count.index).attachment).endpoint_id
+  vpc_endpoint_id        = one(one(one(aws_networkfirewall_firewall.main.firewall_status).sync_states).attachment).endpoint_id
 }
 
 resource "aws_route_table_association" "private" {
   count          = var.number_of_availability_zones
   subnet_id      = aws_subnet.private_subnet[count.index].id
-  route_table_id = aws_route_table.private_to_firewall[count.index].id
+  route_table_id = aws_route_table.private_to_firewall.id
 }
 
 resource "aws_route_table_association" "isolated" {
   count          = var.number_of_isolated_subnets
   subnet_id      = aws_subnet.isolated_subnet[count.index].id
-  route_table_id = aws_route_table.private_to_firewall[count.index].id
+  route_table_id = aws_route_table.private_to_firewall.id
 }
 
 # Firewall should forward to the NAT Gateway
 resource "aws_route_table" "to_nat_gateway" {
-  count  = var.number_of_availability_zones
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "to-nat-route-table-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}"
+    Name = "to-nat-route-table-${var.environment_name}"
   }
 }
 
 resource "aws_route" "to_nat_gateway" {
-  count                  = var.number_of_availability_zones
-  route_table_id         = aws_route_table.to_nat_gateway[count.index].id
+  route_table_id         = aws_route_table.to_nat_gateway.id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_gateway[count.index].id
+  nat_gateway_id         = aws_nat_gateway.nat_gateway.id
 }
 
 resource "aws_route_table_association" "firewall" {
-  count          = var.number_of_availability_zones
-  subnet_id      = aws_subnet.firewall[count.index].id
-  route_table_id = aws_route_table.to_nat_gateway[count.index].id
+  subnet_id      = aws_subnet.firewall.id
+  route_table_id = aws_route_table.to_nat_gateway.id
 }
 
 # NAT gateway should send internet bound traffic out to the gateway
@@ -86,8 +81,7 @@ resource "aws_route" "nat_gateway_to_internet" {
 }
 
 resource "aws_route_table_association" "nat_gateway" {
-  count          = var.number_of_availability_zones
-  subnet_id      = aws_subnet.nat_gateway[count.index].id
+  subnet_id      = aws_subnet.nat_gateway.id
   route_table_id = aws_route_table.nat_gateway_subnet_route_table.id
 }
 
@@ -98,7 +92,7 @@ resource "aws_route" "nat_gateway_back_to_firewall_private" {
   # More specific routes override less specific ones (by prefix length)
   route_table_id         = aws_route_table.nat_gateway_subnet_route_table.id
   destination_cidr_block = aws_subnet.private_subnet[count.index].cidr_block
-  vpc_endpoint_id        = one(element(one(aws_networkfirewall_firewall.main.firewall_status).sync_states[*], count.index).attachment).endpoint_id
+  vpc_endpoint_id        = one(one(one(aws_networkfirewall_firewall.main.firewall_status).sync_states).attachment).endpoint_id
 }
 
 resource "aws_route" "nat_gateway_back_to_firewall_isolated" {
@@ -106,5 +100,5 @@ resource "aws_route" "nat_gateway_back_to_firewall_isolated" {
   # More specific routes override less specific ones (by prefix length)
   route_table_id         = aws_route_table.nat_gateway_subnet_route_table.id
   destination_cidr_block = aws_subnet.isolated_subnet[count.index].cidr_block
-  vpc_endpoint_id        = one(element(one(aws_networkfirewall_firewall.main.firewall_status).sync_states[*], count.index).attachment).endpoint_id
+  vpc_endpoint_id        = one(one(one(aws_networkfirewall_firewall.main.firewall_status).sync_states).attachment).endpoint_id
 }

@@ -46,7 +46,7 @@ module "frontdoor" {
 
   ssl_certs_created         = var.ssl_certs_created
   environment_name          = local.environment_name
-  public_subnet_ids         = module.networking.public_subnet[*].id
+  public_subnet_ids         = module.networking.public_subnets[*].id
   vpc_id                    = module.networking.vpc.id
   application_port          = local.application_port
   cloudfront_domain_name    = "prsdb.communities.gov.uk"
