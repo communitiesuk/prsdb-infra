@@ -52,6 +52,10 @@ module "networking" {
 module "frontdoor" {
   source = "../modules/frontdoor"
 
+  providers = {
+    aws.us-east-1 = aws.us-east-1
+  }
+
   ssl_certs_created         = var.ssl_certs_created
   environment_name          = local.environment_name
   public_subnet_ids         = module.networking.public_subnets[*].id
@@ -59,6 +63,8 @@ module "frontdoor" {
   application_port          = local.application_port
   cloudfront_domain_name    = "integration.register-home-to-rent.communities.gov.uk"
   load_balancer_domain_name = "integration.lb.register-home-to-rent.communities.gov.uk"
+  # TODO: Add Softwire and MHCLG IPs
+  ip_allowlist = []
 }
 
 module "certificates" {

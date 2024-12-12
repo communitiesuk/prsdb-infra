@@ -59,3 +59,9 @@ variable "geolocation_allow_list" {
   description = "List of allowed locations - geo restrictions disabled when set to null"
   default     = null
 }
+
+variable "ip_allowlist" {
+  type        = list(string)
+  description = "List of allowed IPs - if empty then no ip restrictions are applied"
+  default     = []
+}

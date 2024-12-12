@@ -10,8 +10,7 @@ resource "aws_cloudfront_distribution" "main" {
   is_ipv6_enabled = true
   price_class     = "PriceClass_100" # Affects which edge locations are used by cloudfront, which affects the latency users will experience in different geographic areas
 
-  # TODO: PRSD-573 - reinstate when WAF is configured
-  # web_acl_id      = aws_wafv2_web_acl.main.arn
+  web_acl_id = aws_wafv2_web_acl.main.arn
 
   origin {
     domain_name = var.ssl_certs_created ? var.load_balancer_domain_name : aws_lb.main.dns_name
