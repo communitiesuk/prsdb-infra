@@ -21,10 +21,18 @@ provider "aws" {
   region = "eu-west-2"
 }
 
+provider "aws" {
+  alias  = "us-east-1"
+  region = "us-east-1"
+}
+
 locals {
   environment_name = "integration"
   multi_az         = false
   application_port = 8080
+
+  app_host                  = "integration.register-home-to-rent.communities.gov.uk"
+  load_balancer_domain_name = "integration.lb.register-home-to-rent.communities.gov.uk"
 }
 
 module "networking" {
@@ -49,7 +57,26 @@ module "frontdoor" {
   public_subnet_ids         = module.networking.public_subnets[*].id
   vpc_id                    = module.networking.vpc.id
   application_port          = local.application_port
-  cloudfront_domain_name    = "prsdb.communities.gov.uk"
-  load_balancer_domain_name = "alb.prsdb.communities.gov.uk"
+  cloudfront_domain_name    = "integration.register-home-to-rent.communities.gov.uk"
+  load_balancer_domain_name = "integration.lb.register-home-to-rent.communities.gov.uk"
+}
+
+module "certificates" {
+  source = "../modules/certificates"
+
+  providers = {
+    aws.us-east-1 = aws.us-east-1
+  }
+
+  cloudfront_domain_name    = local.app_host
+  load_balancer_domain_name = local.load_balancer_domain_name
+  cloudfront_additional_names = [
+    "integration.search-landlord-home-information.communities.gov.uk",
+    "integration.check-home-to-rent-registration.communities.gov.uk"
+  ]
+  load_balancer_additional_names = [
+    "integration.lb.search-landlord-home-information.communities.gov.uk",
+    "integration.lb.check-home-to-rent-registration.communities.gov.uk"
+  ]
 }
 
