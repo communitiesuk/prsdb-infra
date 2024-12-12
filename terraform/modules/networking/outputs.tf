@@ -4,17 +4,17 @@ output "vpc" {
 }
 
 output "nat_gateway_ip" {
-  value = aws_eip.nat_gateway[*].public_ip
+  value = aws_eip.nat_gateway.public_ip
 }
 
-output "public_subnet" {
+output "public_subnets" {
   value       = aws_subnet.public_subnet
-  description = "Public /22 subnet for alb listeners"
+  description = "Public /22 subnets for alb listeners"
 }
 
-output "private_subnet" {
+output "private_subnets" {
   value       = aws_subnet.private_subnet
-  description = "Private /22 subnet for ECS and bastian host"
+  description = "Private /22 subnets for ECS and bastian host"
 }
 
 output "isolated_subnets" {

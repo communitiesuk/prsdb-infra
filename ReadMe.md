@@ -17,12 +17,23 @@ TODO
 - After the `apply` step completes successfully and you can see the s3 bucket and dynamoDB table in the aws console, uncomment the `backend "s3"` block and run `terraform init`
 - You should be prompted to move the terraform state to the remote backend. Once this is done the terraform state is successfully bootstrapped for the new environment
 
-### Setting up the environment
-
-TODO - Add section on validating SSL certificates before spinning up the rest of the environment
+### Setting up the environment folder
 
 - In your new `terraform/<environment name>` folder, you can now also remove the `.template` from the end of all of the filenames, replace all instances of the string `<environment name>` with your actual environment name, and more generally look through `main.tf` for any sets of `<>` that require environment-specific input, e.g. the domains of any 3rd party integrations.
-- Once this is done, `cd` into `terraform/<environment name>` and run `terraform init` followed by `terraform plan`. If the output of the plan looks correct, run `terraform apply` to bring up the new environment.
+
+### Setting up the initial networking and requesting the ssl certificates
+
+- Before we can create the environment as a whole, we must first create the initial networking infrastructure, and then request the DNS names and certificates from MHCLG.
+- One of the files in your new `terraform/<environment name>` folder will be `terraform.tfvars`. Check that this contains the line `ssl_certs_created = false`
+- Once this is done, `cd` into `terraform/<environment name>` and run `terraform init` followed by `terraform plan -target module.networking -target module.frontdoor`. If the output of the plan looks correct, run `terraform apply -target module.networking -target module.frontdoor` to bring up the networking for new environment.
+- In the terraform output you should see outputs for `cloudfront_dns_name` and `load_balancer_dns_name`. Include these in the request to MHCLG For the domain names and certificates.
+
+TODO: Document the request process for the domain names and certificates
+
+### Setting up the rest of the environment
+
+- In `terraform.tfvars` set `ssl_certs_created` to `true`.
+- Then run `terraform plan`. If the output looks correct, run `terraform apply` to bring up the environment.
 
 ## tfsec
 

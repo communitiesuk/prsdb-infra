@@ -1,5 +1,5 @@
 output "public_subnet_ids" {
-  value = module.networking.public_subnet[*].id
+  value = module.networking.public_subnets[*].id
 }
 
 output "vpc_id" {

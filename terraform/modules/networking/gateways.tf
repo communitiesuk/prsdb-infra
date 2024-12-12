@@ -11,16 +11,14 @@ resource "aws_internet_gateway" "main" {
 }
 
 resource "aws_eip" "nat_gateway" {
-  count  = var.number_of_availability_zones
   domain = "vpc"
 }
 
 resource "aws_nat_gateway" "nat_gateway" {
-  count         = var.number_of_availability_zones
-  allocation_id = element(aws_eip.nat_gateway[*].id, count.index)
-  subnet_id     = aws_subnet.nat_gateway[count.index].id
+  allocation_id = aws_eip.nat_gateway.id
+  subnet_id     = aws_subnet.nat_gateway.id
 
   tags = {
-    Name = "nat-gateway-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}"
+    Name = "nat-gateway-${var.environment_name}"
   }
 }

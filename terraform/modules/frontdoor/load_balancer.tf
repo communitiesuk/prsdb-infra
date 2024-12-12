@@ -7,6 +7,10 @@ resource "aws_lb" "main" {
   load_balancer_type         = "application"
   security_groups            = [aws_security_group.load_balancer.id]
   subnets                    = var.public_subnet_ids
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_lb_listener" "https" {
@@ -52,7 +56,7 @@ resource "aws_lb_target_group" "main" {
 
 resource "aws_lb_listener_rule" "forward" {
   count        = var.ssl_certs_created ? 1 : 0
-  listener_arn = aws_lb_listener.https[count.index].arn
+  listener_arn = aws_lb_listener.https[0].arn
 
   action {
     target_group_arn = aws_lb_target_group.main.id
