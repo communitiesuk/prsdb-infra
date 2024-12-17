@@ -3,8 +3,7 @@ resource "aws_iam_openid_connect_provider" "main" {
 
   client_id_list = ["sts.amazonaws.com"]
 
-  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1",
-    "1c58a3a8518e8759bf075b76b750d4f2df264fcd",
-    "1b511abead59c6ce207077c0bf0e0043b1382612"
-  ]
+  # The README for the Github action explains that this must be provided but AWS ignores it when using Github as a IdP
+  # https://github.com/aws-actions/configure-aws-credentials
+  thumbprint_list = ["ffffffffffffffffffffffffffffffffffffffff"]
 }
