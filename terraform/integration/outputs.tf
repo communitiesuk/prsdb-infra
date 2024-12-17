@@ -25,6 +25,6 @@ output "load_balancer_certificate_validation" {
 }
 
 output "ecr_repository_url" {
-  value = module.ecr.ecr_repository_url
+  value       = module.ecr.ecr_repository_url
   description = "The url of the ecr repository for this environment"
 }
