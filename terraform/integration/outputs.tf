@@ -23,3 +23,8 @@ output "load_balancer_certificate_validation" {
   value       = module.certificates.load_balancer_certificate_validation
   description = "The domain validation objects for the load balancer certificate"
 }
+
+output "ecr_repository_url" {
+  value = module.ecr.ecr_repository_url
+  description = "The url of the ecr repository for this environment"
+}
