@@ -5,7 +5,7 @@ output "public_subnet_ids" {
 
 output "vpc_id" {
   value       = module.networking.vpc.id
-  description = "The id of the main vpc"
+  description = "The id of the vpc"
 }
 
 output "load_balancer_dns_name" {
