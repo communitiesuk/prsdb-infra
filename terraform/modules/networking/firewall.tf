@@ -302,7 +302,7 @@ locals {
   # Solution below taken from https://github.com/communitiesuk/delta-common-infrastructure
   subnet_firewall_rules = [
     for name, config in local.firewall_config : join("\n", ["# ${name}",
-      config.http_allowed_domains == [] && config.tls_allowed_domains == [] ?
+      length(config.http_allowed_domains) == 0 && length(config.tls_allowed_domains) == 0 ?
       "drop ip ${config.cidr} any <> any any (msg:\"Drop all traffic from ${name}\"; sid:${config.sid_offset}; rev:1;)"
       : join("\n", concat(
         [

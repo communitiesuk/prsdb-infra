@@ -9,4 +9,5 @@ variable "environment_name" {
 
 variable "push_ecr_image_policy_arn" {
   description = "arn of the iam policy for pushing images to ecr"
+  type        = string
 }
