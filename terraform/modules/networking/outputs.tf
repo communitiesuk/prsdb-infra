@@ -1,10 +1,11 @@
 output "vpc" {
   value       = aws_vpc.main
-  description = "Main AWS VPC"
+  description = "The AWS VPC"
 }
 
 output "nat_gateway_ip" {
-  value = aws_eip.nat_gateway.public_ip
+  value       = aws_eip.nat_gateway.public_ip
+  description = "The IP address of the NAT gateway"
 }
 
 output "public_subnets" {

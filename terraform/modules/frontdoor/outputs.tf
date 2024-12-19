@@ -1,4 +1,5 @@
 output "load_balancer" {
+  description = "An object representing the application load balancer"
   value = {
     arn               = aws_lb.main.arn
     arn_suffix        = aws_lb.main.arn_suffix
@@ -9,5 +10,6 @@ output "load_balancer" {
 }
 
 output "cloudfront_dns_name" {
-  value = aws_cloudfront_distribution.main.domain_name
+  description = "The domain name of the cloudfront distribution"
+  value       = aws_cloudfront_distribution.main.domain_name
 }
