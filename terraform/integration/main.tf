@@ -56,13 +56,15 @@ module "frontdoor" {
     aws.us-east-1 = aws.us-east-1
   }
 
-  ssl_certs_created         = var.ssl_certs_created
-  environment_name          = local.environment_name
-  public_subnet_ids         = module.networking.public_subnets[*].id
-  vpc_id                    = module.networking.vpc.id
-  application_port          = local.application_port
-  cloudfront_domain_name    = "integration.register-home-to-rent.test.communities.gov.uk"
-  load_balancer_domain_name = "integration.lb.register-home-to-rent.test.communities.gov.uk"
+  ssl_certs_created             = var.ssl_certs_created
+  environment_name              = local.environment_name
+  public_subnet_ids             = module.networking.public_subnets[*].id
+  vpc_id                        = module.networking.vpc.id
+  application_port              = local.application_port
+  cloudfront_domain_name        = "integration.register-home-to-rent.test.communities.gov.uk"
+  load_balancer_domain_name     = "integration.lb.register-home-to-rent.test.communities.gov.uk"
+  cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
+  load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
   # TODO: Add Softwire and MHCLG IPs
   ip_allowlist = []
 }
