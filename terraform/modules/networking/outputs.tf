@@ -1,6 +1,6 @@
 output "vpc" {
   value       = aws_vpc.main
-  description = "Main AWS VPC"
+  description = "The AWS VPC"
 }
 
 output "nat_gateway_ip" {
