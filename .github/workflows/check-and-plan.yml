@@ -1,0 +1,89 @@
+name: Check and Plan
+on:
+  pull_request:
+
+jobs:
+  format:
+    name: tf format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.1
+
+      - name: Check formatting of all terraform files
+        run: terraform fmt -check -recursive
+
+  validate:
+    name: tf validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.1
+
+      - name: Terraform init integration folder
+        working-directory: terraform/integration
+        run: terraform init -backend=false
+
+      - name: Terraform validate integration folder
+        working-directory: terraform/integration
+        run: terraform validate
+
+      - name: Terraform init integration backend folder
+        working-directory: terraform/integration/backend
+        run: terraform init -backend=false
+
+      - name: Terraform validate integration backend folder
+        working-directory: terraform/integration/backend
+        run: terraform validate
+
+  tflint:
+    name: tflint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.1
+
+      - name: Cache plugin directory for tflint
+        uses: actions/cache@v3
+        with:
+          path: ~/.tflint.d/plugins
+          key: ubuntu-latest-tflint-${{ hashFiles('.tflint.hcl') }}
+
+      - name: Set up tflint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.54.0
+
+      - name: Init tflint
+        run: tflint --init
+
+      - name: Run tflint
+        run: tflint --recursive --config "$(pwd)/.tflint.hcl" --format=compact --color
+
+  tfsec:
+    name: tfsec
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: terraform/
+          version: v1.28.11
