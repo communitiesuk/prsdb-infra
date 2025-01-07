@@ -54,6 +54,20 @@ jobs:
         if: steps.plan.outputs.exitcode == 1
         run: exit 1
 
+      - name: Report pipeline status
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "commit": "Terraform plan: ${{ toJson(github.event.head_commit.message) }}",
+              "result": "${{ job.status == 'success' && 'Success :tick:' || 'Failure :no-cross:' }}",
+              "url": "${{ format('https://github.com/communitiesuk/prsdb-infra/actions/runs/{0}', github.run_id) }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
   apply:
     name: Terraform apply
     needs: plan
@@ -89,3 +103,17 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false
         working-directory: terraform/integration
+
+      - name: Report pipeline status
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "commit": "Terraform apply: ${{ toJson(github.event.head_commit.message) }}",
+              "result": "${{ job.status == 'success' && 'Success :tick:' || 'Failure :no-cross:' }}",
+              "url": "${{ format('https://github.com/communitiesuk/prsdb-infra/actions/runs/{0}', github.run_id) }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
