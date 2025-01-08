@@ -24,7 +24,8 @@ data "aws_iam_policy_document" "github_actions_terraform_plan_assume_role" {
     condition {
       test = "StringLike"
       values = [
-        "repo:communitiesuk/prsdb-infra:*"
+        "repo:communitiesuk/prsdb-infra:*",
+        "repo:communitiesuk/prsdb-webapp:*",
       ]
       variable = "token.actions.githubusercontent.com:sub"
     }
@@ -73,9 +74,10 @@ data "aws_iam_policy_document" "github_actions_terraform_admin_assume_role" {
     }
 
     condition {
-      test = "StringEquals"
+      test = "StringLike"
       values = [
         "repo:communitiesuk/prsdb-infra:*",
+        "repo:communitiesuk/prsdb-webapp:*",
       ]
       variable = "token.actions.githubusercontent.com:sub"
     }
@@ -108,7 +110,7 @@ data "aws_iam_policy_document" "github_actions_push_ecr_assume_role" {
     }
 
     condition {
-      test = "StringEquals"
+      test = "StringLike"
       values = [
         "repo:communitiesuk/prsdb-webapp:*",
       ]
