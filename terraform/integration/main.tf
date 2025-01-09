@@ -31,8 +31,8 @@ locals {
   multi_az         = false
   application_port = 8080
 
-  app_host                  = "integration.register-home-to-rent.test.communities.gov.uk"
-  load_balancer_domain_name = "integration.lb.register-home-to-rent.test.communities.gov.uk"
+  app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
+  load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 }
 
 module "networking" {
@@ -61,8 +61,8 @@ module "frontdoor" {
   public_subnet_ids             = module.networking.public_subnets[*].id
   vpc_id                        = module.networking.vpc.id
   application_port              = local.application_port
-  cloudfront_domain_name        = "integration.register-home-to-rent.test.communities.gov.uk"
-  load_balancer_domain_name     = "integration.lb.register-home-to-rent.test.communities.gov.uk"
+  cloudfront_domain_name        = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
+  load_balancer_domain_name     = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
   cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
   load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
   # TODO: Add Softwire and MHCLG IPs
@@ -79,12 +79,12 @@ module "certificates" {
   cloudfront_domain_name    = local.app_host
   load_balancer_domain_name = local.load_balancer_domain_name
   cloudfront_additional_names = [
-    "integration.search-landlord-home-information.test.communities.gov.uk",
-    "integration.check-home-to-rent-registration.test.communities.gov.uk"
+    "${local.environment_name}.search-landlord-home-information.test.communities.gov.uk",
+    "${local.environment_name}.check-home-to-rent-registration.test.communities.gov.uk"
   ]
   load_balancer_additional_names = [
-    "integration.lb.search-landlord-home-information.test.communities.gov.uk",
-    "integration.lb.check-home-to-rent-registration.test.communities.gov.uk"
+    "${local.environment_name}.lb.search-landlord-home-information.test.communities.gov.uk",
+    "${local.environment_name}.lb.check-home-to-rent-registration.test.communities.gov.uk"
   ]
 }
 
