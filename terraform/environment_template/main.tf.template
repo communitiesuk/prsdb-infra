@@ -24,6 +24,10 @@ provider "aws" {
 locals {
   environment_name = "<environment name>"
   multi_az = false
+  application_port = 8080
+
+  app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
+  load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 }
 
 module "networking" {
@@ -35,4 +39,58 @@ module "networking" {
   integration_domains = [
     <Domains for 3rd party integrations in this environment>
   ]
+}
+
+module "frontdoor" {
+  source = "../modules/frontdoor"
+
+  providers = {
+    aws.us-east-1 = aws.us-east-1
+  }
+
+  ssl_certs_created             = var.ssl_certs_created
+  environment_name              = local.environment_name
+  public_subnet_ids             = module.networking.public_subnets[*].id
+  vpc_id                        = module.networking.vpc.id
+  application_port              = local.application_port
+  cloudfront_domain_name        = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
+  load_balancer_domain_name     = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+  cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
+  load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
+  ip_allowlist = [
+    <Allowed IPs if IP whitelisting is to be turned on, empty otherwise>
+  ]
+}
+
+module "certificates" {
+  source = "../modules/certificates"
+
+  providers = {
+    aws.us-east-1 = aws.us-east-1
+  }
+
+  cloudfront_domain_name    = local.app_host
+  load_balancer_domain_name = local.load_balancer_domain_name
+  cloudfront_additional_names = [
+    "${local.environment_name}.search-landlord-home-information.test.communities.gov.uk",
+    "${local.environment_name}.check-home-to-rent-registration.test.communities.gov.uk"
+  ]
+  load_balancer_additional_names = [
+    "${local.environment_name}.lb.search-landlord-home-information.test.communities.gov.uk",
+    "${local.environment_name}.lb.check-home-to-rent-registration.test.communities.gov.uk"
+  ]
+}
+
+module "ecr" {
+  source = "../modules/ecr"
+
+  environment_name      = local.environment_name
+  image_retention_count = 3
+}
+
+module "github_actions_access" {
+  source = "../modules/github_actions_access"
+
+  environment_name          = local.environment_name
+  push_ecr_image_policy_arn = module.ecr.push_ecr_image_policy_arn
 }
