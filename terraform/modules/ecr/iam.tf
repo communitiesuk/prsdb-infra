@@ -60,8 +60,8 @@ data "aws_iam_policy_document" "task_assume_role" {
   }
 }
 
-resource "aws_iam_role" "task" {
-  name               = "${var.environment_name}-task"
+resource "aws_iam_role" "webapp_task" {
+  name               = "${var.environment_name}-webapp-task"
   assume_role_policy = data.aws_iam_policy_document.task_assume_role.json
 }
 
@@ -84,7 +84,7 @@ resource "aws_iam_policy" "allow_ecs_exec" {
 }
 
 resource "aws_iam_role_policy_attachment" "task_allow_ecs_exec" {
-  role       = aws_iam_role.task.name
+  role       = aws_iam_role.webapp_task.name
   policy_arn = aws_iam_policy.allow_ecs_exec.arn
 }
 
