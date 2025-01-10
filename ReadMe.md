@@ -36,8 +36,8 @@ TODO: Document the request process for the domain names and certificates
 - Make sure that the `terraform.tfvars` file that was created in the previous step contains the line `task_definition_created = false`
 - Still inside your `terraform/<environment name>` folder, run `terraform plan -target module.ecr`.
 - If the output of the plan looks correct, run `terraform apply -target module.ecr` to create the ECR repository.
-- In `terraform/<environment name>/task_definition`, if you haven't already, remove the `.template` from the end of any file names in the folder, and replace all instances of the string `<environment name>` with your actual environment name.
-- Next, cd into `terraform/<environment name>/task_definition` and run `terraform init` followed by `terraform plan`. This should show you one resource being created - the task definition. If the output looks correct, run `terraform apply`.
+- In `terraform/<environment name>/ecs_task_definition`, if you haven't already, remove the `.template` from the end of any file names in the folder, and replace all instances of the string `<environment name>` with your actual environment name.
+- Next, cd into `terraform/<environment name>/ecs_task_definition` and run `terraform init` followed by `terraform plan`. This should show you one resource being created - the task definition. If the output looks correct, run `terraform apply`.
 
 ### Setting up the rest of the environment
 

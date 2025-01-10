@@ -31,7 +31,7 @@ data "aws_iam_role" "webapp_ecs_task" {
 
 locals {
   # TODO: Get non-secret computed environment variables from SSM datasources
-  environment = [
+  environment_variables = [
     {
       name  = "ENVIRONMENT_NAME"
       value = "integration"
@@ -49,8 +49,10 @@ module "webapp_ecs_task_definition" {
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
   # TODO: consider what our requirements are for the instance
-  task_cpu                    = 512
-  task_memory                 = 1024
-  task_name                   = "prsdb-webapp"
+  task_cpu    = 512
+  task_memory = 1024
+  task_name   = "prsdb-webapp"
   #   TODO: Add data sources for secrets once they're created + environment variables
+  environment_variables = local.environment_variables
+  secrets               = local.secrets
 }
