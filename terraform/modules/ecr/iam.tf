@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "task_execution_assume_role" {
+data "aws_iam_policy_document" "ecs_task_execution_assume_role" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -10,13 +10,13 @@ data "aws_iam_policy_document" "task_execution_assume_role" {
   }
 }
 
-resource "aws_iam_role" "task_execution" {
-  name               = "${var.environment_name}-task-execution"
-  assume_role_policy = data.aws_iam_policy_document.task_execution_assume_role.json
+resource "aws_iam_role" "ecs_task_execution" {
+  name               = "${var.environment_name}-ecs-task-execution"
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "task_execution_managed_policy" {
-  role = aws_iam_role.task_execution.name
+  role = aws_iam_role.ecs_task_execution.name
   # This is an aws managed policy for ecs task execution roles
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
@@ -60,8 +60,8 @@ data "aws_iam_policy_document" "task_assume_role" {
   }
 }
 
-resource "aws_iam_role" "webapp_task" {
-  name               = "${var.environment_name}-webapp-task"
+resource "aws_iam_role" "webapp_ecs_task" {
+  name               = "${var.environment_name}-webapp-ecs-task"
   assume_role_policy = data.aws_iam_policy_document.task_assume_role.json
 }
 
@@ -84,7 +84,7 @@ resource "aws_iam_policy" "allow_ecs_exec" {
 }
 
 resource "aws_iam_role_policy_attachment" "task_allow_ecs_exec" {
-  role       = aws_iam_role.webapp_task.name
+  role       = aws_iam_role.webapp_ecs_task.name
   policy_arn = aws_iam_policy.allow_ecs_exec.arn
 }
 
