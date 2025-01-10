@@ -25,14 +25,23 @@ TODO
 
 - Before we can create the environment as a whole, we must first create the initial networking infrastructure, and then request the DNS names and certificates from MHCLG.
 - One of the files in your new `terraform/<environment name>` folder will be `terraform.tfvars`. Check that this contains the line `ssl_certs_created = false`
-- Once this is done, `cd` into `terraform/<environment name>` and run `terraform init` followed by `terraform plan -target module.networking -target module.frontdoor`. If the output of the plan looks correct, run `terraform apply -target module.networking -target module.frontdoor` to bring up the networking for new environment.
+- Once this is done, `cd` into `terraform/<environment name>` and run `terraform init` followed by `terraform plan -target module.networking -target module.frontdoor`. If the output of the plan looks correct, run `terraform apply -target module.networking -target module.frontdoor` to bring up the networking and ECR repository for the new environment.
 - In the terraform output you should see outputs for `cloudfront_dns_name` and `load_balancer_dns_name`. Include these in the request to MHCLG For the domain names and certificates.
 
 TODO: Document the request process for the domain names and certificates
 
+### Setting up the ECR repository and task definition
+
+- We also need to create the ECR repository and initial task definition before we can bring up the ECS service.
+- Make sure that the `terraform.tfvars` file that was created in the previous step contains the line `task_definition_created = false`
+- Still inside your `terraform/<environment name>` folder, run `terraform plan -target module.ecr`.
+- If the output of the plan looks correct, run `terraform apply -target module.ecr` to create the ECR repository.
+- In `terraform/<environment name>/task_definition`, if you haven't already, remove the `.template` from the end of any file names in the folder, and replace all instances of the string `<environment name>` with your actual environment name.
+- Next, cd into `terraform/<environment name>/task_definition` and run `terraform init` followed by `terraform plan`. This should show you one resource being created - the task definition. If the output looks correct, run `terraform apply`.
+
 ### Setting up the rest of the environment
 
-- In `terraform.tfvars` set `ssl_certs_created` to `true`.
+- In `terraform.tfvars` set `ssl_certs_created` to `true` and `task_definition_created` to `true`.
 - Then run `terraform plan`. If the output looks correct, run `terraform apply` to bring up the environment.
 
 ## tfsec

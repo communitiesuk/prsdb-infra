@@ -48,8 +48,9 @@ module "webapp_ecs_task_definition" {
   container_port              = 8080
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
-  task_cpu                    = 0
-  task_memory                 = 0
+  # TODO: consider what our requirements are for the instance
+  task_cpu                    = 512
+  task_memory                 = 1024
   task_name                   = "prsdb-webapp"
   #   TODO: Add data sources for secrets once they're created + environment variables
 }
