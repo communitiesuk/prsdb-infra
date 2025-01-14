@@ -1,0 +1,105 @@
+name: Update task definition
+on:
+  workflow_call:
+    inputs:
+      environment_name:
+        description: 'The name of the environment to deploy the task definition to'
+        type: string
+        required: true
+      account_id:
+        description: 'The id of the AWS account that the task definition is to be created in'
+        type: string
+        required: true
+      image_name:
+        type: string
+        description: 'the fully qualified name of the docker image for the task definition'
+
+jobs:
+  plan:
+    name: Terraform plan
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    concurrency: "task-definition-tfstate-${{ inputs.environment_name }}"
+    outputs:
+      plan: ${{ steps.plan.outputs.stdout }}
+      plan_exitcode: ${{ steps.plan.outputs.exitcode }}
+
+    env:
+      AWS_REGION: "eu-west-2"
+      TF_VAR_image_name: ${{ inputs.image_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: communitiesuk/prsdb-infra
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: "arn:aws:iam::${{ inputs.account_id }}:role/github-actions-terraform-ci-plan-read-only"
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Terraform
+        # Exposes stdout, stderr and exitcode as outputs for any steps that run terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.1
+
+      - name: Terraform init
+        id: init
+        run: terraform init -input=false
+        working-directory: "terraform/${{ inputs.environment_name }}/ecs_task_definition"
+
+      - name: Terraform Plan
+        id: plan
+        # Terraform's "detailed-exitcode" codes are: 0 for "no changes", 1 for errors, 2 for "valid changes"
+        # We don't save the plan as an artefact as it's sensitive and this repo is public
+        run: >
+          terraform plan -input=false -detailed-exitcode
+        continue-on-error: true
+        working-directory: "terraform/${{ inputs.environment_name }}/ecs_task_definition"
+
+      - name: Fail job if plan failed
+        if: steps.plan.outputs.exitcode == 1
+        run: exit 1
+
+  apply:
+    name: Terraform apply
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    concurrency: "task-definition-tfstate-${{ inputs.environment_name }}"
+    environment: ${{ inputs.environment_name }}
+    if: needs.plan.outputs.plan_exitcode == 2
+    env:
+      AWS_REGION: "eu-west-2"
+      TF_VAR_image_name: ${{ inputs.image_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: communitiesuk/prsdb-infra
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: "arn:aws:iam::${{ inputs.account_id }}:role/github-actions-terraform-admin"
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.1
+
+      - name: Terraform init
+        id: init
+        run: terraform init -input=false
+        working-directory: "terraform/${{ inputs.environment_name }}/ecs_task_definition"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -input=false
+        working-directory: "terraform/${{ inputs.environment_name }}/ecs_task_definition"
