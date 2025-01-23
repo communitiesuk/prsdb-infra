@@ -29,6 +29,22 @@ data "aws_iam_role" "webapp_ecs_task" {
   name = "integration-webapp-ecs-task"
 }
 
+data "aws_secretsmanager_secret" "database_password" {
+  name = "tf-integration-prsdb-database-password"
+}
+
+data "aws_secretsmanager_secret" "one_login_private_key" {
+  name = "tf-integration-one-login-private-key"
+}
+
+data "aws_secretsmanager_secret" "notify_api_key" {
+  name = "tf-integration-notify-api-key"
+}
+
+data "aws_secretsmanager_secret" "os_places_api_key" {
+  name = "tf-integration-os-places-api-key"
+}
+
 locals {
   # TODO: Get non-secret computed environment variables from SSM datasources
   environment_variables = [
@@ -37,8 +53,24 @@ locals {
       value = "integration"
     },
   ]
-  # TODO: Get secrets from secrets manager datasources
-  secrets = []
+  secrets = [
+    {
+      name      = "RDS_PASSWORD"
+      valueFrom = data.aws_secretsmanager_secret.database_password.arn
+    },
+    {
+      name      = "ONE_LOGIN_PRIVATE_KEY"
+      valueFrom = data.aws_secretsmanager_secret.one_login_private_key.arn
+    },
+    {
+      name      = "EMAILNOTIFICATIONS_APIKEY"
+      valueFrom = data.aws_secretsmanager_secret.notify_api_key.arn
+    },
+    {
+      name      = "OS_PLACES_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.os_places_api_key.arn
+    },
+  ]
 }
 
 module "webapp_ecs_task_definition" {
@@ -49,10 +81,9 @@ module "webapp_ecs_task_definition" {
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
   # TODO: consider what our requirements are for the instance
-  task_cpu    = 512
-  task_memory = 1024
-  task_name   = "prsdb-webapp"
-  #   TODO: Add data sources for secrets once they're created + environment variables
+  task_cpu              = 512
+  task_memory           = 1024
+  task_name             = "prsdb-webapp"
   environment_variables = local.environment_variables
   secrets               = local.secrets
 }
