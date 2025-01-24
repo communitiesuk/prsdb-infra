@@ -12,6 +12,7 @@ data "aws_iam_policy_document" "kms_secrets_decrypt" {
     resources = [aws_kms_key.prsdb_webapp_secrets.arn]
   }
 
+  # Required to allow the KMS key to be managed after creation: https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#key-policy-default-allow-root-enable-iam
   statement {
     principals {
       type        = "AWS"
