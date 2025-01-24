@@ -3,6 +3,11 @@ output "ecs_task_execution_role_arn" {
   description = "Role to be used by ECS to execute tasks from the ecr repository"
 }
 
+output "ecs_task_execution_role_id" {
+  value       = aws_iam_role.ecs_task_execution.id
+  description = "Id of role to be used to execute tasks"
+}
+
 output "webapp_ecs_task_role_arn" {
   value       = aws_iam_role.webapp_ecs_task.arn
   description = "Role to be used by the ECS task definition"

@@ -102,3 +102,10 @@ module "github_actions_access" {
   push_ecr_image_policy_arn = module.ecr.push_ecr_image_policy_arn
 }
 
+module "secrets" {
+  source = "../modules/secrets"
+
+  environment_name               = local.environment_name
+  webapp_task_execution_role_arn = module.ecr.ecs_task_execution_role_arn
+  webapp_task_execution_role_id  = module.ecr.ecs_task_execution_role_id
+}
