@@ -1,6 +1,10 @@
 resource "aws_kms_key" "prsdb_webapp_secrets" {
   description         = "prsdb-webapp-secrets-${var.environment_name}"
   enable_key_rotation = true
+
+  tags = {
+    "terraform-plan-read" = true
+  }
 }
 
 resource "aws_kms_alias" "prsdb_webapp_secrets" {
