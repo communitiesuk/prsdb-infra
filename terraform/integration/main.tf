@@ -109,3 +109,9 @@ module "secrets" {
   webapp_task_execution_role_arn = module.ecr.ecs_task_execution_role_arn
   webapp_task_execution_role_id  = module.ecr.ecs_task_execution_role_id
 }
+
+module "parameters" {
+  source = "../modules/ssm"
+
+  environment_name = local.environment_name
+}
