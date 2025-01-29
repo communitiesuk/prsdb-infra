@@ -30,6 +30,7 @@ locals {
   environment_name = "integration"
   multi_az         = false
   application_port = 8080
+  database_port    = 5432
 
   app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
@@ -114,4 +115,19 @@ module "parameters" {
   source = "../modules/ssm"
 
   environment_name = local.environment_name
+}
+
+module "database" {
+  source = "../modules/rds"
+
+  environment_name                = local.environment_name
+  database_password               = module.secrets.database_password.result
+  database_port                   = local.database_port
+  allocated_storage               = 50
+  backup_retention_period         = 7
+  db_subnet_group_name            = module.networking.db_subnet_group_name
+  instance_class                  = "db.t4g.small"
+  multi_az                        = local.multi_az
+  vpc_id                          = module.networking.vpc.id
+  webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
 }

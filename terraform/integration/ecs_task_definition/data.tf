@@ -18,6 +18,14 @@ data "aws_ssm_parameter" "one_login_issuer_url" {
   name = "${local.environment_name}-one-login-issuer-url"
 }
 
+data "aws_ssm_parameter" "database_username" {
+  name = "${local.environment_name}-prsdb-database-username"
+}
+
+data "aws_ssm_parameter" "database_url" {
+  name = "${local.environment_name}-prsdb-database-url"
+}
+
 data "aws_secretsmanager_secret" "database_password" {
   name = "tf-${local.environment_name}-prsdb-database-password"
 }

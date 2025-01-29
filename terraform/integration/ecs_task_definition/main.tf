@@ -26,7 +26,6 @@ provider "aws" {
 }
 
 locals {
-  # TODO PRSD-749: Add DB parameters and secrets
   # TODO PRSD-750: Add Elasticache parameters
   environment_variables = [
     {
@@ -44,7 +43,15 @@ locals {
     {
       name  = "ONE_LOGIN_ISSUER_URL"
       value = data.aws_ssm_parameter.one_login_issuer_url.value
-    }
+    },
+    {
+      name  = "RDS_URL"
+      value = data.aws_ssm_parameter.database_url
+    },
+    {
+      name  = "RDS_USERNAME"
+      value = data.aws_ssm_parameter.database_username
+    },
   ]
   secrets = [
     {

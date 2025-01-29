@@ -49,3 +49,8 @@ resource "aws_subnet" "isolated_subnet" {
   vpc_id            = aws_vpc.main.id
   tags              = { Name = "vpc-isolated-subnet-${var.environment_name}-${data.aws_availability_zones.available.names[count.index]}" }
 }
+
+resource "aws_db_subnet_group" "main" {
+  name       = "${var.environment_name}-db-subnet-group"
+  subnet_ids = aws_subnet.isolated_subnet[*].id
+}

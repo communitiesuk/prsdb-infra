@@ -6,7 +6,7 @@ resource "aws_ssm_parameter" "one_login_public_key" {
   value = "default_to_be_set_manually" # To be set manually on AWS
 
   lifecycle {
-    ignore_changes = ["value"]
+    ignore_changes = [value]
   }
 }
 
@@ -16,7 +16,7 @@ resource "aws_ssm_parameter" "one_login_client_id" {
   value = "default_to_be_set_manually" # To be set manually on AWS
 
   lifecycle {
-    ignore_changes = ["value"]
+    ignore_changes = [value]
   }
 }
 
@@ -26,6 +26,6 @@ resource "aws_ssm_parameter" "one_login_issuer_url" {
   value = "default_to_be_set_manually" # To be set manually on AWS
 
   lifecycle {
-    ignore_changes = ["value"]
+    ignore_changes = [value]
   }
 }
