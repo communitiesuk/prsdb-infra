@@ -1,4 +1,5 @@
 #tfsec:ignore:AVD-AWS-0176:iam authentication not suitable as tokens only last 15minutes, password authentication preferred
+#tfsec:ignore:aws-rds-enable-performance-insights: TODO: PRSD-733 - to be re-enabled as part of adding logging
 resource "aws_db_instance" "main" {
   identifier                = "${var.environment_name}-database"
   db_name                   = "prsdb"
