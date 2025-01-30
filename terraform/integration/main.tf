@@ -41,7 +41,7 @@ module "networking" {
   vpc_cidr_block               = "10.1.0.0/16"
   environment_name             = local.environment_name
   number_of_availability_zones = 2
-  number_of_isolated_subnets   = local.multi_az ? 2 : 1
+  number_of_isolated_subnets   = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
   integration_domains = [
     "oidc.integration.account.gov.uk",
     "api.os.uk",
