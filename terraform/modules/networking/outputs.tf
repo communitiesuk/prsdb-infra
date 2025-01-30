@@ -23,3 +23,8 @@ output "isolated_subnets" {
   description = "var.number_of_isolated_subnets /22 subnets for db and redis - 2 required when using multi-AZ rds"
 }
 
+output "db_subnet_group_name" {
+  value       = aws_db_subnet_group.main.name
+  description = "Name of the db subnet group"
+}
+
