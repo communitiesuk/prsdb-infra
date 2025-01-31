@@ -46,11 +46,11 @@ locals {
     },
     {
       name  = "RDS_URL"
-      value = data.aws_ssm_parameter.database_url
+      value = data.aws_ssm_parameter.database_url.value
     },
     {
       name  = "RDS_USERNAME"
-      value = data.aws_ssm_parameter.database_username
+      value = data.aws_ssm_parameter.database_username.value
     },
   ]
   secrets = [
