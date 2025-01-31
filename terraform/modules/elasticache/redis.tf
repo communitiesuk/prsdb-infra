@@ -7,24 +7,24 @@ locals {
 }
 
 resource "aws_elasticache_replication_group" "main" {
-  at_rest_encryption_enabled    = true
-  auth_token                    = var.redis_password
-  auto_minor_version_upgrade    = true
-  automatic_failover_enabled    = var.highly_available ? true : false
-  description = "Redis replication group, consisting of a single node, or a primary node and a replica."
-  engine                        = "redis"
-  engine_version                = "7.4" # Unlike RDS, this should not cause state drift
-  final_snapshot_identifier     = "${var.environment_name}-database-final-snapshot"
-  maintenance_window            = "sun:23:00-mon:01:30"
-  multi_az_enabled              = var.highly_available ? true : false
-  node_type                     = var.node_type
-  num_cache_clusters            = var.highly_available ? 2 : 1
-  port                          = var.redis_port
-  preferred_cache_cluster_azs   = local.preferred_cache_cluster_azs
-  replication_group_id          = "${var.environment_name}-redis-replication-group"
-  security_group_ids            = [aws_security_group.redis.id]
-  snapshot_retention_limit      = var.snapshot_retention_limit
-  snapshot_window               = "02:30-03:30"
-  subnet_group_name             = var.redis_subnet_group_name
-  transit_encryption_enabled    = true
+  at_rest_encryption_enabled  = true
+  auth_token                  = var.redis_password
+  auto_minor_version_upgrade  = true
+  automatic_failover_enabled  = var.highly_available ? true : false
+  description                 = "Redis replication group, consisting of a single node, or a primary node and a replica."
+  engine                      = "redis"
+  engine_version              = "7.4" # Unlike RDS, this should not cause state drift
+  final_snapshot_identifier   = "${var.environment_name}-database-final-snapshot"
+  maintenance_window          = "sun:23:00-mon:01:30"
+  multi_az_enabled            = var.highly_available ? true : false
+  node_type                   = var.node_type
+  num_cache_clusters          = var.highly_available ? 2 : 1
+  port                        = var.redis_port
+  preferred_cache_cluster_azs = local.preferred_cache_cluster_azs
+  replication_group_id        = "${var.environment_name}-redis-replication-group"
+  security_group_ids          = [aws_security_group.redis.id]
+  snapshot_retention_limit    = var.snapshot_retention_limit
+  snapshot_window             = "02:30-03:30"
+  subnet_group_name           = var.redis_subnet_group_name
+  transit_encryption_enabled  = true
 }
