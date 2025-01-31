@@ -30,7 +30,7 @@ variable "backup_retention_period" {
 
 variable "backup_window" {
   type        = string
-  description = "Backup window for the db. If scheduled stop is enabled this should be within the db on times"
+  description = "Backup window for the db."
   default     = "23:09-23:39"
 }
 

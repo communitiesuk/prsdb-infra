@@ -26,7 +26,6 @@ provider "aws" {
 }
 
 locals {
-  # TODO PRSD-750: Add Elasticache parameters
   environment_variables = [
     {
       name  = "ENVIRONMENT_NAME"
@@ -52,11 +51,23 @@ locals {
       name  = "RDS_USERNAME"
       value = data.aws_ssm_parameter.database_username.value
     },
+    {
+      name  = "ELASTICACHE_URL"
+      value = data.aws_ssm_parameter.redis_url.value
+    },
+    {
+      name  = "ELASTICACHE_PORT"
+      value = data.aws_ssm_parameter.redis_port.value
+    },
   ]
   secrets = [
     {
       name      = "RDS_PASSWORD"
       valueFrom = data.aws_secretsmanager_secret.database_password.arn
+    },
+    {
+      name      = "ELASTICACHE_PASSWORD"
+      valueFrom = data.aws_secretsmanager_secret.redis_password.arn
     },
     {
       name      = "ONE_LOGIN_PRIVATE_KEY"
