@@ -15,7 +15,7 @@ resource "aws_elasticache_replication_group" "main" {
   engine                      = "redis"
   engine_version              = "7.4" # Unlike RDS, this should not cause state drift
   final_snapshot_identifier   = "${var.environment_name}-database-final-snapshot"
-  maintenance_window          = "sun:23:00-mon:01:30"
+  maintenance_window          = var.maintenance_window
   multi_az_enabled            = var.highly_available ? true : false
   node_type                   = var.node_type
   num_cache_clusters          = var.highly_available ? 2 : 1
@@ -24,7 +24,7 @@ resource "aws_elasticache_replication_group" "main" {
   replication_group_id        = "${var.environment_name}-redis-replication-group"
   security_group_ids          = [aws_security_group.redis.id]
   snapshot_retention_limit    = var.snapshot_retention_limit
-  snapshot_window             = "02:30-03:30"
+  snapshot_window             = var.backup_window
   subnet_group_name           = var.redis_subnet_group_name
   transit_encryption_enabled  = true
 }

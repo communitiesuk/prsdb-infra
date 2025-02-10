@@ -41,13 +41,13 @@ variable "snapshot_retention_limit" {
 variable "backup_window" {
   type        = string
   description = "Backup window for redis."
-  default     = "23:09-23:39"
+  default     = "02:30-03:30"
 }
 
 variable "maintenance_window" {
   type        = string
   description = "Maintenance window for redis."
-  default     = "Mon:02:33-Mon:03:03"
+  default     = "sun:23:00-mon:01:30"
 }
 
 variable "vpc_id" {
