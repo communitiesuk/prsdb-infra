@@ -30,6 +30,18 @@ data "aws_secretsmanager_secret" "database_password" {
   name = "tf-${local.environment_name}-prsdb-database-password"
 }
 
+data "aws_ssm_parameter" "redis_url" {
+  name = "${local.environment_name}-prsdb-redis-url"
+}
+
+data "aws_ssm_parameter" "redis_port" {
+  name = "${local.environment_name}-prsdb-redis-port"
+}
+
+data "aws_secretsmanager_secret" "redis_password" {
+  name = "tf-${local.environment_name}-prsdb-redis-password"
+}
+
 data "aws_secretsmanager_secret" "one_login_private_key" {
   name = "tf-${local.environment_name}-one-login-private-key"
 }

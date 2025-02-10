@@ -31,6 +31,7 @@ locals {
   multi_az         = false
   application_port = 8080
   database_port    = 5432
+  redis_port       = 6379
 
   app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
@@ -130,4 +131,17 @@ module "database" {
   multi_az                        = local.multi_az
   vpc_id                          = module.networking.vpc.id
   webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
+}
+
+module "redis" {
+  source = "../modules/elasticache"
+
+  environment_name         = local.environment_name
+  highly_available         = false
+  node_type                = "cache.t4g.micro"
+  redis_password           = module.secrets.redis_password.result
+  redis_port               = local.redis_port
+  redis_subnet_group_name  = module.networking.db_subnet_group_name
+  snapshot_retention_limit = 7
+  vpc_id                   = module.networking.vpc.id
 }
