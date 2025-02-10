@@ -13,7 +13,7 @@ resource "aws_elasticache_replication_group" "main" {
   automatic_failover_enabled  = var.highly_available ? true : false
   description                 = "Redis replication group, consisting of a single node, or a primary node and a replica."
   engine                      = "redis"
-  engine_version              = "7.4" # Unlike RDS, this should not cause state drift
+  engine_version              = "7.1" # Unlike RDS, this should not cause state drift
   final_snapshot_identifier   = "${var.environment_name}-database-final-snapshot"
   maintenance_window          = var.maintenance_window
   multi_az_enabled            = var.highly_available ? true : false
