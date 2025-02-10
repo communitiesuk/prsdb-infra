@@ -141,7 +141,7 @@ module "redis" {
   node_type                = "cache.t4g.micro"
   redis_password           = module.secrets.redis_password.result
   redis_port               = local.redis_port
-  redis_subnet_group_name  = module.networking.db_subnet_group_name
+  redis_subnet_group_name  = module.networking.redis_subnet_group_name
   snapshot_retention_limit = 7
   vpc_id                   = module.networking.vpc.id
 }

@@ -28,3 +28,8 @@ output "db_subnet_group_name" {
   description = "Name of the db subnet group"
 }
 
+output "redis_subnet_group_name" {
+  value       = aws_elasticache_subnet_group.main.name
+  description = "Name of the redis subnet group"
+}
+
