@@ -45,7 +45,7 @@ locals {
     },
     {
       name  = "RDS_URL"
-      value = data.aws_ssm_parameter.database_url.value
+      value = "jdbc:postgresql://${data.aws_ssm_parameter.database_url.value}"
     },
     {
       name  = "RDS_USERNAME"
