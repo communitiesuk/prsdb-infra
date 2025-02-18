@@ -45,6 +45,7 @@ module "networking" {
   number_of_isolated_subnets   = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
   integration_domains = [
     "oidc.integration.account.gov.uk",
+    "identity.integration.account.gov.uk",
     "api.os.uk",
     "api.notifications.service.gov.uk",
     "publicapi.payments.service.gov.uk"
@@ -67,8 +68,16 @@ module "frontdoor" {
   load_balancer_domain_name     = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
   cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
   load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
-  # TODO: Add Softwire and MHCLG IPs
-  ip_allowlist = []
+  ip_allowlist = [
+    # Softwire
+    "31.221.86.178/32",
+    "167.98.33.82/32",
+    "82.163.115.98/32",
+    "87.224.105.250/32",
+    "87.224.116.242/32",
+    "45.150.142.210/32",
+    # TODO - Find out and add MHCLG IPs
+  ]
 }
 
 module "certificates" {
@@ -144,4 +153,21 @@ module "redis" {
   redis_subnet_group_name  = module.networking.redis_subnet_group_name
   snapshot_retention_limit = 7
   vpc_id                   = module.networking.vpc.id
+}
+
+module "ecs_service" {
+  count  = var.task_definition_created ? 1 : 0
+  source = "../modules/ecs_service"
+
+  environment_name          = local.environment_name
+  webapp_task_desired_count = 1
+  application_port          = local.application_port
+  database_port             = local.database_port
+  redis_port                = local.redis_port
+  lb_target_group_arn       = module.frontdoor.load_balancer.target_group_arn
+  lb_security_group_id      = module.frontdoor.load_balancer.security_group_id
+  db_security_group_id      = module.database.rds_security_group_id
+  redis_security_group_id   = module.redis.redis_security_group_id
+  private_subnet_ids        = module.networking.private_subnets[*].id
+  vpc_id                    = module.networking.vpc.id
 }
