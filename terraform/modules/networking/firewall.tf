@@ -283,7 +283,7 @@ locals {
       cidr                 = local.private_cidr_10
       http_allowed_domains = []
       tls_allowed_domains = concat([
-        ".clamav.net", # to download virus definitions for ClamAV
+        ".clamav.net",    # to download virus definitions for ClamAV
         ".amazonaws.com", # to allow access to aws services that do not have explicit endpoints
         ],
         var.integration_domains

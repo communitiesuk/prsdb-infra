@@ -54,11 +54,11 @@ resource "aws_lb_target_group" "main" {
   load_balancing_algorithm_type = "least_outstanding_requests"
 
   health_check {
-    path              = "/"
-    protocol          = "HTTP"
-    healthy_threshold = 2
+    path                = "/"
+    protocol            = "HTTP"
+    healthy_threshold   = 2
     unhealthy_threshold = 5
-    timeout           = 10
+    timeout             = 10
   }
 }
 
