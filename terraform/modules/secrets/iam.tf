@@ -44,6 +44,7 @@ resource "aws_iam_role_policy" "secret_access" {
         Effect = "Allow"
         Resource = [
           aws_secretsmanager_secret.database_password.arn,
+          aws_secretsmanager_secret.redis_password.arn,
           aws_secretsmanager_secret.one_login_private_key.arn,
           aws_secretsmanager_secret.notify_api_key.arn,
           aws_secretsmanager_secret.os_places_api_key.arn
