@@ -52,6 +52,14 @@ resource "aws_lb_target_group" "main" {
   vpc_id                        = var.vpc_id
   target_type                   = "ip"
   load_balancing_algorithm_type = "least_outstanding_requests"
+
+  health_check {
+    path              = "/"
+    protocol          = "HTTP"
+    healthy_threshold = 2
+    unhealthy_threshold = 5
+    timeout           = 10
+  }
 }
 
 resource "aws_lb_listener_rule" "forward" {
@@ -83,13 +91,3 @@ resource "aws_vpc_security_group_ingress_rule" "load_balancer_https_ingress" {
   prefix_list_id    = data.aws_ec2_managed_prefix_list.cloudfront.id
   security_group_id = aws_security_group.load_balancer.id
 }
-
-# TODO: PRSD-574 - Reinstate when ECS has been configured
-# resource "aws_vpc_security_group_egress_rule" "load_balancer_container_egress" {
-#   description                  = "Allow egress to ecs"
-#   ip_protocol                  = "tcp"
-#   from_port                    = var.application_port
-#   to_port                      = var.application_port
-#   referenced_security_group_id = var.ecs_security_group_id
-#   security_group_id            = aws_security_group.load_balancer.id
-# }

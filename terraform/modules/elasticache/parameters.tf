@@ -1,7 +1,7 @@
 resource "aws_ssm_parameter" "redis_url" {
   name  = "${var.environment_name}-prsdb-redis-url"
   type  = "String"
-  value = "rediss://${aws_elasticache_replication_group.main.primary_endpoint_address}"
+  value = aws_elasticache_replication_group.main.primary_endpoint_address
 }
 
 resource "aws_ssm_parameter" "redis_port" {

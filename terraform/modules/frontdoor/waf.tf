@@ -14,6 +14,12 @@ resource "aws_wafv2_web_acl" "main" {
     sampled_requests_enabled   = false
   }
 
+  custom_response_body {
+    key          = "ip_error"
+    content      = "This resource is not available to your IP address"
+    content_type = "TEXT_PLAIN"
+  }
+
   dynamic "rule" {
     # [{}] causes 1 instance of the block to be created, [] causes 0 instances of the block
     for_each = length(var.ip_allowlist) > 0 ? [{}] : []
