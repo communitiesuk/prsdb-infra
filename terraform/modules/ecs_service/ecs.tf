@@ -9,7 +9,7 @@ resource "aws_ecs_service" "webapp" {
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100 # There should always be at least the desired count running during a deployment
   desired_count                      = var.webapp_task_desired_count
-  enable_execute_command             = true
+  enable_execute_command             = var.allow_exec
   force_new_deployment               = true
   launch_type                        = "FARGATE"
   scheduling_strategy                = "REPLICA"

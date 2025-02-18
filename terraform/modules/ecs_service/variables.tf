@@ -12,6 +12,12 @@ variable "webapp_task_desired_count" {
   type        = number
 }
 
+variable "allow_exec" {
+  description = "whether to enable AWS ECS Exec on the instance"
+  type        = bool
+  default     = true
+}
+
 variable "application_port" {
   description = "The network port the application runs on"
   type        = number
