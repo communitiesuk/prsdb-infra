@@ -23,16 +23,16 @@ DESTINATION=${2:-"$HOME/.aws/config"}
 
 # Check if aws config is already present
 if [ -f "$DESTINATION" ]; then
-  echo "An aws config is already present at $DESTINATION, delete it and retry"
+  echo "An aws config is already present at $DESTINATION, cannot create config. Create the config file somewhere else and copy it to the end of the existing file."
   if [ -z "$2" ]; then
-    echo "or set a custom destination, using: $0 \"Your mfa_serial\" \"Your custom destination\""
+    echo "To create it elsewhere, set a custom destination, using: $0 \"Your mfa_serial\" \"Your custom destination\""
   else
-    echo "or set a different destination"
+    echo "To create it elsewhere, set a different destination"
   fi
   exit 1
 fi
 
-# Copy the template to the new ADR file
+# Copy the template to the new config file
 cp "$TEMPLATE_DIR/$TEMPLATE" $DESTINATION
 
 if [ $? != 0 ]; then
