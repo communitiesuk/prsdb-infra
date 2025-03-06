@@ -1,0 +1,10 @@
+[profile mhclg]
+mfa_serial=<your-mfa-serial>
+region=eu-west-2
+output=json
+
+[profile mhclg-int]
+source_profile=mhclg
+mfa_serial=<your-mfa-serial>
+region=eu-west-2
+role_arn=arn:aws:iam::794038239680:role/developer
