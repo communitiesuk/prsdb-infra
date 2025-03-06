@@ -20,13 +20,13 @@ $mfaSerial = $args[0]
 
 # Set the destination folder to default if none is provided
 if ($args.Count -eq 1) {
-    $destination = $env:HOME
+    $destination = "$HOME/.aws/config"
 } else {
     $destination = $args[1]
 }
 
 # Check if aws config is already present
-if (Test-Path -Path $filePath -PathType Leaf){
+if (Test-Path -Path $destination -PathType Leaf){
     Write-Host "An aws config is already present at $destination, cannot create config. Create the config file somewhere else and copy it to the end of the existing file."
     if ($args.Count -eq 2) {
         Write-Host "To create it elsewhere, set a custom destination, using: $0 'Your mfa_serial' 'Your custom destination'"
@@ -45,7 +45,7 @@ if (-not ($?)){
 }
 
 # Update the the config to replace the mfa serial placeholder with the mfa serial provided 
-sed -i "s|$mfaSerialPlaceholder|$mfaSerial|g" "$destination"
+(Get-Content "$destination") -replace [regex]::Escape($mfaSerialPlaceholder), $mfaSerial | Set-Content "$destination"
 
 if  (-not ($?)){
     Write-Host "Could not update config file with mfa_serial, deleting"
