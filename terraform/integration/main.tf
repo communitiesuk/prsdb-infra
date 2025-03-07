@@ -129,6 +129,14 @@ module "parameters" {
   environment_name = local.environment_name
 }
 
+module "bastion" {
+  source = "../modules/bastion"
+
+  bastion_subnet_id = module.networking.private_subnets[0].id
+  environment_name  = local.environment_name
+  main_vpc_id       = module.networking.vpc.id
+}
+
 module "database" {
   source = "../modules/rds"
 
@@ -142,6 +150,7 @@ module "database" {
   multi_az                        = local.multi_az
   vpc_id                          = module.networking.vpc.id
   webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
+  bastion_group_id                = module.bastion.security_group_id
 }
 
 module "redis" {

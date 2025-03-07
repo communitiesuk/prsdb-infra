@@ -7,3 +7,12 @@ resource "aws_security_group" "main" {
     create_before_destroy = true
   }
 }
+
+resource "aws_vpc_security_group_ingress_rule" "ingress_from_load_balancer" {
+  description                  = "Allow ingress on port 5432 from the bastion"
+  ip_protocol                  = "tcp"
+  from_port                    = 5432
+  to_port                      = 5432
+  referenced_security_group_id = var.bastion_group_id
+  security_group_id            = aws_security_group.main.id
+}

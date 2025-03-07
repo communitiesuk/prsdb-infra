@@ -64,3 +64,7 @@ variable "webapp_task_execution_role_name" {
   description = "Name of the IAM role for the webapp ECS task execution"
   type        = string
 }
+variable "bastion_group_id" {
+  type = string
+  description = "The id of the bastion security group"
+}
