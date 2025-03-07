@@ -48,9 +48,47 @@ You are now ready to start running terraform commands on the chosen environment.
 - Before we can create the environment as a whole, we must first create the initial networking infrastructure, and then request the DNS names and certificates from MHCLG.
 - One of the files in your new `terraform/<environment name>` folder will be `terraform.tfvars`. Check that this contains the line `ssl_certs_created = false`
 - Once this is done, `cd` into `terraform/<environment name>` and run `terraform init` followed by `terraform plan -target module.networking -target module.frontdoor`. If the output of the plan looks correct, run `terraform apply -target module.networking -target module.frontdoor` to bring up the networking and ECR repository for the new environment.
-- In the terraform output you should see outputs for `cloudfront_dns_name` and `load_balancer_dns_name`. Include these in the request to MHCLG For the domain names and certificates.
+- Use the values in the terraform output to complete the request to MHCLG for changes to their DNS records
 
-TODO: Document the request process for the domain names and certificates
+### Requesting DNS changes from MHCLG
+
+- Use the terraform output to complete a copy of the 'DNS Change Request Form -v2.xlsx' file in the root of the repository as follows:
+  - For each item in the `cloudfront_certificate_validation` and `load_balancer_certificate_validation` blocks of the output:
+    - add a row to the table where:
+      - 'Change' Type is 'Add'
+      - 'Requested by' is your name
+      - 'Record Type' is the value from `resource_record_type`
+      - 'Domain' is either `test.communities.gov.uk` or `service.gov.uk`, whichever appears as part of the value in `domain_name`
+      - 'Name' is the value from `resource_record_name`
+      - 'Content' is the value from `resource_record_value`
+      - 'TTL' is '1 hr'
+      - 'Proxy status' is 'DNS only'
+      - 'Additional comment or Reason for this change' is 'Setting up <environment name> environment for the PRS Database'
+  - For each item in the `cloudfront_certificate_validation` block of the output add an additional row to the table where:
+    - 'Change' Type is 'Add'
+    - 'Requested by' is your name
+    - 'Record Type' is 'CNAME'
+    - 'Domain' is either `test.communities.gov.uk` or `service.gov.uk`, whichever appears as part of the value in `domain_name`
+    - 'Name' is the value from `domain name`
+    - 'Content' is the value from `cloudfront_dns_name`
+    - 'TTL' is '1 hr'
+    - 'Proxy status' is 'DNS only'
+    - 'Additional comment or Reason for this change' is 'Setting up <environment name> environment for the PRS Database'
+  - For each item in the `load_balancer_certificate_validation` block of the output add an additional row to the table where:
+    - 'Change' Type is 'Add'
+    - 'Requested by' is your name
+    - 'Record Type' is 'CNAME'
+    - 'Domain' is either `test.communities.gov.uk` or `service.gov.uk`, whichever appears as part of the value in `domain_name`
+    - 'Name' is the value from `domain name`
+    - 'Content' is the value from `load_balancer_dns_name`
+    - 'TTL' is '1 hr'
+    - 'Proxy status' is 'DNS only'
+    - 'Additional comment or Reason for this change' is 'Setting up <environment name> environment for the PRS Database'
+
+- Once the spreadsheet is completed, create a service now request with MHCLG using the general 'Request' option with the following details:
+  - 'What is it that you require?' --> "Creation of DNS records"
+  - 'Why do you require it?' --> "We are setting up the <environment name> environment for the new PRS Database in AWS. As part of this we need DNS records for the sub-domains and associated certificates. These subdomains were approved by TDA on 21/08/24. The service owner for the project is <service owner name>."
+  - And add the completed spreadsheet as an attachment to the request
 
 ### Setting up pre-requisite resource, and task definition
 
