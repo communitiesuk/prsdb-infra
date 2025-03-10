@@ -28,7 +28,7 @@ resource "aws_security_group" "bastion" {
     to_port     = 5432
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr_block]
-    description = "Allow bastion access to postgres port on the RDS"
+    description = "Allow bastion access to postgres port within the VPC"
   }
 }
 
