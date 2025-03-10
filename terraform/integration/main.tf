@@ -132,7 +132,7 @@ module "parameters" {
 module "bastion" {
   source = "../modules/bastion"
 
-  bastion_subnet_id = module.networking.private_subnets[0].id
+  bastion_subnet_ids = module.networking.private_subnets[*].id
   environment_name  = local.environment_name
   main_vpc_id       = module.networking.vpc.id
 }

@@ -12,7 +12,12 @@ variable "main_vpc_id" {
   description = "The id of the VPC."
 }
 
-variable "bastion_subnet_id" {
-  type        = string
-  description = "The private subnet into which to deploy the bastion"
+variable "bastion_subnet_ids" {
+  type        = list(string)
+  description = "The private subnets into which to deploy a bastion"
+}
+
+variable "number_of_subnets" {
+  type        = number
+  description = "How many subnets to instantiate bastions in"
 }

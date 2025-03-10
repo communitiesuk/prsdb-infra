@@ -51,9 +51,10 @@ resource "aws_iam_instance_profile" "ssm_bastion" {
 }
 
 resource "aws_instance" "bastion" {
+  count           = length(var.bastion_subnet_ids)
   ami             = "ami-00710ab5544b60cf7"
   instance_type   = "t2.micro"
-  subnet_id       = var.bastion_subnet_id
-  vpc_security_group_ids = [aws_security_group.bastion.id]
-  iam_instance_profile = aws_iam_instance_profile.ssm_bastion.name
+  subnet_id       = var.bastion_subnet_ids[count.index]
+  vpc_security_group_ids  = [aws_security_group.bastion.id]
+  iam_instance_profile    = aws_iam_instance_profile.ssm_bastion.name
 }
