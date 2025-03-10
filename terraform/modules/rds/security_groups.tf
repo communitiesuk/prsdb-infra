@@ -8,7 +8,7 @@ resource "aws_security_group" "main" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ingress_from_load_balancer" {
+resource "aws_vpc_security_group_ingress_rule" "ingress_for_ssm_port_forwarding" {
   description                  = "Allow ingress on port 5432 from the bastion"
   ip_protocol                  = "tcp"
   from_port                    = 5432
