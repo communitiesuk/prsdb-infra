@@ -22,6 +22,14 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = [var.vpc_cidr_block]
     description = "Allow bastion access to vpc endpoints to allow for SSM"
   }
+
+  egress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+    description = "Allow bastion access to postgres port on the RDS"
+  }
 }
 
 data "aws_iam_policy_document" "bastion_assume_role" {
@@ -51,34 +59,21 @@ resource "aws_iam_instance_profile" "ssm_bastion" {
   role = aws_iam_role.ssm_bastion.name
 }
 
+data "aws_ami" "amazon-linux-2" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-kernel-*-hvm-*-x86_64-gp2"]
+  }
+}
+
 resource "aws_instance" "bastion" {
   count           = length(var.bastion_subnet_ids)
-  ami             = "ami-00710ab5544b60cf7"
+  ami             = data.aws_ami.amazon-linux-2.id
   instance_type   = "t2.micro"
   subnet_id       = var.bastion_subnet_ids[count.index]
   vpc_security_group_ids  = [aws_security_group.bastion.id]
   iam_instance_profile    = aws_iam_instance_profile.ssm_bastion.name
-}
-
-data "aws_region" "current" {}
-
-resource "aws_vpc_endpoint" "ssm" {
-  vpc_id            = var.main_vpc_id
-  service_name      = "com.amazonaws.${data.aws_region.current.name}.ssm"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = var.bastion_subnet_ids[*]
-}
-
-resource "aws_vpc_endpoint" "ssmmessages" {
-  vpc_id            = var.main_vpc_id
-  service_name      = "com.amazonaws.${data.aws_region.current.name}.ssmmessages"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = var.bastion_subnet_ids[*]
-}
-
-resource "aws_vpc_endpoint" "ec2messages" {
-  vpc_id            = var.main_vpc_id
-  service_name      = "com.amazonaws.${data.aws_region.current.name}.ec2messages"
-  vpc_endpoint_type = "Interface"
-  subnet_ids        = var.bastion_subnet_ids[*]
 }
