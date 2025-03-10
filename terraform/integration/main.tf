@@ -132,9 +132,10 @@ module "parameters" {
 module "bastion" {
   source = "../modules/bastion"
 
-  bastion_subnet_ids = module.networking.private_subnets[*].id
-  environment_name  = local.environment_name
-  main_vpc_id       = module.networking.vpc.id
+  bastion_subnet_ids  = module.networking.private_subnets[*].id
+  environment_name    = local.environment_name
+  main_vpc_id         = module.networking.vpc.id
+  vpc_cidr_block      = module.networking.vpc.cidr_block
 }
 
 module "database" {

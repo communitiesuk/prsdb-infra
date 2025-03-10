@@ -12,12 +12,12 @@ variable "main_vpc_id" {
   description = "The id of the VPC."
 }
 
+variable "vpc_cidr_block" {
+  type        = string
+  description = "A collection of IP addresses to be allocated to VPC."
+}
+
 variable "bastion_subnet_ids" {
   type        = list(string)
   description = "The private subnets into which to deploy a bastion"
-}
-
-variable "number_of_subnets" {
-  type        = number
-  description = "How many subnets to instantiate bastions in"
 }
