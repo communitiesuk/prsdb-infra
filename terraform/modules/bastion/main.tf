@@ -30,7 +30,7 @@ data "aws_iam_policy_document" "bastion_assume_role" {
 
     principals {
       type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
+      identifiers = ["ec2.amazonaws.com"]
     }
   }
 }
@@ -45,9 +45,15 @@ resource "aws_iam_role_policy_attachment" "ssm_bastion_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+resource "aws_iam_instance_profile" "ssm_bastion" {
+  name = "ec2_ssm_instance_profile"
+  role = aws_iam_role.ssm_bastion.name
+}
+
 resource "aws_instance" "bastion" {
   ami             = "ami-00710ab5544b60cf7"
   instance_type   = "t2.micro"
   subnet_id       = var.bastion_subnet_id
   security_groups = [aws_security_group.bastion.name]
+  iam_instance_profile = aws_iam_instance_profile.ssm_bastion.name
 }
