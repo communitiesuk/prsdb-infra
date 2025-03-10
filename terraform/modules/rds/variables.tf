@@ -65,6 +65,6 @@ variable "webapp_task_execution_role_name" {
   type        = string
 }
 variable "bastion_group_id" {
-  type = string
+  type        = string
   description = "The id of the bastion security group"
 }
