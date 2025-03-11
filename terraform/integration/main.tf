@@ -78,7 +78,8 @@ module "frontdoor" {
     "45.150.142.210/32",
     # Made Tech
     "79.173.131.202/32",
-    # TODO - Find out and add MHCLG IPs
+    # MHCLG
+    "4.158.35.41/32",
   ]
 }
 
