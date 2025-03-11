@@ -28,6 +28,45 @@ Still in the environment directory, run `terraform init` to create a local terra
 
 You are now ready to start running terraform commands on the chosen environment.
 
+## Accessing deployed infrastructure
+
+### Connecting to the database
+The database is an RDS instance running on isolated subnets. This means there is no way to directly connect to it. 
+Instead, we use one bastion EC2 instance per availability zone acting as an 
+[SSM agent](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html). 
+The instructions here assume that all infrastructure is deployed in the region eu-west-2 (London). 
+If the infrastructure is in a different region, use that instead in each link and command.
+
+Once you have followed the set up above, to connect to the database you will need:
+* The id of bastion you intend to use - [london ec2 instances](https://eu-west-2.console.aws.amazon.com/ec2/home#Instances)
+* The endpoint of the database - [london databases](https://eu-west-2.console.aws.amazon.com/rds#databases:)
+* The password for the database is stored in secrets - [london secrets](https://eu-west-2.console.aws.amazon.com/secretsmanager/listsecrets)
+
+First, start an `aws-vault exec` session for the profile corresponding to the environment you want to connect to,
+then run this command:
+
+```shell
+aws ssm start-session --region eu-west-2 --target <bastion id> --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host="<database endpoint>",portNumber="5432",localPortNumber="5432"
+```
+
+You should see something similar to:
+```shell 
+Starting session with SessionId: 12a3456bcdefghi789
+Port 5432 opened for sessionId 12a3456bcdefghi789.
+Waiting for connections...
+```
+
+Leave this terminal open and running, and then you should be able to connect to the database from your machine using 
+this connection string:
+```
+postgresql://postgres:<password>@localhost:5432/prsdb
+```
+
+When you start a connection, you will see a confirmation in the terminal window:
+```shell
+Connection accepted for session [12a3456bcdefghi789]
+```
+
 ## Setting up a new environment from scratch
 
 ### Bootstrapping the terraform backend
