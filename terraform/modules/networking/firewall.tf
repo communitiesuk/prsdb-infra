@@ -307,6 +307,10 @@ locals {
       "drop ip ${config.cidr} any <> any any (msg:\"Drop all traffic from ${name}\"; sid:${config.sid_offset}; rev:1;)"
       : join("\n", concat(
         [
+          # Temporarily all outbound TLS until vpc endpoints are added
+          "pass tls ${config.cidr} [1024:] -> any 443 (msg:\"Allow outbound TLS traffic from ${name}\"; flow:to_server; sid:${config.sid_offset - 1};)"
+        ],
+        [
           for idx, http_domain in config.http_allowed_domains : startswith(http_domain, ".")
           ? "pass http ${config.cidr} [1024:] -> any 80 (http.host; content:\"${http_domain}\"; endswith; msg:\"Allow HTTP traffic from ${name} to *${http_domain}\"; flow:to_server; sid:${config.sid_offset + idx};)"
           : "pass http ${config.cidr} [1024:] -> any 80 (http.host; content:\"${http_domain}\"; startswith; endswith; msg:\"Allow HTTP traffic from ${name} to ${http_domain}\"; flow:to_server; sid:${config.sid_offset + idx};)"
@@ -320,6 +324,7 @@ locals {
   ]
 
   base_firewall_rules = <<EOT
+# Temporarily allow access while we add vpc endpoints
 drop http any any -> any any (msg:"Drop HTTP traffic without allowlisted Host header"; sid:5001; rev:1;)
 drop tls  any any -> any any (msg:"Drop TLS traffic without allowlisted SNI"; sid:5002; rev:1;)
 drop tcp  any any -> any any (msg:"Drop remaining established TCP traffic"; flow:established; sid:5003; rev:1;)
