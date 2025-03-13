@@ -10,6 +10,8 @@ If using the "Manual installation" method, you can select the correct version fr
 Install the latest AWS vault by following [these instructions](https://github.com/99designs/aws-vault). (N.B. there is no windows AMD64 version, so you need to use 386 in that case). 
 You will need to rename the .exe file to "aws-vault.exe" and add it to your path.
 
+Install AWS CLI by following [these instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+
 Use the shell script "setup/create_profiles.sh" to add a `.aws/config` file to your home directory, with your mfa_serial value added.
 You can find this in the aws console under the top right drop down menu -> `Security credentials".
 You should not override the destination file.
