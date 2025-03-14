@@ -28,21 +28,21 @@ provider "aws" {
 
 locals {
   environment_name = "test"
-  multi_az = false
+  multi_az         = false
   application_port = 8080
-    database_port    = 5432
-    redis_port       = 6379
+  database_port    = 5432
+  redis_port       = 6379
 
   app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 }
 
 module "networking" {
-  source                     = "../modules/networking"
-  vpc_cidr_block             = "10.1.0.0/16"
-  environment_name           = local.environment_name
+  source                       = "../modules/networking"
+  vpc_cidr_block               = "10.1.0.0/16"
+  environment_name             = local.environment_name
   number_of_availability_zones = 2
-  number_of_isolated_subnets = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
+  number_of_isolated_subnets   = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
   integration_domains = [
     "oidc.integration.account.gov.uk",
     "identity.integration.account.gov.uk",

@@ -8,13 +8,13 @@ terraform {
     }
   }
 
-   backend "s3" {
-     bucket         = "prsdb-tfstate-test"
-     dynamodb_table = "tfstate-lock-test"
-     encrypt        = true
-     key            = "prsdb-infra-test-tfstate"
-     region         = "eu-west-2"
-   }
+  backend "s3" {
+    bucket         = "prsdb-tfstate-test"
+    dynamodb_table = "tfstate-lock-test"
+    encrypt        = true
+    key            = "prsdb-infra-test-tfstate"
+    region         = "eu-west-2"
+  }
 }
 
 provider "aws" {
