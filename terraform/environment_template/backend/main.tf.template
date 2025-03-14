@@ -22,6 +22,6 @@ provider "aws" {
 }
 
 module "terraform-backend" {
-  source           = "../../modules/backend"
+  source           = "../../modules/terraform_backend"
   environment_name = "<environment name>"
 }
