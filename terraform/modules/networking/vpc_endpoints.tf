@@ -23,6 +23,8 @@ locals {
     "ecs",
     "ecs-agent",
     "ecs-telemetry",
+    "kms",
+    "ec2"
   ]
 }
 
