@@ -24,7 +24,9 @@ locals {
     "ecs-agent",
     "ecs-telemetry",
     "kms",
-    "ec2"
+    "ec2",
+    "monitoring",
+    "logs"
   ]
 }
 
