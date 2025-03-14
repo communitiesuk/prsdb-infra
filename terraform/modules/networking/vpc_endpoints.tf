@@ -12,27 +12,30 @@ resource "aws_security_group" "aws_service_vpc_endpoints" {
   }
 }
 
-resource "aws_vpc_endpoint" "ssm" {
-  vpc_id              = aws_vpc.main.id
-  service_name        = data.aws_vpc_endpoint_service.ssm.service_name
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = aws_subnet.private_subnet[*].id
-  security_group_ids  = [aws_security_group.aws_service_vpc_endpoints.id]
-  private_dns_enabled = true
+locals {
+  vpc_endpoint_services = [
+    "ssm",
+    "ssmmessages",
+    "ec2messages",
+    "secretsmanager",
+    "ecr.api",
+    "ecr.dkr",
+    "ecs",
+    "ecs-agent",
+    "ecs-telemetry",
+  ]
 }
 
-resource "aws_vpc_endpoint" "ssmmessages" {
-  vpc_id              = aws_vpc.main.id
-  service_name        = data.aws_vpc_endpoint_service.ssmmessages.service_name
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = aws_subnet.private_subnet[*].id
-  security_group_ids  = [aws_security_group.aws_service_vpc_endpoints.id]
-  private_dns_enabled = true
+data "aws_vpc_endpoint_service" "vpc_endpoints" {
+  count   = length(local.vpc_endpoint_services)
+  service = local.vpc_endpoint_services[count.index]
 }
 
-resource "aws_vpc_endpoint" "ec2messages" {
+
+resource "aws_vpc_endpoint" "ecs" {
   vpc_id              = aws_vpc.main.id
-  service_name        = data.aws_vpc_endpoint_service.ec2messages.service_name
+  count               = length(data.aws_vpc_endpoint_service.vpc_endpoints)
+  service_name        = data.aws_vpc_endpoint_service.vpc_endpoints[count.index].service_name
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private_subnet[*].id
   security_group_ids  = [aws_security_group.aws_service_vpc_endpoints.id]
