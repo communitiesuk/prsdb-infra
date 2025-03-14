@@ -39,12 +39,16 @@ locals {
 
 module "networking" {
   source                     = "../modules/networking"
-  vpc_cidr_block             = "<environment cidr block>"
+  vpc_cidr_block             = "10.1.0.0/16"
   environment_name           = local.environment_name
   number_of_availability_zones = 2
   number_of_isolated_subnets = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
   integration_domains = [
-    <Domains for 3rd party integrations in this environment>
+    "oidc.integration.account.gov.uk",
+    "identity.integration.account.gov.uk",
+    "api.os.uk",
+    "api.notifications.service.gov.uk",
+    "publicapi.payments.service.gov.uk"
   ]
 }
 
@@ -65,7 +69,17 @@ module "frontdoor" {
   cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
   load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
   ip_allowlist = [
-    <Allowed IPs if IP whitelisting is to be turned on, empty otherwise>
+    # Softwire
+    "31.221.86.178/32",
+    "167.98.33.82/32",
+    "82.163.115.98/32",
+    "87.224.105.250/32",
+    "87.224.116.242/32",
+    "45.150.142.210/32",
+    # Made Tech
+    "79.173.131.202/32",
+    # MHCLG
+    "4.158.35.41/32",
   ]
 }
 
@@ -131,10 +145,10 @@ module "database" {
   environment_name                = local.environment_name
   database_password               = module.secrets.database_password.result
   database_port                   = local.database_port
-  allocated_storage               = <storage amount>
-  backup_retention_period         = <backup retention period>
+  allocated_storage               = 50
+  backup_retention_period         = 7
   db_subnet_group_name            = module.networking.db_subnet_group_name
-  instance_class                  = "<instance class>"
+  instance_class                  = "db.t4g.small"
   multi_az                        = local.multi_az
   vpc_id                          = module.networking.vpc.id
   webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
@@ -146,11 +160,11 @@ module "redis" {
 
   environment_name         = local.environment_name
   highly_available         = false
-  node_type                = "<cache instance class>"
+  node_type                = "cache.t4g.micro"
   redis_password           = module.secrets.redis_password.result
   redis_port               = local.redis_port
   redis_subnet_group_name  = module.networking.redis_subnet_group_name
-  snapshot_retention_limit = <number of snapshots to retain>
+  snapshot_retention_limit = 7
   vpc_id                   = module.networking.vpc.id
 }
 
@@ -159,7 +173,7 @@ module "ecs_service" {
   source = "../modules/ecs_service"
 
   environment_name          = local.environment_name
-  webapp_task_desired_count = <number of webapp instances>
+  webapp_task_desired_count = 1
   application_port          = local.application_port
   database_port             = local.database_port
   redis_port                = local.redis_port
