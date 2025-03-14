@@ -71,6 +71,10 @@ Connection accepted for session [12a3456bcdefghi789]
 
 ## Setting up a new environment from scratch
 
+In order to interact with the environment in an AWS account you will need make sure you have a developer profile set up
+for that account in your `~/.aws/config`. You should also update `profile-template` with a template for the developer role.
+You can use `aws-vault` to create a terminal session with the appropriate credentials.
+
 ### Bootstrapping the terraform backend
 
 - Create the new folder `terraform/<environment name>` and copy the contents of `terraform/environment_template` into it
