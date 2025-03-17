@@ -36,7 +36,7 @@ data "aws_vpc_endpoint_service" "vpc_endpoints" {
 }
 
 
-resource "aws_vpc_endpoint" "ecs" {
+resource "aws_vpc_endpoint" "vpc_endpoints" {
   vpc_id              = aws_vpc.main.id
   count               = length(data.aws_vpc_endpoint_service.vpc_endpoints)
   service_name        = data.aws_vpc_endpoint_service.vpc_endpoints[count.index].service_name
