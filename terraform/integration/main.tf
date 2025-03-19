@@ -184,3 +184,11 @@ module "ecs_service" {
   private_subnet_ids        = module.networking.private_subnets[*].id
   vpc_id                    = module.networking.vpc.id
 }
+
+module "s3_bucket" {
+  source                             = "../modules/s3_bucket"
+  bucket_name                        = "prsdb-quarantine-integration"
+  access_log_bucket_name             = "prsdb-quarantine-access-logs-integration"
+  noncurrent_version_expiration_days = 700
+  access_s3_log_expiration_days      = 700
+}
