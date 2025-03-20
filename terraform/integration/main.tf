@@ -185,10 +185,8 @@ module "ecs_service" {
   vpc_id                    = module.networking.vpc.id
 }
 
-module "s3_bucket" {
-  source                             = "../modules/s3_bucket"
-  bucket_name                        = "prsdb-quarantine-integration"
-  access_log_bucket_name             = "prsdb-quarantine-access-logs-integration"
-  noncurrent_version_expiration_days = 700
-  access_s3_log_expiration_days      = 700
+module "file_upload" {
+  source = "../modules/file_upload"
+  environment_name = local.environment_name
+  webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
 }
