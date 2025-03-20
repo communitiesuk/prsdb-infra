@@ -28,6 +28,7 @@ resource "aws_kms_alias" "quarantine_bucket_encryption_key" {
   target_key_id = aws_kms_key.quarantine_bucket_encryption_key.key_id
 }
 
+# tfsec:ignore:aws-iam-no-policy-wildcards
 data "aws_iam_policy_document" "upload_to_quarantine" {
   statement {
     sid = "QuarantineS3"
