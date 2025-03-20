@@ -186,7 +186,7 @@ module "ecs_service" {
 }
 
 module "file_upload" {
-  source = "../modules/file_upload"
-  environment_name = local.environment_name
+  source                          = "../modules/file_upload"
+  environment_name                = local.environment_name
   webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
 }
