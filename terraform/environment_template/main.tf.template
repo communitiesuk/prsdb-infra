@@ -170,3 +170,9 @@ module "ecs_service" {
   private_subnet_ids        = module.networking.private_subnets[*].id
   vpc_id                    = module.networking.vpc.id
 }
+
+module "file_upload" {
+  source = "../modules/file_upload"
+  environment_name = local.environment_name
+  webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
+}
