@@ -48,4 +48,7 @@ resource "aws_vpc_endpoint" "vpc_endpoints" {
   subnet_ids          = aws_subnet.private_subnet[*].id
   security_group_ids  = [aws_security_group.aws_service_vpc_endpoints.id]
   private_dns_enabled = true
+  dns_options {
+    private_dns_only_for_inbound_resolver_endpoint = false
+  }
 }
