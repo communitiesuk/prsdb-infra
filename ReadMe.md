@@ -138,6 +138,14 @@ You can use `aws-vault` to create a terminal session with the appropriate creden
   - 'Why do you require it?' --> "We are setting up the <environment name> environment for the new PRS Database in AWS. As part of this we need DNS records for the sub-domains and associated certificates. These subdomains were approved by TDA on 21/08/24. The service owner for the project is <service owner name>."
   - And add the completed spreadsheet as an attachment to the request
 
+In order to use the prsdb web service once it's been deployed to these domains, One-Login needs to be updated to know about the new environment.
+Get the One-Login admin to add these for each of the cloudfront domains used above:
+- Redirect URIs:
+  - /login/oauth2/code/one-login
+  - /login/oauth2/code/one-login-id
+- Post log out redirect URIs:
+  - /signout
+
 ### Setting up pre-requisite resource, and task definition
 
 - We also need to create a number of pre-requisite resources, and then initial task definition before we can bring up the full ECS service.
@@ -145,6 +153,7 @@ You can use `aws-vault` to create a terminal session with the appropriate creden
 - Still inside your `terraform/<environment name>` folder, run `terraform plan`.
 - If the output of the plan looks correct, run `terraform apply` to create the pre-requisite resources.
 - Terraform will create the webapp secrets and SSM parameters but (apart from those related to the database and Redis) will not populate them. Ask the team lead where you can find the appropriate values, and then populate them via the AWS console.
+  - For Notify, this will involve creating a new API Key to use for the new environment.
 - To create the task definition, in `terraform/<environment name>/ecs_task_definition`, if you haven't already, remove the `.template` from the end of any file names in the folder, and replace all instances of the string `<environment name>` with your actual environment name.
 - Next, cd into `terraform/<environment name>/ecs_task_definition` and run `terraform init` followed by `terraform plan`. This should show you one resource being created - the task definition. If the output looks correct, run `terraform apply`.
 
