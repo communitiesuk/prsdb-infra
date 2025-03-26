@@ -22,4 +22,7 @@ resource "aws_instance" "bastion" {
   metadata_options {
     http_tokens = "required"
   }
+  tags = {
+    Name = "${var.environment_name}-bastion-${count.index + 1}"
+  }
 }
