@@ -39,6 +39,18 @@ data "aws_iam_policy_document" "upload_to_quarantine" {
       "${module.quarantine_bucket.bucket_arn}/*",
     ]
   }
+
+  statement {
+    sid    = "AllowKMSUsage"
+    effect = "Allow"
+    actions = [
+      "kms:Encrypt",
+      "kms:GenerateDataKey"
+    ]
+    resources = [
+      aws_kms_key.quarantine_bucket_encryption_key.arn
+    ]
+  }
 }
 
 resource "aws_iam_policy" "upload_to_quarantine" {
