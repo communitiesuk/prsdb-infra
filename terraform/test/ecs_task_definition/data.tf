@@ -53,3 +53,7 @@ data "aws_secretsmanager_secret" "notify_api_key" {
 data "aws_secretsmanager_secret" "os_places_api_key" {
   name = "tf-${local.environment_name}-os-places-api-key"
 }
+
+data "aws_ssm_parameter" "quarantine_bucket" {
+  name = "${local.environment_name}-prsdb-quarantine-bucket"
+}
