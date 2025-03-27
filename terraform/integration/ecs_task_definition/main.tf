@@ -59,6 +59,10 @@ locals {
       name  = "ELASTICACHE_PORT"
       value = data.aws_ssm_parameter.redis_port.value
     },
+    {
+      name  = "AWS_QUARANTINE_BUCKET"
+      value = data.aws_ssm_parameter.quarantine_bucket.value
+    },
   ]
   secrets = [
     {
