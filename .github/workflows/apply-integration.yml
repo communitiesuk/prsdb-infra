@@ -11,3 +11,4 @@ jobs:
     with:
       environment: integration
       aws-account-id: 794038239680
+    secrets: inherit

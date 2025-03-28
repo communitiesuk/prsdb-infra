@@ -11,3 +11,4 @@ jobs:
     with:
       environment: test
       aws-account-id: 869935096717
+    secrets: inherit
