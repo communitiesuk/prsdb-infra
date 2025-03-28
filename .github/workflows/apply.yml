@@ -12,13 +12,9 @@ on:
 jobs:
   validate-target-environment:
     name: Validate Target Environment
-    runs-on: ubuntu-latest
-    steps:
-      - name: Throw Invalid Target Environment Error
-        if: inputs.environment != 'integration' && inputs.environment != 'test'
-        run: |
-          echo "::error ::Invalid Target Environment: ${{ inputs.environment }}. This action can only target integration and test environments."
-          exit 1
+    uses: ./.github/workflows/validate-target-environment.yml
+    with:
+      environment: ${{ inputs.environment }}
 
   plan:
     name: Terraform plan

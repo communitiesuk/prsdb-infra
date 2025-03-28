@@ -1,0 +1,18 @@
+name: Validate Target Environment
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+jobs:
+  validate-target-environment:
+    name: Validate Target Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Throw Invalid Target Environment Error
+        if: inputs.environment != 'integration' && inputs.environment != 'test'
+        run: |
+          echo "::error ::Invalid Target Environment: ${{ inputs.environment }}. This action can only target integration and test environments."
+          exit 1
