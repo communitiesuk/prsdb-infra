@@ -1,0 +1,13 @@
+name: Apply - Test
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  apply:
+    name: Apply
+    uses: ./.github/workflows/apply.yml
+    with:
+      environment: test
+      aws-account-id: 869935096717

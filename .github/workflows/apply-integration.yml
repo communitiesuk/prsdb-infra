@@ -1,0 +1,13 @@
+name: Apply - Integration
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  apply:
+    name: Apply
+    uses: ./.github/workflows/apply.yml
+    with:
+      environment: integration
+      aws-account-id: 794038239680
