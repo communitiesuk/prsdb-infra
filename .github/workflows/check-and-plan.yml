@@ -1,10 +1,28 @@
 name: Check and Plan
 on:
-  pull_request:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      aws-account-id:
+        required: true
+        type: string
 
 jobs:
+  validate-target-environment:
+    name: Validate Target Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Throw Invalid Target Environment Error
+        if: inputs.environment != 'integration' && inputs.environment != 'test'
+        run: |
+          echo "::error ::Invalid Target Environment: ${{ inputs.environment }}. This action can only target integration and test environments."
+          exit 1
+
   format:
     name: tf format
+    needs: validate-target-environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,6 +38,7 @@ jobs:
 
   validate:
     name: tf validate
+    needs: validate-target-environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,24 +49,25 @@ jobs:
         with:
           terraform_version: 1.9.1
 
-      - name: Terraform init integration folder
-        working-directory: terraform/integration
+      - name: Terraform init ${{ inputs.environment }} folder
+        working-directory: terraform/${{ inputs.environment }}
         run: terraform init -backend=false
 
-      - name: Terraform validate integration folder
-        working-directory: terraform/integration
+      - name: Terraform validate ${{ inputs.environment }} folder
+        working-directory: terraform/${{ inputs.environment }}
         run: terraform validate
 
-      - name: Terraform init integration backend folder
-        working-directory: terraform/integration/backend
+      - name: Terraform init ${{ inputs.environment }} backend folder
+        working-directory: terraform/${{ inputs.environment }}/backend
         run: terraform init -backend=false
 
-      - name: Terraform validate integration backend folder
-        working-directory: terraform/integration/backend
+      - name: Terraform validate ${{ inputs.environment }} backend folder
+        working-directory: terraform/${{ inputs.environment }}/backend
         run: terraform validate
 
   tflint:
     name: tflint
+    needs: validate-target-environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -77,6 +97,7 @@ jobs:
 
   tfsec:
     name: tfsec
+    needs: validate-target-environment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -88,8 +109,9 @@ jobs:
           working_directory: terraform/
           version: v1.28.11
 
-  plan_integration:
-    name: Integration Terraform plan
+  plan:
+    name: ${{ inputs.environment }} terraform plan
+    needs: validate-target-environment
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -99,21 +121,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
-          role-to-assume: arn:aws:iam::794038239680:role/github-actions-terraform-ci-plan-read-only
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/github-actions-terraform-ci-plan-read-only
           aws-region: ${{ env.AWS_REGION }}
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.1
+
       - name: Terraform init
         run: terraform init -input=false
-        working-directory: terraform/integration
+        working-directory: terraform/${{ inputs.environment }}
+
       - name: Terraform validate
         run: terraform validate
-        working-directory: terraform/integration
+        working-directory: terraform/${{ inputs.environment }}
+
       - name: Terraform plan
         run: terraform plan -input=false -refresh=false -lock=false
-        working-directory: terraform/integration
+        working-directory: terraform/${{ inputs.environment }}
