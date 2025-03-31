@@ -13,6 +13,7 @@ resource "aws_security_group" "aws_service_vpc_endpoints" {
 }
 
 locals {
+  # This list must be append-only to avoid terraform tearing down and (trying to) recreate the endpoints - this fails due to DNS propagation time
   vpc_endpoint_services = [
     "ssm",
     "ssmmessages",
@@ -26,13 +27,16 @@ locals {
     "kms",
     "ec2",
     "monitoring",
-    "logs"
+    "logs",
+    "s3",
+    "s3tables",
   ]
 }
 
 data "aws_vpc_endpoint_service" "vpc_endpoints" {
-  count   = length(local.vpc_endpoint_services)
-  service = local.vpc_endpoint_services[count.index]
+  count        = length(local.vpc_endpoint_services)
+  service      = local.vpc_endpoint_services[count.index]
+  service_type = "Interface"
 }
 
 
@@ -44,4 +48,7 @@ resource "aws_vpc_endpoint" "vpc_endpoints" {
   subnet_ids          = aws_subnet.private_subnet[*].id
   security_group_ids  = [aws_security_group.aws_service_vpc_endpoints.id]
   private_dns_enabled = true
+  dns_options {
+    private_dns_only_for_inbound_resolver_endpoint = false
+  }
 }

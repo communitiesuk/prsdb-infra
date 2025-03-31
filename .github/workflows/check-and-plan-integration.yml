@@ -1,0 +1,10 @@
+name: Check and Plan - Integration
+on: pull_request
+
+jobs:
+  check-and-plan:
+    name: Check and Plan
+    uses: ./.github/workflows/check-and-plan.yml
+    with:
+      environment: integration
+      aws-account-id: 794038239680
