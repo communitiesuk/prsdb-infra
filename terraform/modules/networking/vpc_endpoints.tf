@@ -51,7 +51,7 @@ resource "aws_vpc_endpoint" "vpc_endpoints" {
 
 # s3 requires additional options due to there also being a 'gateway' VPC endpoint for s3
 data "aws_vpc_endpoint_service" "s3" {
-  service = "s3"
+  service      = "s3"
   service_type = "Interface"
 }
 
