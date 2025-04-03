@@ -28,7 +28,6 @@ locals {
     "ec2",
     "monitoring",
     "logs",
-    "s3",
     "s3tables",
   ]
 }
@@ -44,6 +43,21 @@ resource "aws_vpc_endpoint" "vpc_endpoints" {
   vpc_id              = aws_vpc.main.id
   count               = length(data.aws_vpc_endpoint_service.vpc_endpoints)
   service_name        = data.aws_vpc_endpoint_service.vpc_endpoints[count.index].service_name
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = aws_subnet.private_subnet[*].id
+  security_group_ids  = [aws_security_group.aws_service_vpc_endpoints.id]
+  private_dns_enabled = true
+}
+
+# s3 requires additional options due to there also being a 'gateway' VPC endpoint for s3
+data "aws_vpc_endpoint_service" "s3" {
+  service      = "s3"
+  service_type = "Interface"
+}
+
+resource "aws_vpc_endpoint" "s3_endpoint" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = data.aws_vpc_endpoint_service.s3.service_name
   vpc_endpoint_type   = "Interface"
   subnet_ids          = aws_subnet.private_subnet[*].id
   security_group_ids  = [aws_security_group.aws_service_vpc_endpoints.id]
