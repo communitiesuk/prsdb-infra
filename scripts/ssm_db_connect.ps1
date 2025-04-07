@@ -15,5 +15,10 @@ $DB_URL = (aws ssm get-parameter --output text --name "${ENVIRONMENT_NAME}-prsdb
 # Extract the DB endpoint from the DB URL
 $DB_ENDPOINT = $DB_URL.Split(':')[0]
 
+# Fetch the database password and copy it to the clipboard
+$DB_PASSWORD = (aws secretsmanager get-secret-value --secret-id "tf-${ENVIRONMENT_NAME}-prsdb-database-password" --query SecretString --output text)
+$DB_PASSWORD | Set-Clipboard
+echo "Database password copied to clipboard"
+
 # Start the port forwarding session and redirect output to file
 aws ssm start-session --region eu-west-2 --target $BASTION_ID --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host=$DB_ENDPOINT,portNumber="5432",localPortNumber="5432"
