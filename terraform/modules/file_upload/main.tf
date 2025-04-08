@@ -45,7 +45,8 @@ data "aws_iam_policy_document" "upload_to_quarantine" {
     effect = "Allow"
     actions = [
       "kms:Encrypt",
-      "kms:GenerateDataKey"
+      "kms:GenerateDataKey",
+      "kms:Decrypt",
     ]
     resources = [
       aws_kms_key.quarantine_bucket_encryption_key.arn
