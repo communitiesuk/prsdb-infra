@@ -72,6 +72,12 @@ When you start a connection, you will see a confirmation in the terminal window:
 Connection accepted for session [12a3456bcdefghi789]
 ```
 
+Alternatively, from the project root you can run:
+- `./scripts/ssm_db_connect.ps1 <environment name>` in powershell, or
+- `./scripts/ssm_db_connect.sh <environment name>` in bash
+
+This will start the port forwarding session, and copy the database password to your clipboard. You can then connect to the database as set out above.
+
 ## Setting up a new environment from scratch
 
 In order to interact with the environment in an AWS account you will need make sure you have a developer profile set up
