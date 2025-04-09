@@ -76,7 +76,7 @@ resource "aws_wafv2_web_acl" "main" {
   }
 
   rule {
-    name     = "aws-managed-rules-common-rule-set"
+    name     = "aws-managed-rules-common-rule-set-for-file-uploads"
     priority = 4
 
     override_action {
@@ -87,6 +87,71 @@ resource "aws_wafv2_web_acl" "main" {
       managed_rule_group_statement {
         name        = "AWSManagedRulesCommonRuleSet"
         vendor_name = "AWS"
+        rule_action_override {
+          # This rule blocks request bodies over 8KB in size, but PRSDB needs file uploads so we remove this restriction
+          # The default maximum request body size that can be inspected when using cloudfront web ACLs is 16KB, so this
+          # does limit the effectiveness of the other rules here. The limit can be increased to up to 64KB if necessary
+          # at extra cost.
+          # More info here: https://docs.aws.amazon.com/waf/latest/developerguide/web-acl-setting-body-inspection-limit.html
+          name = "SizeRestrictions_BODY"
+          action_to_use {
+            count {}
+          }
+        }
+
+        scope_down_statement {
+          byte_match_statement {
+            positional_constraint = "CONTAINS"
+            search_string         = "file-upload"
+            field_to_match {
+              uri_path {}
+            }
+            text_transformation {
+              priority = 0
+              type     = "NONE"
+            }
+          }
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "waf-block-common-exploit"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name     = "aws-managed-rules-common-rule-set"
+    priority = 5
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+
+        scope_down_statement {
+          not_statement {
+            statement {
+              byte_match_statement {
+                positional_constraint = "CONTAINS"
+                search_string         = "file-upload"
+                field_to_match {
+                  uri_path {}
+                }
+                text_transformation {
+                  priority = 0
+                  type     = "NONE"
+                }
+              }
+            }
+          }
+        }
       }
     }
 
@@ -99,7 +164,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "aws-managed-rules-known-bad-inputs-rule-set"
-    priority = 5
+    priority = 6
 
     override_action {
       none {}
@@ -121,7 +186,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "aws-managed-rules-sqli-rule-set"
-    priority = 6
+    priority = 7
 
     override_action {
       none {}
@@ -143,7 +208,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "aws-managed-rules-linux-rule-set"
-    priority = 7
+    priority = 8
 
     override_action {
       none {}
@@ -165,7 +230,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "aws-managed-rules-unix-rule-set"
-    priority = 8
+    priority = 9
 
     override_action {
       none {}
@@ -187,7 +252,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "overall-ip-rate-limit"
-    priority = 9
+    priority = 10
 
     action {
       block {
