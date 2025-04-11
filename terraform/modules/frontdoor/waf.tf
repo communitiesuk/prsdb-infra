@@ -76,7 +76,7 @@ resource "aws_wafv2_web_acl" "main" {
   }
 
   rule {
-    name     = "aws-managed-rules-common-rule-set-for-file-uploads"
+    name     = "aws-managed-rules-common-rule-set"
     priority = 4
 
     override_action {
@@ -93,23 +93,10 @@ resource "aws_wafv2_web_acl" "main" {
           # does limit the effectiveness of the other rules here. The limit can be increased to up to 64KB if necessary
           # at extra cost.
           # More info here: https://docs.aws.amazon.com/waf/latest/developerguide/web-acl-setting-body-inspection-limit.html
+          # We have a separate rule enforcing a size constraint to ensure only file-upload endpoints accept large requests.
           name = "SizeRestrictions_BODY"
           action_to_use {
             count {}
-          }
-        }
-
-        scope_down_statement {
-          byte_match_statement {
-            positional_constraint = "CONTAINS"
-            search_string         = "file-upload"
-            field_to_match {
-              uri_path {}
-            }
-            text_transformation {
-              priority = 0
-              type     = "NONE"
-            }
           }
         }
       }
@@ -123,19 +110,31 @@ resource "aws_wafv2_web_acl" "main" {
   }
 
   rule {
-    name     = "aws-managed-rules-common-rule-set"
+    name     = "size-constraint-on-non-file-upload-requests"
     priority = 5
 
-    override_action {
-      none {}
+    action {
+      block {}
     }
 
     statement {
-      managed_rule_group_statement {
-        name        = "AWSManagedRulesCommonRuleSet"
-        vendor_name = "AWS"
-
-        scope_down_statement {
+      and_statement {
+        statement {
+          size_constraint_statement {
+            comparison_operator = "GT" # Greater than
+            size                = 8192 # 8KB
+            field_to_match {
+              body {
+                oversize_handling = "MATCH"
+              }
+            }
+            text_transformation {
+              priority = 0
+              type     = "NONE"
+            }
+          }
+        }
+        statement {
           not_statement {
             statement {
               byte_match_statement {
@@ -157,7 +156,7 @@ resource "aws_wafv2_web_acl" "main" {
 
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name                = "waf-block-common-exploit"
+      metric_name                = "waf-block-large-requests"
       sampled_requests_enabled   = true
     }
   }
