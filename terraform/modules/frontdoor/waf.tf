@@ -110,8 +110,48 @@ resource "aws_wafv2_web_acl" "main" {
   }
 
   rule {
-    name     = "size-constraint-on-non-file-upload-requests"
+    name     = "size-constraint-on-file-uploads"
     priority = 5
+
+    action {
+      block {
+        custom_response {
+          response_code = 303
+          response_header {
+            name  = "Location"
+            value = "/landlord/dashboard"
+          }
+        }
+      }
+    }
+
+    statement {
+      regex_match_statement {
+        field_to_match {
+          single_header {
+            name = "content-length"
+          }
+        }
+        # If there are over 9 digits in the Content-Header request, then it's at least a GB
+        regex_string = "^.{8}"
+
+        text_transformation {
+          priority = 0
+          type     = "NONE"
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "content-length-header-too-long"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name     = "size-constraint-on-non-file-upload-requests"
+    priority = 6
 
     action {
       block {}
@@ -163,7 +203,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "aws-managed-rules-known-bad-inputs-rule-set"
-    priority = 6
+    priority = 7
 
     override_action {
       none {}
@@ -185,7 +225,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "aws-managed-rules-sqli-rule-set"
-    priority = 7
+    priority = 8
 
     override_action {
       none {}
@@ -207,7 +247,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "aws-managed-rules-linux-rule-set"
-    priority = 8
+    priority = 9
 
     override_action {
       none {}
@@ -229,7 +269,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "aws-managed-rules-unix-rule-set"
-    priority = 9
+    priority = 10
 
     override_action {
       none {}
@@ -251,7 +291,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "overall-ip-rate-limit"
-    priority = 10
+    priority = 11
 
     action {
       block {
