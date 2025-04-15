@@ -128,7 +128,7 @@ resource "aws_wafv2_web_acl" "main" {
           response_code = 303
           response_header {
             name  = "Location"
-            value = "/landlord/dashboard"
+            value = "/error/file-too-large"
           }
         }
       }
@@ -142,7 +142,7 @@ resource "aws_wafv2_web_acl" "main" {
           }
         }
         # If there are over 9 digits in the Content-Header request, then it's at least a GB
-        regex_string = "^.{8}"
+        regex_string = "^.{10}"
 
         text_transformation {
           priority = 0
