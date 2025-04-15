@@ -228,19 +228,19 @@ resource "aws_wafv2_web_acl" "main" {
             statement {
               label_match_statement {
                 key   = "awswaf:managed:aws:core-rule-set:CrossSiteScripting_Body"
-                scope = "Label"
+                scope = "LABEL"
               }
             }
             statement {
               label_match_statement {
                 key   = "awswaf:managed:aws:core-rule-set:SizeRestrictions_Body"
-                scope = "Label"
+                scope = "LABEL"
               }
             }
             statement {
               label_match_statement {
                 key   = "awswaf:managed:aws:sql-database:SQLi_Body"
-                scope = "Label"
+                scope = "LABEL"
               }
             }
           }
@@ -264,6 +264,12 @@ resource "aws_wafv2_web_acl" "main" {
           }
         }
       }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "block-exempted-non-file-uploads"
+      sampled_requests_enabled   = true
     }
   }
 
