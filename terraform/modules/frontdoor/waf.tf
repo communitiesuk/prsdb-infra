@@ -93,8 +93,17 @@ resource "aws_wafv2_web_acl" "main" {
           # does limit the effectiveness of the other rules here. The limit can be increased to up to 64KB if necessary
           # at extra cost.
           # More info here: https://docs.aws.amazon.com/waf/latest/developerguide/web-acl-setting-body-inspection-limit.html
-          # We have a separate rule enforcing a size constraint to ensure only file-upload endpoints accept large requests.
+          # We have a separate rule blocking requests that match to ensure only file-upload endpoints accept large requests.
           name = "SizeRestrictions_BODY"
+          action_to_use {
+            count {}
+          }
+        }
+        rule_action_override {
+          # The cross site scripting rule can sometimes give false positives on file uploads because it interprets the
+          # data as random characters. https://repost.aws/knowledge-center/waf-upload-blocked-files
+          # We have a separate rule blocking requests that match to ensure only file-upload endpoints accept suspicious requests.
+          name = "CrossSiteScripting_BODY"
           action_to_use {
             count {}
           }
@@ -150,60 +159,8 @@ resource "aws_wafv2_web_acl" "main" {
   }
 
   rule {
-    name     = "size-constraint-on-non-file-upload-requests"
-    priority = 6
-
-    action {
-      block {}
-    }
-
-    statement {
-      and_statement {
-        statement {
-          size_constraint_statement {
-            comparison_operator = "GT" # Greater than
-            size                = 8192 # 8KB
-            field_to_match {
-              body {
-                oversize_handling = "MATCH"
-              }
-            }
-            text_transformation {
-              priority = 0
-              type     = "NONE"
-            }
-          }
-        }
-        statement {
-          not_statement {
-            statement {
-              byte_match_statement {
-                positional_constraint = "CONTAINS"
-                search_string         = "file-upload"
-                field_to_match {
-                  uri_path {}
-                }
-                text_transformation {
-                  priority = 0
-                  type     = "NONE"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "waf-block-large-requests"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  rule {
     name     = "aws-managed-rules-known-bad-inputs-rule-set"
-    priority = 7
+    priority = 6
 
     override_action {
       none {}
@@ -225,7 +182,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   rule {
     name     = "aws-managed-rules-sqli-rule-set"
-    priority = 8
+    priority = 7
 
     override_action {
       none {}
@@ -235,6 +192,16 @@ resource "aws_wafv2_web_acl" "main" {
       managed_rule_group_statement {
         name        = "AWSManagedRulesSQLiRuleSet"
         vendor_name = "AWS"
+
+        rule_action_override {
+          # The SQL injection rule can sometimes give false positives on file uploads because it interprets the
+          # data as random characters. https://repost.aws/knowledge-center/waf-upload-blocked-files
+          # We have a separate rule blocking requests that match to ensure only file-upload endpoints accept suspicious requests.
+          name = "SQLi_BODY"
+          action_to_use {
+            count {}
+          }
+        }
       }
     }
 
@@ -242,6 +209,59 @@ resource "aws_wafv2_web_acl" "main" {
       cloudwatch_metrics_enabled = true
       metric_name                = "waf-block-sql-exploit"
       sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name = "block-counted-rules-on-non-file-upload-requests"
+    # This rule must be applied after the rules containing AWSManagedRulesCommonRuleSet and AWSManagedRulesSQLiRuleSet
+    priority = 8
+
+    action { block {} }
+
+    statement {
+      and_statement {
+        statement {
+          or_statement {
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:core-rule-set:CrossSiteScripting_Body"
+                scope = "Label"
+              }
+            }
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:core-rule-set:SizeRestrictions_Body"
+                scope = "Label"
+              }
+            }
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:sql-database:SQLi_Body"
+                scope = "Label"
+              }
+            }
+          }
+        }
+
+        statement {
+          not_statement {
+            statement {
+              byte_match_statement {
+                positional_constraint = "CONTAINS"
+                search_string         = "file-upload"
+                field_to_match {
+                  uri_path {}
+                }
+                text_transformation {
+                  priority = 0
+                  type     = "NONE"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 
