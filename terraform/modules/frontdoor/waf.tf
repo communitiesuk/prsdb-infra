@@ -217,7 +217,9 @@ resource "aws_wafv2_web_acl" "main" {
     # This rule must be applied after the rules containing AWSManagedRulesCommonRuleSet and AWSManagedRulesSQLiRuleSet
     priority = 8
 
-    action { block {} }
+    action {
+      block {}
+    }
 
     statement {
       and_statement {
