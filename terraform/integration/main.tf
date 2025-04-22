@@ -35,6 +35,8 @@ locals {
 
   app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+
+  cloudwatch_log_expiration_days = 60
 }
 
 module "networking" {
@@ -50,6 +52,7 @@ module "networking" {
     "api.notifications.service.gov.uk",
     "publicapi.payments.service.gov.uk"
   ]
+  vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "frontdoor" {
