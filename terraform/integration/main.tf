@@ -194,7 +194,3 @@ module "file_upload" {
   environment_name                = local.environment_name
   webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
 }
-
-module "logging" {
-  source = "../modules/logging"
-}
