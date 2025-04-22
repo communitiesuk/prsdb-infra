@@ -163,14 +163,15 @@ module "database" {
 module "redis" {
   source = "../modules/elasticache"
 
-  environment_name         = local.environment_name
-  highly_available         = false
-  node_type                = "cache.t4g.micro"
-  redis_password           = module.secrets.redis_password.result
-  redis_port               = local.redis_port
-  redis_subnet_group_name  = module.networking.redis_subnet_group_name
-  snapshot_retention_limit = 7
-  vpc_id                   = module.networking.vpc.id
+  environment_name               = local.environment_name
+  highly_available               = false
+  node_type                      = "cache.t4g.micro"
+  redis_password                 = module.secrets.redis_password.result
+  redis_port                     = local.redis_port
+  redis_subnet_group_name        = module.networking.redis_subnet_group_name
+  snapshot_retention_limit       = 7
+  vpc_id                         = module.networking.vpc.id
+  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "ecs_service" {
