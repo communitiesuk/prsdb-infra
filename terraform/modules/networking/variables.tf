@@ -29,3 +29,8 @@ variable "integration_domains" {
   type        = list(string)
   default     = []
 }
+
+variable "vpc_flow_cloudwatch_log_expiration_days" {
+  type        = number
+  description = "Number of days to retain VPC flow logs for"
+}
