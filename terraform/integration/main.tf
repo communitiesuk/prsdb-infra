@@ -85,6 +85,7 @@ module "frontdoor" {
     # MHCLG
     "4.158.35.41/32",
   ]
+  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "certificates" {

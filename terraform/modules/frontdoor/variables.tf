@@ -66,3 +66,8 @@ variable "ip_allowlist" {
   description = "List of allowed IPs - if empty then no ip restrictions are applied"
   default     = []
 }
+
+variable "cloudwatch_log_expiration_days" {
+  type        = number
+  description = "Number of days to retain cloudwatch logs for"
+}
