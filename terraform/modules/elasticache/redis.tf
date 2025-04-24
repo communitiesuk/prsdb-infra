@@ -27,6 +27,7 @@ resource "aws_elasticache_replication_group" "main" {
   snapshot_window             = var.backup_window
   subnet_group_name           = var.redis_subnet_group_name
   transit_encryption_enabled  = true
+  apply_immediately           = true
   log_delivery_configuration {
     destination      = aws_cloudwatch_log_group.redis_log_group.name
     destination_type = "cloudwatch-logs"
