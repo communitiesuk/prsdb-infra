@@ -23,6 +23,7 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids                = [aws_security_group.main.id]
   performance_insights_enabled          = true
   performance_insights_kms_key_id       = aws_kms_key.performance_insights.arn
+  # RDS comes with 7 days of performance insights retention for free, which should be enough for our needs
   performance_insights_retention_period = 7
 
   lifecycle {
