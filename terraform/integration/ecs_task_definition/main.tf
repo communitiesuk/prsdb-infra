@@ -63,6 +63,18 @@ locals {
       name  = "AWS_QUARANTINE_BUCKET"
       value = data.aws_ssm_parameter.quarantine_bucket.value
     },
+    {
+      name  = "EPC_REGISTER_CLIENT_ID"
+      value = data.aws_ssm_parameter.epc_client_id.value
+    },
+    {
+      name  = "EPC_REGISTER_TOKEN_URI"
+      value = data.aws_ssm_parameter.epc_token_uri.value
+    },
+    {
+      name  = "EPC_REGISTER_BASE_URL"
+      value = data.aws_ssm_parameter.epc_base_url.value
+    },
   ]
   secrets = [
     {
@@ -84,6 +96,10 @@ locals {
     {
       name      = "OS_PLACES_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.os_places_api_key.arn
+    },
+    {
+      name      = "EPC_REGISTER_CLIENT_SECRET"
+      valueFrom = data.aws_secretsmanager_secret.epc_client_secret.arn
     },
   ]
 }
