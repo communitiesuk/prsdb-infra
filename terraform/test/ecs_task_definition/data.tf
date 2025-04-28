@@ -59,7 +59,7 @@ data "aws_ssm_parameter" "quarantine_bucket" {
 }
 
 data "aws_secretsmanager_secret" "epc_client_secret" {
-  name = "${local.environment_name}-prsdb-epc-client-secret"
+  name = "tf-${local.environment_name}-prsdb-epc-client-secret"
 }
 
 data "aws_ssm_parameter" "epc_client_id" {
