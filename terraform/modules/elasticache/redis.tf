@@ -29,9 +29,16 @@ resource "aws_elasticache_replication_group" "main" {
   transit_encryption_enabled  = true
   apply_immediately           = true
   log_delivery_configuration {
-    destination      = aws_cloudwatch_log_group.redis_log_group.name
+    destination      = module.redis_log_group.name
     destination_type = "cloudwatch-logs"
     log_format       = "json"
     log_type         = "slow-log"
   }
 }
+
+module "redis_log_group" {
+  source             = "../../modules/encrypted_log_group"
+  log_group_name     = "${var.environment_name}-redis"
+  log_retention_days = var.cloudwatch_log_expiration_days
+}
+

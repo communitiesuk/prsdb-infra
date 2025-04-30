@@ -1,4 +1,4 @@
-#tfsec:ignore:aws-ecs-enable-container-insight:TODO PRSD-733 enable container insights if necessary for logging/monitoring
+#tfsec:ignore:aws-ecs-enable-container-insight: We can enable insights later if required
 resource "aws_ecs_cluster" "main" {
   name = "${var.environment_name}-app"
 }
