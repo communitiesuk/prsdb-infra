@@ -1,13 +1,24 @@
 data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
 
 data "aws_iam_policy_document" "vpc_flow_logs_assume_role" {
   statement {
-    effect  = "Allow"
-    actions = ["sts:AssumeRole"]
-
+    effect = "Allow"
     principals {
       type        = "Service"
       identifiers = ["vpc-flow-logs.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = ["arn:aws:ec2:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:vpc-flow-log/*"]
     }
   }
 }
@@ -21,6 +32,7 @@ resource "aws_iam_role" "vpc_flow_logs" {
 # tfsec:ignore:aws-iam-no-policy-wildcards
 data "aws_iam_policy_document" "vpc_flow_logs" {
   statement {
+    effect = "Allow"
     actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
@@ -28,19 +40,7 @@ data "aws_iam_policy_document" "vpc_flow_logs" {
       "logs:DescribeLogGroups",
       "logs:DescribeLogStreams"
     ]
-    effect    = "Allow"
     resources = ["*"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceAccount"
-      values   = [data.aws_caller_identity.current.account_id]
-    }
-    condition {
-      test     = "ArnLike"
-      variable = "aws:SourceArn"
-      values   = [aws_flow_log.vpc_accepted.arn, aws_flow_log.vpc_rejected.arn]
-    }
   }
 }
 
