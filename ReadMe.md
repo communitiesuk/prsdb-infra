@@ -15,13 +15,21 @@ Install AWS CLI by following [these instructions](https://docs.aws.amazon.com/cl
 Install the Session Manager plugin for AWS CLI by following [these instructions](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 You may need to add the "session-manager-plugin.exe" file to your PATH.
 
-Use the shell script "setup/create_profiles.sh" to add a `.aws/config` file to your home directory, with your mfa_serial value added.
-You can find this in the aws console under the top right drop down menu -> `Security credentials".
+Use the shell script "setup/create_profiles.sh" (or "setup/create_profiles.ps1" if using Windows Powershell) to add a `.aws/config` file to your home directory, with your mfa identifier value added.
+You can find this in the aws console under the top right drop down menu -> `Security credentials`.
+Note you may need to switch out of any roles you are switched into to see the `Security credentials` option
+Your mfa identifier look like `arn:aws:iam::123456789012:mfa/yourname`.
+
 You should not override the destination file.
 
 ```shell
 setup/create_profiles.sh "Your mfa_serial value" ["Override destination file"]
 ```
+(Powershell)
+```shell
+setup/create_profiles.ps1 "Your mfa_serial value" ["Override destination file"]
+```
+(If you get a "Could not find a part of the path..." error when the script runs, you may need to create the .aws folder in your home directory first)
 
 Create an access key in the AWS portal on the Security credentials page (just below where you found you `mfa_serial`). In your terminal, run `aws-vault add mhclg` and provide your access key details.
 
@@ -66,6 +74,13 @@ this connection string:
 ```
 postgresql://postgres:<password>@localhost:5432/prsdb
 ```
+If you are using DataGrip or Intellij's database tab and get a "Connection failed" error, instead of typing in the connection string try allowing it to write its own connection string using the settings:
+- Host: localhost
+- Port: 5432
+- Authentication: User and Password
+- User: postgres
+- Password: <password>
+- Database: prsdb
 
 When you start a connection, you will see a confirmation in the terminal window:
 ```shell

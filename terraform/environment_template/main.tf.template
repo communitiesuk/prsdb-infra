@@ -35,6 +35,8 @@ locals {
 
   app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+
+  cloudwatch_log_expiration_days = <log retention period>
 }
 
 module "networking" {
@@ -46,6 +48,7 @@ module "networking" {
   integration_domains = [
     <Domains for 3rd party integrations in this environment>
   ]
+  vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "frontdoor" {
@@ -67,6 +70,7 @@ module "frontdoor" {
   ip_allowlist = [
     <Allowed IPs if IP whitelisting is to be turned on, empty otherwise>
   ]
+  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "certificates" {
@@ -144,14 +148,15 @@ module "database" {
 module "redis" {
   source = "../modules/elasticache"
 
-  environment_name         = local.environment_name
-  highly_available         = false
-  node_type                = "<cache instance class>"
-  redis_password           = module.secrets.redis_password.result
-  redis_port               = local.redis_port
-  redis_subnet_group_name  = module.networking.redis_subnet_group_name
-  snapshot_retention_limit = <number of snapshots to retain>
-  vpc_id                   = module.networking.vpc.id
+  environment_name               = local.environment_name
+  highly_available               = false
+  node_type                      = "<cache instance class>"
+  redis_password                 = module.secrets.redis_password.result
+  redis_port                     = local.redis_port
+  redis_subnet_group_name        = module.networking.redis_subnet_group_name
+  snapshot_retention_limit       = <number of snapshots to retain>
+  vpc_id                         = module.networking.vpc.id
+  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "ecs_service" {

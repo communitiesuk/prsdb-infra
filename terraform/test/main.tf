@@ -35,6 +35,8 @@ locals {
 
   app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+
+  cloudwatch_log_expiration_days = 60
 }
 
 module "networking" {
@@ -48,8 +50,10 @@ module "networking" {
     "identity.integration.account.gov.uk",
     "api.os.uk",
     "api.notifications.service.gov.uk",
-    "publicapi.payments.service.gov.uk"
+    "publicapi.payments.service.gov.uk",
+    "api.epb-staging.digital.communities.gov.uk"
   ]
+  vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "frontdoor" {
@@ -82,6 +86,7 @@ module "frontdoor" {
     # MHCLG
     "4.158.35.41/32",
   ]
+  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "certificates" {
@@ -159,14 +164,15 @@ module "database" {
 module "redis" {
   source = "../modules/elasticache"
 
-  environment_name         = local.environment_name
-  highly_available         = false
-  node_type                = "cache.t4g.micro"
-  redis_password           = module.secrets.redis_password.result
-  redis_port               = local.redis_port
-  redis_subnet_group_name  = module.networking.redis_subnet_group_name
-  snapshot_retention_limit = 7
-  vpc_id                   = module.networking.vpc.id
+  environment_name               = local.environment_name
+  highly_available               = false
+  node_type                      = "cache.t4g.micro"
+  redis_password                 = module.secrets.redis_password.result
+  redis_port                     = local.redis_port
+  redis_subnet_group_name        = module.networking.redis_subnet_group_name
+  snapshot_retention_limit       = 7
+  vpc_id                         = module.networking.vpc.id
+  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "ecs_service" {
@@ -191,3 +197,4 @@ module "file_upload" {
   environment_name                = local.environment_name
   webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
 }
+

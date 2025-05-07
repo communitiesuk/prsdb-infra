@@ -54,3 +54,8 @@ variable "vpc_id" {
   type        = string
   description = "The ID of the VPC to be associated with"
 }
+
+variable "cloudwatch_log_expiration_days" {
+  type        = number
+  description = "Number of days to retain cloudwatch logs for"
+}

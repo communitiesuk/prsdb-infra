@@ -57,3 +57,19 @@ data "aws_secretsmanager_secret" "os_places_api_key" {
 data "aws_ssm_parameter" "quarantine_bucket" {
   name = "${local.environment_name}-prsdb-quarantine-bucket"
 }
+
+data "aws_secretsmanager_secret" "epc_client_secret" {
+  name = "tf-${local.environment_name}-prsdb-epc-client-secret"
+}
+
+data "aws_ssm_parameter" "epc_client_id" {
+  name = "${local.environment_name}-prsdb-epc-client-id"
+}
+
+data "aws_ssm_parameter" "epc_token_uri" {
+  name = "${local.environment_name}-prsdb-epc-token-uri"
+}
+
+data "aws_ssm_parameter" "epc_base_url" {
+  name = "${local.environment_name}-prsdb-epc-register-base-url"
+}
