@@ -74,7 +74,7 @@ this connection string:
 ```
 postgresql://postgres:<password>@localhost:5432/prsdb
 ```
-If you are using DataGrip and get a "Connection failed" error, instead of typing in the connection string try allowing it to write its own connection string using the settings:
+If you are using DataGrip or Intellij's database tab and get a "Connection failed" error, instead of typing in the connection string try allowing it to write its own connection string using the settings:
 - Host: localhost
 - Port: 5432
 - Authentication: User and Password
