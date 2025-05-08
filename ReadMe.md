@@ -12,6 +12,8 @@ Install the Session Manager plugin for AWS CLI by following [these instructions]
 You may need to add the "session-manager-plugin.exe" file to your PATH.
 
 ### Using SSO
+Before setting up access via SSO, delete any existing mhclg elements from your `~/.aws/config` file (or delete the whole file if you're only using it for this project) to prevent any potential aws-vault authentication issues.
+
 Run `aws configure sso` and follow the prompts:
 
 ```shell
