@@ -2,12 +2,8 @@
 
 This repository contains the Terraform configuration for the infrastructure of the Private Rented Sector Database (PRSDB) service. The main respository for the service, which includes Architecture Decision Records for this infrastructure can be found at https://github.com/communitiesuk/prsdb-webapp
 
-## Setting up terraform
-
-Install the appropriate version of Terraform by following [these instructions](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli). We are currently using 1.9.x, so make sure you select that version. 
-If using the "Manual installation" method, you can select the correct version from the dropdown at the top of the installation page.
-
-Install the latest AWS vault by following [these instructions](https://github.com/99designs/aws-vault). (N.B. there is no windows AMD64 version, so you need to use 386 in that case). 
+## Connecting to AWS
+Install the latest AWS vault by following [these instructions](https://github.com/99designs/aws-vault). (N.B. there is no windows AMD64 version, so you need to use 386 in that case).
 You will need to rename the .exe file to "aws-vault.exe" and add it to your PATH.
 
 Install AWS CLI by following [these instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
@@ -15,6 +11,39 @@ Install AWS CLI by following [these instructions](https://docs.aws.amazon.com/cl
 Install the Session Manager plugin for AWS CLI by following [these instructions](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 You may need to add the "session-manager-plugin.exe" file to your PATH.
 
+### Using SSO
+Before setting up access via SSO, delete any existing mhclg elements from your `~/.aws/config` file (or delete the whole file if you're only using it for this project) to prevent any potential aws-vault authentication issues.
+
+Run `aws configure sso` and follow the prompts:
+
+```shell
+SSO session name (Recommended): mhclg-sso
+SSO start URL [None]: https://d-9c67685a87.awsapps.com/start
+SSO region [None]: eu-west-2
+SSO registration scopes: sso:account:access
+```
+
+The AWS CLI will provide you with a code in your terminal and open a browser window. (If you're asked to) log in using your Super User MHCLG account then confirm the code in the browser matches. On the subsequent page
+you should click 'Allow access' then return to the terminal.
+
+Note: To prevent authentication errors, use a browser that is not already logged into AWS via SSO (e.g. use a different profile in Microsoft Edge).
+
+The terminal should now display the list of AWS accounts you have access to. Select the integration account. As only the developer role is available, you should then be prompted to provide the following information:
+
+```shell
+CLI default client [None]: eu-west-2
+CLI default output format: can be left blank - press enter
+CLI profile name [name_of_role-account_id]: mhclg-int
+```
+
+In your terminal, navigate to the integration directory and run `aws-vault exec mhclg-int -- <your preferred shell>`.
+This will start a sub-shell with the access key credentials available and the role of that profile. Use `exit` to return to your previous shell when you are done.
+If you want to work on a different environment, repeat this process with a different AWS account and profile name.
+
+When using SSO, you must specify the profile name in the command. For example, `aws s3 ls --profile <your profile>`. 
+You can end your session with `aws sso logout` and log back in with `aws sso login --profile <your profile>`.
+
+### Using MFA
 Use the shell script "setup/create_profiles.sh" (or "setup/create_profiles.ps1" if using Windows Powershell) to add a `.aws/config` file to your home directory, with your mfa identifier value added.
 You can find this in the aws console under the top right drop down menu -> `Security credentials`.
 Note you may need to switch out of any roles you are switched into to see the `Security credentials` option
@@ -33,11 +62,15 @@ setup/create_profiles.ps1 "Your mfa_serial value" ["Override destination file"]
 
 Create an access key in the AWS portal on the Security credentials page (just below where you found you `mfa_serial`). In your terminal, run `aws-vault add mhclg` and provide your access key details.
 
-In your terminal, navigate to the integration directory and run `aws-vault exec mhclg-int -- <your preferred shell>`. 
-This will start a sub-shell with the access key credentials available and the role of that profile. Use `exit` to return to your previous shell when you are done.
-If you want to work on a different environment, instead navigate to that environment's directory and use the corresponding profile instead of `mhclg-int`.
+You should now be able to start an `aws-vault exec` session using the instructions from the section above.
 
-Still in the environment directory, run `terraform init` to create a local terraform state linking to the shared environment state.
+## Setting up terraform
+
+Install the appropriate version of Terraform by following [these instructions](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli). We are currently using 1.9.x, so make sure you select that version. 
+If using the "Manual installation" method, you can select the correct version from the dropdown at the top of the installation page.
+
+Start an `aws-vault exec` session for the profile corresponding to the environment you want to connect to, 
+then navigate to the environment's directory and run `terraform init` to create a local terraform state linking to the shared environment state.
 
 You are now ready to start running terraform commands on the chosen environment.
 
