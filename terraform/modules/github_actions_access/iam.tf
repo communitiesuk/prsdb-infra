@@ -128,3 +128,40 @@ resource "aws_iam_role_policy_attachment" "allow_push_image_policy_attachment" {
   role       = aws_iam_role.push_image.name
   policy_arn = var.push_ecr_image_policy_arn
 }
+
+# RDS access role for webapp repo
+data "aws_iam_policy_document" "github_actions_rds_assume_role" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.main.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = "token.actions.githubusercontent.com:aud"
+    }
+
+    condition {
+      test = "StringLike"
+      values = [
+        "repo:communitiesuk/prsdb-webapp:*",
+      ]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+
+resource "aws_iam_role" "rds_access" {
+  name               = "${var.environment_name}-rds-access"
+  assume_role_policy = data.aws_iam_policy_document.github_actions_rds_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "allow_rds_access_policy_attachment" {
+  role       = aws_iam_role.rds_access.name
+  policy_arn = var.rds_access_policy_arn
+}
+
