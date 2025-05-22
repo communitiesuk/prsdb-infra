@@ -11,3 +11,8 @@ variable "push_ecr_image_policy_arn" {
   description = "arn of the iam policy for pushing images to ecr"
   type        = string
 }
+
+variable "rds_access_policy_arn" {
+  description = "arn of the iam policy for rds access"
+  type        = string
+}
