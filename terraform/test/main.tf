@@ -45,14 +45,7 @@ module "networking" {
   environment_name             = local.environment_name
   number_of_availability_zones = 2
   number_of_isolated_subnets   = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
-  integration_domains = [
-    "oidc.integration.account.gov.uk",
-    "identity.integration.account.gov.uk",
-    "api.os.uk",
-    "api.notifications.service.gov.uk",
-    "publicapi.payments.service.gov.uk",
-    "api.epb-staging.digital.communities.gov.uk"
-  ]
+
   vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
