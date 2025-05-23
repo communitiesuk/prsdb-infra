@@ -24,12 +24,6 @@ variable "number_of_isolated_subnets" {
   description = "Each isolated subnet is located in a different AZ; must be 1 <= x <= number of available AZs"
 }
 
-variable "integration_domains" {
-  description = "List of domains to allow through the Network Firewall for third party integrations"
-  type        = list(string)
-  default     = []
-}
-
 variable "vpc_flow_cloudwatch_log_expiration_days" {
   type        = number
   description = "Number of days to retain VPC flow logs for"
