@@ -158,7 +158,6 @@ data "aws_iam_policy_document" "github_actions_rds_assume_role" {
 data "aws_iam_policy_document" "ssm_port_forwarding" {
   statement {
     actions = [
-      "ssm:GetParameter",
       "ssm:StartSession",
       "ssm:DescribeSessions",
       "ssm:TerminateSession",
@@ -167,6 +166,27 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
     resources = [
       "*",
     ]
+  }
+
+  statement {
+    actions = [
+      "ssm:GetParameter",
+    ]
+    resources = [var.db_username_ssm_parameter_arn]
+  }
+
+  statement {
+    actions = [
+      "secretsmanager:GetSecretValue",
+    ]
+    resources = [var.db_password_secret_arn]
+  }
+
+  statement {
+    actions = [
+      "kms:Decrypt",
+    ]
+    resources = [var.secrets_kms_key_arn]
   }
 }
 

@@ -118,8 +118,11 @@ module "ecr" {
 module "github_actions_access" {
   source = "../modules/github_actions_access"
 
-  environment_name          = local.environment_name
-  push_ecr_image_policy_arn = module.ecr.push_ecr_image_policy_arn
+  environment_name              = local.environment_name
+  push_ecr_image_policy_arn     = module.ecr.push_ecr_image_policy_arn
+  db_username_ssm_parameter_arn = module.database.database_username_ssm_parameter_arn
+  db_password_secret_arn        = module.secrets.database_password_secret_arn
+  secrets_kms_key_arn           = module.secrets.secrets_kms_key_arn
 }
 
 module "secrets" {

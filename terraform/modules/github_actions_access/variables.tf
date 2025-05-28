@@ -12,3 +12,17 @@ variable "push_ecr_image_policy_arn" {
   type        = string
 }
 
+variable "db_username_ssm_parameter_arn" {
+  description = "ARN of the SSM parameter that contains the database username"
+  type        = string
+}
+
+variable "secrets_kms_key_arn" {
+  description = "ARN of the KMS key used to encrypt the secrets"
+  type        = string
+}
+
+variable "db_password_secret_arn" {
+  description = "ARN of the Secrets Manager secret that contains the database password"
+  type        = string
+}
