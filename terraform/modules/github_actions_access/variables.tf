@@ -26,3 +26,9 @@ variable "db_password_secret_arn" {
   description = "ARN of the Secrets Manager secret that contains the database password"
   type        = string
 }
+
+variable "bastion_host_arns" {
+  description = "List of ARNs for the bastion host IAM roles that need access to GitHub Actions"
+  type        = list(string)
+  default     = []
+}

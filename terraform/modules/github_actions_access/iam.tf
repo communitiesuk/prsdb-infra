@@ -155,17 +155,39 @@ data "aws_iam_policy_document" "github_actions_rds_assume_role" {
   }
 }
 
+data "aws_ssm_document" "port_forwarding_document" {
+  name = "AWS-StartPortForwardingSessionToRemoteHost"
+}
+
 data "aws_iam_policy_document" "ssm_port_forwarding" {
   statement {
     actions = [
-      "ssm:StartSession",
       "ssm:DescribeSessions",
-      "ssm:TerminateSession",
       "ec2:DescribeInstances",
     ]
     resources = [
       "*",
     ]
+  }
+
+  statement {
+    actions = [
+      "ssm:TerminateSession",
+      "ssm:ResumeSession",
+    ]
+    resources = [
+      "arn:aws:ssm:*:*:session/${data.aws_caller_identity.current.user_id}-*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "ssm:StartSession",
+    ]
+    resources = concat(
+      var.bastion_host_arns,
+      [data.aws_ssm_document.port_forwarding_document.arn]
+    )
   }
 
   statement {
