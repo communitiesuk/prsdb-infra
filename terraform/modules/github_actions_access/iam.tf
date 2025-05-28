@@ -155,6 +155,27 @@ data "aws_iam_policy_document" "github_actions_rds_assume_role" {
   }
 }
 
+data "aws_iam_policy_document" "ssm_port_forwarding" {
+  statement {
+    actions = [
+      "ssm:GetParameter",
+      "ssm:StartSession",
+      "ssm:DescribeSessions",
+      "ssm:TerminateSession",
+      "ec2:DescribeInstances",
+    ]
+    resources = [
+      "*",
+    ]
+  }
+}
+
+resource "aws_iam_policy" "ssm_port_forwarding" {
+  name        = "${var.environment_name}-ssm-port-forwarding"
+  description = "Policy that allows SSM port forwarding for RDS access"
+  policy      = data.aws_iam_policy_document.ssm_port_forwarding.json
+}
+
 resource "aws_iam_role" "rds_access" {
   name               = "${var.environment_name}-rds-access"
   assume_role_policy = data.aws_iam_policy_document.github_actions_rds_assume_role.json
@@ -162,6 +183,6 @@ resource "aws_iam_role" "rds_access" {
 
 resource "aws_iam_role_policy_attachment" "allow_rds_access_policy_attachment" {
   role       = aws_iam_role.rds_access.name
-  policy_arn = var.rds_access_policy_arn
+  policy_arn = aws_iam_policy.ssm_port_forwarding.arn
 }
 
