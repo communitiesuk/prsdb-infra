@@ -185,7 +185,7 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
     ]
     resources = concat(
       var.bastion_host_arns,
-      ["arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSession"],
+      ["arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSessionToRemoteHost"],
     )
   }
 
