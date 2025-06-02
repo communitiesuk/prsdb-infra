@@ -174,7 +174,7 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
       "ssm:ResumeSession",
     ]
     resources = [
-      "arn:aws:ssm:*:*:session/${data.aws_caller_identity.current.user_id}-*",
+      "arn:aws:ssm:eu-west-2:${data.aws_caller_identity.current.account_id}:session/GitHubActions-*",
     ]
   }
 
