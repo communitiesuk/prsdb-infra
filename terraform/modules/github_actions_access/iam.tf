@@ -194,7 +194,7 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
     actions = [
       "ssm:GetParameter",
     ]
-    resources = [var.db_username_ssm_parameter_arn]
+    resources = [var.db_username_ssm_parameter_arn, var.db_url_ssm_parameter_arn]
   }
 
   statement {

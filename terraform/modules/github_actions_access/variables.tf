@@ -17,6 +17,11 @@ variable "db_username_ssm_parameter_arn" {
   type        = string
 }
 
+variable "db_url_ssm_parameter_arn" {
+  description = "ARN of the SSM parameter that contains the database URL"
+  type        = string
+}
+
 variable "secrets_kms_key_arn" {
   description = "ARN of the KMS key used to encrypt the secrets"
   type        = string

@@ -8,3 +8,7 @@ output "database_username_ssm_parameter_arn" {
   description = "The ARN of the SSM parameter containing the database username"
 }
 
+output "database_url_ssm_parameter_arn" {
+  value       = aws_ssm_parameter.database_url.arn
+  description = "The ARN of the SSM parameter containing the database URL"
+}
