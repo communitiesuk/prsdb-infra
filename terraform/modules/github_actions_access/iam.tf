@@ -155,12 +155,9 @@ data "aws_iam_policy_document" "github_actions_rds_assume_role" {
   }
 }
 
-data "aws_ssm_document" "port_forwarding_document" {
-  name = "AWS-StartPortForwardingSessionToRemoteHost"
-}
-
 data "aws_iam_policy_document" "ssm_port_forwarding" {
   statement {
+    effect = "Allow"
     actions = [
       "ssm:DescribeSessions",
       "ec2:DescribeInstances",
@@ -171,6 +168,7 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
   }
 
   statement {
+    effect = "Allow"
     actions = [
       "ssm:TerminateSession",
       "ssm:ResumeSession",
@@ -181,16 +179,18 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
   }
 
   statement {
+    effect = "Allow"
     actions = [
       "ssm:StartSession",
     ]
     resources = concat(
       var.bastion_host_arns,
-      [data.aws_ssm_document.port_forwarding_document.arn]
+      ["arn:aws:ssm:eu-west-2::document/AWS-StartPortForwardingSession"],
     )
   }
 
   statement {
+    effect = "Allow"
     actions = [
       "ssm:GetParameter",
     ]
@@ -198,6 +198,7 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
   }
 
   statement {
+    effect = "Allow"
     actions = [
       "secretsmanager:GetSecretValue",
     ]
@@ -205,6 +206,7 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
   }
 
   statement {
+    effect = "Allow"
     actions = [
       "kms:Decrypt",
     ]
