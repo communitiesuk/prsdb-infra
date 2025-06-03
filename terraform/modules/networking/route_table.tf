@@ -23,7 +23,7 @@ resource "aws_route_table" "to_nat_gateway" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "to-firewall-route-table-${var.environment_name}"
+    Name = "to-nat-gateway-route-table-${var.environment_name}"
   }
 }
 
@@ -39,10 +39,20 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.to_nat_gateway.id
 }
 
+
+# Isolated subnets should only have access to the VPC
+resource "aws_route_table" "local_only" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "local-only-route-table-${var.environment_name}"
+  }
+}
+
 resource "aws_route_table_association" "isolated" {
   count          = var.number_of_isolated_subnets
   subnet_id      = aws_subnet.isolated_subnet[count.index].id
-  route_table_id = aws_route_table.to_nat_gateway.id
+  route_table_id = aws_route_table.local_only.id
 }
 
 # NAT gateway should send internet bound traffic out to the gateway
