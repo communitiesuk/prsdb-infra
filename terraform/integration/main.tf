@@ -45,14 +45,7 @@ module "networking" {
   environment_name             = local.environment_name
   number_of_availability_zones = 2
   number_of_isolated_subnets   = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
-  integration_domains = [
-    "oidc.integration.account.gov.uk",
-    "identity.integration.account.gov.uk",
-    "api.os.uk",
-    "api.notifications.service.gov.uk",
-    "publicapi.payments.service.gov.uk",
-    "api.epb-staging.digital.communities.gov.uk"
-  ]
+
   vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
@@ -118,8 +111,13 @@ module "ecr" {
 module "github_actions_access" {
   source = "../modules/github_actions_access"
 
-  environment_name          = local.environment_name
-  push_ecr_image_policy_arn = module.ecr.push_ecr_image_policy_arn
+  environment_name              = local.environment_name
+  push_ecr_image_policy_arn     = module.ecr.push_ecr_image_policy_arn
+  db_username_ssm_parameter_arn = module.database.database_username_ssm_parameter_arn
+  db_url_ssm_parameter_arn      = module.database.database_url_ssm_parameter_arn
+  db_password_secret_arn        = module.secrets.database_password_secret_arn
+  secrets_kms_key_arn           = module.secrets.secrets_kms_key_arn
+  bastion_host_arns             = module.bastion.bastion_instance_arns
 }
 
 module "secrets" {

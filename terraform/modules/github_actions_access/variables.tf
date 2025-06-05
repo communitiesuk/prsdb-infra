@@ -11,3 +11,29 @@ variable "push_ecr_image_policy_arn" {
   description = "arn of the iam policy for pushing images to ecr"
   type        = string
 }
+
+variable "db_username_ssm_parameter_arn" {
+  description = "ARN of the SSM parameter that contains the database username"
+  type        = string
+}
+
+variable "db_url_ssm_parameter_arn" {
+  description = "ARN of the SSM parameter that contains the database URL"
+  type        = string
+}
+
+variable "secrets_kms_key_arn" {
+  description = "ARN of the KMS key used to encrypt the secrets"
+  type        = string
+}
+
+variable "db_password_secret_arn" {
+  description = "ARN of the Secrets Manager secret that contains the database password"
+  type        = string
+}
+
+variable "bastion_host_arns" {
+  description = "List of ARNs for the bastion host IAM roles that need access to GitHub Actions"
+  type        = list(string)
+  default     = []
+}
