@@ -75,6 +75,10 @@ locals {
       name  = "EPC_REGISTER_BASE_URL"
       value = data.aws_ssm_parameter.epc_base_url.value
     },
+    {
+      name  = "EPC_CERTIFICATE_BASE_URL"
+      value = data.aws_ssm_parameter.epc_certificate_base_url.value
+    },
   ]
   secrets = [
     {

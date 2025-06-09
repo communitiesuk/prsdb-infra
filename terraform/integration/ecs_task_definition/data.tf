@@ -73,3 +73,7 @@ data "aws_ssm_parameter" "epc_token_uri" {
 data "aws_ssm_parameter" "epc_base_url" {
   name = "${local.environment_name}-prsdb-epc-register-base-url"
 }
+
+data "aws_ssm_parameter" "epc_certificate_base_url" {
+  name = "${local.environment_name}-prsdb-epc-certificate-base-url"
+}
