@@ -37,6 +37,8 @@ resource "aws_iam_policy" "guardduty_malware_protection_policy" {
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
+# Following the template from the AWS documentation: https://docs.aws.amazon.com/guardduty/latest/ug/malware-protection-s3-iam-policy-prerequisite.html
+# tfsec:ignore:aws-iam-no-policy-wildcards
 data "aws_iam_policy_document" "guardduty_malware_protection_policy" {
   statement {
     sid    = "AllowManagedRuleToSendS3EventsToGuardDuty"
