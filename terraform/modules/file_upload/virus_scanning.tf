@@ -3,7 +3,7 @@ resource "aws_guardduty_malware_protection_plan" "quarantine_scanning" {
 
   protected_resource {
     s3_bucket {
-      bucket_name     = module.quarantine_bucket.bucket
+      bucket_name = module.quarantine_bucket.bucket
     }
   }
 
