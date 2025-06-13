@@ -30,7 +30,7 @@ resource "aws_iam_role_policy_attachment" "guardduty_malware_protection_policy_a
 }
 
 resource "aws_iam_policy" "guardduty_malware_protection_policy" {
-  name   = "ecr-push-images"
+  name   = "malware-protection-policy"
   policy = data.aws_iam_policy_document.guardduty_malware_protection_policy.json
 }
 
