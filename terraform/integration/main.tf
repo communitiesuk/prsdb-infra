@@ -34,6 +34,8 @@ locals {
   redis_port       = 6379
 
   app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
+  search_landlord_host      = "${local.environment_name}.search-landlord-home-information.test.communities.gov.uk"
+  check_home_to_rent_host   = "${local.environment_name}.check-home-to-rent-registration.test.communities.gov.uk"
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 
   cloudwatch_log_expiration_days = 60
@@ -56,17 +58,18 @@ module "frontdoor" {
     aws.us-east-1 = aws.us-east-1
   }
 
-  ssl_certs_created      = var.ssl_certs_created
-  environment_name       = local.environment_name
-  public_subnet_ids      = module.networking.public_subnets[*].id
-  vpc_id                 = module.networking.vpc.id
-  application_port       = local.application_port
-  cloudfront_domain_name = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
-  additional_cloudfront_domain_names = [
-    "${local.environment_name}.search-landlord-home-information.test.communities.gov.uk",
-    "${local.environment_name}.check-home-to-rent-registration.test.communities.gov.uk"
+  ssl_certs_created             = var.ssl_certs_created
+  environment_name              = local.environment_name
+  public_subnet_ids             = module.networking.public_subnets[*].id
+  vpc_id                        = module.networking.vpc.id
+  application_port              = local.application_port
+  cloudfront_domain_name        = local.app_host
+  cloudfront_domain_aliases     = [
+    local.app_host,
+    local.search_landlord_host,
+    local.check_home_to_rent_host
   ]
-  load_balancer_domain_name     = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+  load_balancer_domain_name     = local.load_balancer_domain_name
   cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
   load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
   ip_allowlist = [
@@ -93,9 +96,12 @@ module "certificates" {
     aws.us-east-1 = aws.us-east-1
   }
 
-  cloudfront_domain_name      = local.app_host
-  load_balancer_domain_name   = local.load_balancer_domain_name
-  cloudfront_additional_names = module.frontdoor.additional_cloudfront_domain_names
+  cloudfront_domain_name    = local.app_host
+  load_balancer_domain_name = local.load_balancer_domain_name
+  cloudfront_additional_names = [
+    local.search_landlord_host,
+    local.check_home_to_rent_host
+  ]
   load_balancer_additional_names = [
     "${local.environment_name}.lb.search-landlord-home-information.test.communities.gov.uk",
     "${local.environment_name}.lb.check-home-to-rent-registration.test.communities.gov.uk"
