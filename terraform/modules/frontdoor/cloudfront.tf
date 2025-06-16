@@ -4,7 +4,7 @@ locals {
 
 #tfsec:ignore:aws-cloudfront-enable-logging: TODO we will be implementing logging later
 resource "aws_cloudfront_distribution" "main" {
-  aliases         = var.ssl_certs_created ? [var.cloudfront_domain_name] : []
+  aliases         = var.ssl_certs_created ? concat([var.cloudfront_domain_name], var.additional_cloudfront_domain_names) : []
   enabled         = true
   http_version    = "http2and3"
   is_ipv6_enabled = true
