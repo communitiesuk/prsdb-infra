@@ -63,8 +63,7 @@ module "frontdoor" {
   public_subnet_ids             = module.networking.public_subnets[*].id
   vpc_id                        = module.networking.vpc.id
   application_port              = local.application_port
-  cloudfront_domain_name        = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
-  cloudfront_domain_aliases     = [
+  cloudfront_domain_names     = [
     local.app_host,
     local.search_landlord_host,
     local.check_home_to_rent_host

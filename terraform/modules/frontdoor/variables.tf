@@ -45,12 +45,7 @@ variable "application_port" {
 #   description = "The id of the ecs security group for ecs egress"
 # }
 
-variable "cloudfront_domain_name" {
-  type        = string
-  description = "MHCLG delegated domain name for cloudfront"
-}
-
-variable "cloudfront_domain_aliases" {
+variable "cloudfront_domain_names" {
   type        = list(string)
   description = "All MHCLG delegated domain names for cloudfront"
 }
