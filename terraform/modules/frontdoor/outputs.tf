@@ -14,3 +14,8 @@ output "cloudfront_dns_name" {
   description = "The domain name of the cloudfront distribution"
   value       = aws_cloudfront_distribution.main.domain_name
 }
+
+output "additional_cloudfront_domain_names" {
+  value       = var.additional_cloudfront_domain_names
+  description = "Additional domain names for the CloudFront distribution"
+}

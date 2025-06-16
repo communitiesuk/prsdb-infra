@@ -50,6 +50,11 @@ variable "cloudfront_domain_name" {
   description = "MHCLG delegated domain name for cloudfront"
 }
 
+variable "additional_cloudfront_domain_names" {
+  type        = list(string)
+  description = "Additional MHCLG delegated domain names for cloudfront"
+}
+
 variable "load_balancer_domain_name" {
   type        = string
   description = "MHCLG delegated domain name for alb"
