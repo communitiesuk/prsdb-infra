@@ -126,6 +126,15 @@ Alternatively, from the project root you can run:
 
 This will start the port forwarding session, and copy the database password to your clipboard. You can then connect to the database as set out above.
 
+## Updating existing infrastructure
+After modifying the terraform files, you can run `terraform fmt --recursive` from the root of the repository to format all the files.
+
+Run `terraform plan` to see what changes will be made, and if everything looks correct put up a PR for the changes.
+
+The terraform will applied when your PR is merged.
+
+If there are problems, it may be necessary to make updates manually from the terminal using `terrform apply`, but we should aim to apply terraform via the git pipeline where possible.
+
 ## Setting up a new environment from scratch
 
 In order to interact with the environment in an AWS account you will need make sure you have a developer profile set up
