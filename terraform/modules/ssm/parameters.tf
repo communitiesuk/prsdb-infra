@@ -59,3 +59,13 @@ resource "aws_ssm_parameter" "epc_register_base_url" {
     ignore_changes = [value]
   }
 }
+
+resource "aws_ssm_parameter" "epc_certificate_base_url" {
+  name  = "${var.environment_name}-prsdb-epc-certificate-base-url"
+  type  = "String"
+  value = "default_to_be_set_manually" # To be set manually on AWS
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
