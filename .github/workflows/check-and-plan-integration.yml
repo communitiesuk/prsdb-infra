@@ -1,5 +1,9 @@
 name: Check and Plan - Integration
-on: pull_request
+on:
+  pull_request:
+    branches:
+      - main
+      - fix/PRSD-1073-fix-pipeline-triggers
 
 jobs:
   check-and-plan:
