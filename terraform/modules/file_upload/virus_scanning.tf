@@ -166,7 +166,7 @@ resource "aws_cloudwatch_event_rule" "process_scan_complete_event_rule" {
   name        = "process-scan-complete-event-rule-${var.environment_name}"
   description = "Rule to process GuardDuty malware scan complete events"
   event_pattern = jsonencode({
-    source = ["aws.guardduty"]
+    source      = ["aws.guardduty"]
     detail-type = ["GuardDuty Malware Protection Object Scan Result"]
   })
 }
@@ -175,14 +175,14 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
   target_id = "process-scan-complete-event-target-${var.environment_name}"
   rule      = aws_cloudwatch_event_rule.process_scan_complete_event_rule.name
   arn       = var.ecs_cluster_arn
-  role_arn    = aws_iam_role.event_bridge_invoke_ecs_task_role.arn
+  role_arn  = aws_iam_role.event_bridge_invoke_ecs_task_role.arn
   ecs_target {
     launch_type         = "FARGATE"
     task_count          = 1
     task_definition_arn = data.aws_ecs_task_definition.webapp_task_definition.arn
 
     network_configuration {
-      subnets         = var.private_subnet_ids
+      subnets          = var.private_subnet_ids
       assign_public_ip = false
       security_groups  = var.ecs_security_group_ids
     }
