@@ -196,6 +196,7 @@ module "ecs_service" {
   vpc_id                    = module.networking.vpc.id
 }
 
+# TODO PRSD-1282: Update to match new required parameters
 module "file_upload" {
   source                          = "../modules/file_upload"
   environment_name                = local.environment_name
