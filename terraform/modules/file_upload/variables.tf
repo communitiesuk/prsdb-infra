@@ -18,11 +18,11 @@ variable "ecs_cluster_arn" {
 }
 
 variable "private_subnet_ids" {
-  type = list(string)
+  type        = list(string)
   description = "List of private subnet IDs where the ECS tasks will run"
 }
 
 variable "ecs_security_group_ids" {
-  type = list(string)
+  type        = list(string)
   description = "List of security group IDs to attach to the ECS tasks"
 }

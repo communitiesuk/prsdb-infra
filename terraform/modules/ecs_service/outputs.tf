@@ -4,6 +4,6 @@ output "ecs_cluster_arn" {
 }
 
 output "ecs_security_group_ids" {
-  value = [aws_security_group.ecs.id]
+  value       = [aws_security_group.ecs.id]
   description = "List of security group IDs attached to the ECS tasks"
 }
