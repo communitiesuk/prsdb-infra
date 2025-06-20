@@ -1,5 +1,8 @@
 name: Check and Plan - Integration
-on: pull_request
+on:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   check-and-plan:
