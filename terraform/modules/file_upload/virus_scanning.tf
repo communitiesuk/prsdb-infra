@@ -179,7 +179,7 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
   ecs_target {
     launch_type         = "FARGATE"
     task_count          = 1
-    task_definition_arn = data.aws_ecs_task_definition.webapp_task_definition.arn
+    task_definition_arn = data.aws_ecs_task_definition.webapp_task_definition.arn_without_revision
 
     network_configuration {
       subnets          = var.private_subnet_ids
@@ -242,7 +242,7 @@ resource "aws_iam_policy" "event_bridge_invoke_ecs_task_custom_policy" {
           "ecs:RunTask"
         ]
         Resource = [
-          data.aws_ecs_task_definition.webapp_task_definition.arn
+          data.aws_ecs_task_definition.webapp_task_definition.arn_without_revision
         ]
       },
       {
