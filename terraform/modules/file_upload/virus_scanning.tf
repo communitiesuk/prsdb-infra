@@ -188,19 +188,27 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
     }
     platform_version = "LATEST"
   }
-  input = jsonencode({
-    containerOverrides = [
-      {
-        name = "prsdb-webapp",
-        environment = [
-          {
-            name  = "SPRING_PROFILES_ACTIVE"
-            value = "web-server-deactivated,example-email-sender"
-          },
-        ]
-      }
-    ]
-  })
+  input_transformer {
+    input_paths = {
+      "scanResultDetail" = "$.detail"
+    }
+    input_template = jsonencode({
+      containerOverrides = [
+        {
+          name = "prsdb-webapp",
+          environment = [
+            {
+              name  = "SPRING_PROFILES_ACTIVE"
+              value = "web-server-deactivated,example-scan-processor"
+            },
+            {
+              name = "SCAN_RESULT"
+            value = "<scanResultDetail>", }
+          ]
+        }
+      ]
+    })
+  }
 }
 
 data "aws_ecs_task_definition" "webapp_task_definition" {
