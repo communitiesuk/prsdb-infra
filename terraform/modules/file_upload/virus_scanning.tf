@@ -242,7 +242,8 @@ resource "aws_iam_policy" "event_bridge_invoke_ecs_task_custom_policy" {
           "ecs:RunTask"
         ]
         Resource = [
-          data.aws_ecs_task_definition.webapp_task_definition.arn_without_revision
+          data.aws_ecs_task_definition.webapp_task_definition.arn_without_revision,
+          "${data.aws_ecs_task_definition.webapp_task_definition.arn_without_revision}:*"
         ]
       },
       {
