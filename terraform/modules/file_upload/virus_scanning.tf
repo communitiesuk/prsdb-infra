@@ -190,7 +190,8 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
   }
   input_transformer {
     input_paths = {
-      "scanResultDetail" = "$.detail"
+      "scanResultDetail" = "$.detail.scanResultDetails.scanResultStatus",
+      "s3ObjectKey"      = "$.detail.s3ObjectDetails.objectKey"
     }
     input_template = <<INPUT_TEMPLATE
 {
@@ -203,8 +204,12 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
           "value": "web-server-deactivated,example-scan-processor"
         },
         {
-          "name": "SCAN_RESULT",
-          "value": <scanResultDetail>
+          "name": "SCAN_RESULT_STATUS",
+          "value": <scanResultStatus>
+        },
+        {
+          "name": "S3_OBJECT_KEY",
+          "value": <s3ObjectKey>
         }
       ]
     }
