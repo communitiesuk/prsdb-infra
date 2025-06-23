@@ -192,22 +192,25 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
     input_paths = {
       "scanResultDetail" = "$.detail"
     }
-    input_template = jsonencode({
-      containerOverrides = [
+    input_template = <<INPUT_TEMPLATE
+{
+  "containerOverrides": [
+    {
+      "name": "prsdb-webapp",
+      "environment": [
         {
-          name = "prsdb-webapp",
-          environment = [
-            {
-              name  = "SPRING_PROFILES_ACTIVE"
-              value = "web-server-deactivated,example-scan-processor"
-            },
-            {
-              name = "SCAN_RESULT"
-            value = "<scanResultDetail>", }
-          ]
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "web-server-deactivated,example-scan-processor"
+        },
+        {
+          "name": "SCAN_RESULT",
+          "value": <scanResultDetail>
         }
       ]
-    })
+    }
+  ]
+}
+INPUT_TEMPLATE
   }
 }
 
