@@ -190,7 +190,7 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
   }
   input_transformer {
     input_paths = {
-      "scanResultDetail" = "$.detail.scanResultDetails.scanResultStatus",
+      "scanResultStatus" = "$.detail.scanResultDetails.scanResultStatus",
       "s3ObjectKey"      = "$.detail.s3ObjectDetails.objectKey"
     }
     input_template = <<INPUT_TEMPLATE
