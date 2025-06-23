@@ -162,7 +162,7 @@ data "aws_iam_policy_document" "guardduty_malware_protection_assume_role" {
   }
 }
 
-resource "aws_cloudwatch_event_rule" "process_scan_complete_event_rule" {
+resource "aws_cloudwatch_event_rule" "scan_complete_event_rule" {
   name        = "process-scan-complete-event-rule-${var.environment_name}"
   description = "Rule to process GuardDuty malware scan complete events"
   event_pattern = jsonencode({
@@ -173,7 +173,7 @@ resource "aws_cloudwatch_event_rule" "process_scan_complete_event_rule" {
 
 resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
   target_id = "process-scan-complete-event-target-${var.environment_name}"
-  rule      = aws_cloudwatch_event_rule.process_scan_complete_event_rule.name
+  rule      = aws_cloudwatch_event_rule.scan_complete_event_rule.name
   arn       = var.ecs_cluster_arn
   role_arn  = aws_iam_role.event_bridge_invoke_ecs_task_role.arn
   ecs_target {
