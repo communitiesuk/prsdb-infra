@@ -1,8 +1,8 @@
 
 module "scan_result_event_bucket" {
   source                             = "../s3_bucket"
-  bucket_name                        = "prsdb-store_scan_complete-${var.environment_name}"
-  access_log_bucket_name             = "prsdb-store_scan_complete-access-logs-${var.environment_name}"
+  bucket_name                        = "prsdb-store-scan-complete-${var.environment_name}"
+  access_log_bucket_name             = "prsdb-store-scan-complete-access-logs-${var.environment_name}"
   noncurrent_version_expiration_days = 700
   access_s3_log_expiration_days      = 700
   kms_key_arn                        = aws_kms_key.scan_result_event_bucket_encryption_key.arn
@@ -14,7 +14,7 @@ resource "aws_kms_key" "scan_result_event_bucket_encryption_key" {
 }
 
 resource "aws_kms_alias" "scan_result_event_bucket_encryption_key" {
-  name          = "alias/scan_result_event-encryption-${var.environment_name}"
+  name          = "alias/scan-result-event-encryption-${var.environment_name}"
   target_key_id = aws_kms_key.scan_result_event_bucket_encryption_key.key_id
 }
 
