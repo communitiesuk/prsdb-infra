@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "kinesis_firehose_role" {
 
     principals {
       type        = "Service"
-      identifiers = ["kinesis.amazonaws.com"]
+      identifiers = ["firehose.amazonaws.com"]
     }
 
     actions = ["sts:AssumeRole"]
