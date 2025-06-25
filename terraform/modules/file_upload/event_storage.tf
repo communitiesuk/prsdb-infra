@@ -21,7 +21,7 @@ resource "aws_kms_alias" "scan_result_event_bucket_encryption_key" {
 # tfsec:ignore:aws-iam-no-policy-wildcards
 data "aws_iam_policy_document" "save_scan_result_event" {
   statement {
-    sid = "save_scan_result_event"
+    sid = "SaveScanResultEventS3"
     actions = [
       "s3:PutObject",
     ]
