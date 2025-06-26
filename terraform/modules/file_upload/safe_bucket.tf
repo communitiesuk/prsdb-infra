@@ -49,6 +49,6 @@ resource "aws_iam_policy" "upload_to_safe" {
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_uploaded_files_s3_attachment" {
-  role       = data.aws_ecs_task_definition.webapp_task_definition.task_role_arn
+  role       = var.webapp_task_execution_role_name
   policy_arn = aws_iam_policy.upload_to_safe.arn
 }
