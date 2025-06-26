@@ -48,7 +48,7 @@ resource "aws_iam_policy" "upload_to_quarantine" {
   policy = data.aws_iam_policy_document.upload_to_quarantine.json
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_s3_attachment" {
+resource "aws_iam_role_policy_attachment" "ecs_quarantine_s3_attachment" {
   role       = var.webapp_task_execution_role_name
   policy_arn = aws_iam_policy.upload_to_quarantine.arn
 }
