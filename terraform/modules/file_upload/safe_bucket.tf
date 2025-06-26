@@ -1,20 +1,20 @@
-module "safe_bucket" {
+module "uploaded_files_bucket" {
   source                             = "../s3_bucket"
-  bucket_name                        = "prsdb-safe-${var.environment_name}"
-  access_log_bucket_name             = "prsdb-safe-access-logs-${var.environment_name}"
+  bucket_name                        = "prsdb-uploaded-files-${var.environment_name}"
+  access_log_bucket_name             = "prsdb-uploaded-files-access-logs-${var.environment_name}"
   noncurrent_version_expiration_days = 700
   access_s3_log_expiration_days      = 700
-  kms_key_arn                        = aws_kms_key.safe_bucket_encryption_key.arn
+  kms_key_arn                        = aws_kms_key.uploaded_files_bucket_encryption_key.arn
 }
 
-resource "aws_kms_key" "safe_bucket_encryption_key" {
+resource "aws_kms_key" "uploaded_files_bucket_encryption_key" {
   description         = "Safe bucket encryption key"
   enable_key_rotation = true
 }
 
-resource "aws_kms_alias" "safe_bucket_encryption_key" {
-  name          = "alias/safe-encryption-${var.environment_name}"
-  target_key_id = aws_kms_key.safe_bucket_encryption_key.key_id
+resource "aws_kms_alias" "uploaded_files_bucket_encryption_key" {
+  name          = "alias/uploaded-files-encryption-${var.environment_name}"
+  target_key_id = aws_kms_key.uploaded_files_bucket_encryption_key.key_id
 }
 
 # tfsec:ignore:aws-iam-no-policy-wildcards
@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "upload_to_safe" {
       "s3:PutObject",
     ]
     resources = [
-      "${module.safe_bucket.bucket_arn}/*",
+      "${module.uploaded_files_bucket.bucket_arn}/*",
     ]
   }
 
@@ -38,7 +38,7 @@ data "aws_iam_policy_document" "upload_to_safe" {
       "kms:Decrypt",
     ]
     resources = [
-      aws_kms_key.safe_bucket_encryption_key.arn
+      aws_kms_key.uploaded_files_bucket_encryption_key.arn
     ]
   }
 }
@@ -48,7 +48,7 @@ resource "aws_iam_policy" "upload_to_safe" {
   policy = data.aws_iam_policy_document.upload_to_safe.json
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_safe_s3_attachment" {
+resource "aws_iam_role_policy_attachment" "ecs_uploaded_files_s3_attachment" {
   role       = data.aws_ecs_task_definition.webapp_task_definition.task_role_arn
   policy_arn = aws_iam_policy.upload_to_safe.arn
 }
