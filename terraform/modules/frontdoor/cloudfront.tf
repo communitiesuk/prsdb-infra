@@ -38,6 +38,10 @@ resource "aws_cloudfront_distribution" "main" {
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.main.id
     target_origin_id           = local.origin_id
     viewer_protocol_policy     = "redirect-to-https"
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.url_rewriter.arn
+    }
   }
 
   viewer_certificate {
@@ -109,4 +113,12 @@ resource "aws_cloudfront_origin_request_policy" "main" {
 resource "random_password" "cloudfront_header" {
   length  = 16
   special = false
+}
+
+resource "aws_cloudfront_function" "url_rewriter" {
+    name    = "url-rewriter"
+    runtime = "cloudfront-js-2.0"
+    comment = "Rewrites URLs to include the service line as the first path segment"
+    publish = true
+    code    = file("url_rewriter.js")
 }
