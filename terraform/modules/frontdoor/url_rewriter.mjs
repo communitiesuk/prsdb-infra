@@ -1,4 +1,4 @@
-function url_rewriter(event) {
+export function url_rewriter(event) {
     const exceptions = ["landlord", "local-authority", "sign-out", "error", "assets"];
     const request = event.request;
     let pathSegments = request.uri.split('/');

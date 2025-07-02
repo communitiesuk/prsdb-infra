@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "test": "node --test test/js/*.test.js"
+  },
+  "devDependencies": {
+    "babel-jest": "^30.0.2",
+    "babel-plugin-rewire": "^1.2.0"
+  }
+}

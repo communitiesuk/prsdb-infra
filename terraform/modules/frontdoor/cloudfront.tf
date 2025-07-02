@@ -120,5 +120,5 @@ resource "aws_cloudfront_function" "url_rewriter" {
   runtime = "cloudfront-js-2.0"
   comment = "Rewrites URLs to include the service line as the first path segment"
   publish = true
-  code    = file("${path.module}/url_rewriter.js")
+  code    = file("${path.module}/url_rewriter.mjs")
 }
