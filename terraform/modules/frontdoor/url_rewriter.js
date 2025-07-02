@@ -2,7 +2,15 @@ function url_rewriter(event) {
     const exceptions = ["landlord", "local-authority", "sign-out", "error", "assets"];
     const request = event.request;
     let pathSegments = request.uri.split('/');
-    const domainSegmentIndex = pathSegments.findIndex(segment => segment.includes(".gov.uk"));
+    let domainSegmentIndex;
+    try {
+        // Throws an error if ".gov.uk" is not found in the path segments - we expect this in the domain.
+        domainSegmentIndex = get_domain_segment_index(pathSegments)
+    } catch (error) {
+        // Logs the error and returns the request. If the error was uncaught, the client would see a 500 error.
+        console.log(`Error: ${error.message} for request URI: ${request.uri}`);
+        return request;
+    }
 
     pathSegments = remove_service_segment_if_invalid_for_domain(pathSegments, domainSegmentIndex);
 
@@ -34,4 +42,13 @@ function insert_service_segment_for_domain(pathSegments, domainSegmentIndex) {
         pathSegments.splice(domainSegmentIndex+1,0,"local-authority");
     }
     return pathSegments;
+}
+
+function get_domain_segment_index(pathSegments) {
+    const domainSegmentIndex = pathSegments.findIndex(segment => segment.includes(".gov.uk"));
+    if (domainSegmentIndex === -1) {
+        // If no domain segment is found, return the request as is
+        throw new Error(".gov.uk domain segment not found in the request URI");
+    }
+    return domainSegmentIndex;
 }
