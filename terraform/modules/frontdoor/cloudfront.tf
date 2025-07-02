@@ -38,10 +38,11 @@ resource "aws_cloudfront_distribution" "main" {
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.main.id
     target_origin_id           = local.origin_id
     viewer_protocol_policy     = "redirect-to-https"
-    function_association {
-      event_type   = "viewer-request"
-      function_arn = aws_cloudfront_function.url_rewriter.arn
-    }
+    # TODO PRSD-1294: Add this back in once url_rewriter has been tested
+    # function_association {
+    #  event_type   = "viewer-request"
+    #  function_arn = aws_cloudfront_function.url_rewriter.arn
+    # }
   }
 
   viewer_certificate {
