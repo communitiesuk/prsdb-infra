@@ -1,4 +1,4 @@
-export function url_rewriter(event) {
+function url_rewriter(event) {
     const exceptions = ["landlord", "local-authority", "sign-out", "error", "assets"];
     const request = event.request;
     let pathSegments = request.uri.split('/');
@@ -52,3 +52,5 @@ function get_domain_segment_index(pathSegments) {
     }
     return domainSegmentIndex;
 }
+
+url_rewriter;
