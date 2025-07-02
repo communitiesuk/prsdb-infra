@@ -117,9 +117,9 @@ resource "random_password" "cloudfront_header" {
 }
 
 resource "aws_cloudfront_function" "url_rewriter" {
-    name    = "url-rewriter"
-    runtime = "cloudfront-js-2.0"
-    comment = "Rewrites URLs to include the service line as the first path segment"
-    publish = true
-    code    = file("url_rewriter.js")
+  name    = "url-rewriter"
+  runtime = "cloudfront-js-2.0"
+  comment = "Rewrites URLs to include the service line as the first path segment"
+  publish = true
+  code    = file("${path.module}/url_rewriter.js")
 }
