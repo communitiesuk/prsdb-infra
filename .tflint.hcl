@@ -24,10 +24,6 @@ rule "terraform_unused_required_providers" {
   enabled = true
 }
 
-rule "aws_cloudfront_function_invalid_runtime" {
-  enabled = false
-}
-
 config {
   call_module_type = "all"
 }
