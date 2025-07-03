@@ -28,7 +28,8 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
   input_transformer {
     input_paths = {
       "scanResultStatus" = "$.detail.scanResultDetails.scanResultStatus",
-      "s3ObjectKey"      = "$.detail.s3ObjectDetails.objectKey"
+      "s3ObjectKey"      = "$.detail.s3ObjectDetails.objectKey",
+      "s3BucketName"     = "$.detail.s3ObjectDetails.bucketName"
     }
     input_template = <<INPUT_TEMPLATE
 {
@@ -38,7 +39,7 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
       "environment": [
         {
           "name": "SPRING_PROFILES_ACTIVE",
-          "value": "web-server-deactivated,example-scan-processor"
+          "value": "web-server-deactivated,scan-processor"
         },
         {
           "name": "SCAN_RESULT_STATUS",
@@ -47,6 +48,10 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
         {
           "name": "S3_OBJECT_KEY",
           "value": <s3ObjectKey>
+        },
+        {
+          "name": "S3_QUARANTINE_BUCKET_KEY",
+          "value": <s3BucketName>
         }
       ]
     }
