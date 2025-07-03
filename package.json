@@ -1,8 +1,14 @@
 {
   "scripts": {
-    "test": "node --test test/js/**/*.test.js"
+    "test": "jest"
+  },
+  "jest": {
+    "testMatch": ["**/test/js/**/*.test.js"]
   },
   "dependencies": {
     "rewire": "^8.0.0"
+  },
+  "devDependencies": {
+    "jest": "^30.0.4"
   }
 }
