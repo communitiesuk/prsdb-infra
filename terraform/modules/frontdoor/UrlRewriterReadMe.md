@@ -2,7 +2,9 @@
 
 url_writer is a cloudfront function that inserts a service path segment (i.e. `/landlord` or `/local-authority`) into the request URL.
 
-We do not currently have automated testing, but the function can be tested on AWS Console (see [documentation here](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/test-function.html))
+We now have unit tests for this function.
+
+The function can also be manually tested on AWS Console (see [documentation here](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/test-function.html)). This gives an indication of whether the function is fast enough (the "compute utilisation" output should be below 50 to be safe) 
 
 ## Suggested URIs to check and their expected results
 
