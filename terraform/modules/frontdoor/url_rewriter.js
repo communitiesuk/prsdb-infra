@@ -1,7 +1,8 @@
 function url_rewriter(event) {
-    const exceptions = ["landlord", "local-authority", "signout","confirm-sign-out", "error", "assets"];
+    const exceptions = ["signout","confirm-sign-out", "error", "assets"];
     const request = event.request;
     let pathSegments = request.uri.split('/');
+
     let domainSegmentIndex;
     try {
         // Throws an error if ".gov.uk" is not found in the path segments - we expect this in the domain.
@@ -12,8 +13,7 @@ function url_rewriter(event) {
         return request;
     }
 
-    if (exceptions.includes(pathSegments[domainSegmentIndex+1])) {
-        // If the first segment after the domain is one of the excluded paths, return the original request.
+    if (!url_should_be_rewritten(pathSegments, domainSegmentIndex, exceptions)) {
         return request;
     }
 
@@ -41,4 +41,10 @@ function get_domain_segment_index(pathSegments) {
         throw new Error(".gov.uk domain segment not found in the request URI");
     }
     return domainSegmentIndex;
+}
+
+function url_should_be_rewritten(pathSegments, domainSegmentIndex, exceptions) {
+    return !(exceptions.includes(pathSegments[domainSegmentIndex + 1]) ||
+        (pathSegments[domainSegmentIndex].includes("register-home-to-rent") && pathSegments[domainSegmentIndex + 1] === "landlord") ||
+        (pathSegments[domainSegmentIndex].includes("search-landlord-home-information") && pathSegments[domainSegmentIndex + 1] === "local-authority"));
 }
