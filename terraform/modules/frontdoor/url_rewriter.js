@@ -52,5 +52,3 @@ function get_domain_segment_index(pathSegments) {
     }
     return domainSegmentIndex;
 }
-
-url_rewriter;
