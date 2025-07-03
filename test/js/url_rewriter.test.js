@@ -147,7 +147,7 @@ describe('url_rewriter', () => {
             expect(new_uri).toBe('https://register-home-to-rent.communities.gov.uk/landlord/dashboard');
         });
 
-        it('replaces /local-authority with /landlord as the first path segment after the domain', () => {
+        it('inserts /landlord into a URL where the first path segment is /local-authority', () => {
             // given
             const event = {
                 request: {
@@ -160,7 +160,7 @@ describe('url_rewriter', () => {
             const new_uri = url_rewriter(event).uri;
 
             // then
-            expect(new_uri).toBe('https://register-home-to-rent.communities.gov.uk/landlord/dashboard');
+            expect(new_uri).toBe('https://register-home-to-rent.communities.gov.uk/landlord/local-authority/dashboard');
         });
     });
 
@@ -277,7 +277,7 @@ describe('url_rewriter', () => {
             expect(new_uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-authority/dashboard');
         });
 
-        it('replaces /landlord with /local-authority as the first path segment after the domain', () => {
+        it('inserts /local-authority into a URL where the first path segment is /landlord', () => {
             // given
             const event = {
                 request: {
@@ -290,7 +290,7 @@ describe('url_rewriter', () => {
             const new_uri = url_rewriter(event).uri;
 
             // then
-            expect(new_uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-authority/dashboard');
+            expect(new_uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-authority/landlord/dashboard');
         });
     });
 });
