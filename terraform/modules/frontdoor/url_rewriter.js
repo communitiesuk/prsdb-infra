@@ -12,8 +12,6 @@ function url_rewriter(event) {
         return request;
     }
 
-    pathSegments = remove_service_segment_if_invalid_for_domain(pathSegments, domainSegmentIndex);
-
     if (exceptions.includes(pathSegments[domainSegmentIndex+1])) {
         // If the first segment after the domain is one of the excluded paths, return the original request.
         return request;
@@ -23,14 +21,6 @@ function url_rewriter(event) {
 
     request.uri = pathSegments.join('/');
     return request
-}
-
-function remove_service_segment_if_invalid_for_domain(pathSegments, domainSegmentIndex) {
-    if ((pathSegments[domainSegmentIndex].includes("register-home-to-rent") && pathSegments[domainSegmentIndex+1] === "local-authority") ||
-        (pathSegments[domainSegmentIndex].includes("search-landlord-home-information") && pathSegments[domainSegmentIndex+1] === "landlord")) {
-        pathSegments.splice(domainSegmentIndex+1,1);
-    }
-    return pathSegments;
 }
 
 function insert_service_segment_for_domain(pathSegments, domainSegmentIndex) {
