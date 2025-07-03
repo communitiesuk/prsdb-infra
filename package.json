@@ -1,13 +1,8 @@
 {
   "scripts": {
-    "test": "node --test test/js/*.test.js"
-  },
-  "devDependencies": {
-    "babel-jest": "^30.0.2",
-    "babel-plugin-rewire": "^1.2.0"
+    "test": "node --test test/js/**/*.test.js"
   },
   "dependencies": {
-    "babel-core": "^6.26.3",
     "rewire": "^8.0.0"
   }
 }
