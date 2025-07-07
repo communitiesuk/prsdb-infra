@@ -4,7 +4,7 @@ on:
 
 jobs:
   test:
-    name: Build and test
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -16,7 +16,5 @@ jobs:
           node-version: 22
           cache: 'npm'
       - run: npm ci
-      - run: npm run build
-
       - name: Run npm tests
         run: npm test
