@@ -140,3 +140,7 @@ jobs:
       - name: Terraform plan
         run: terraform plan -input=false -refresh=false -lock=false
         working-directory: terraform/${{ inputs.environment }}
+
+  test-javascript:
+    name: Test JavaScript
+    uses: ./.github/workflows/test-javascript.yml
