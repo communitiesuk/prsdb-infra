@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testMatch": ["**/test/js/**/*.test.js"]
+  },
+  "devDependencies": {
+    "jest": "^30.0.4",
+    "rewire": "^8.0.0"
+  }
+}
