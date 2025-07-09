@@ -23,6 +23,9 @@ data "aws_iam_policy_document" "upload_to_quarantine" {
     sid = "QuarantineS3"
     actions = [
       "s3:PutObject",
+      "s3:GetObject",
+      "s3:GetObjectTagging",
+      "s3:DeleteObject",
     ]
     resources = [
       "${module.quarantine_bucket.bucket_arn}/*",

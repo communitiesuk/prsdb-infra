@@ -23,6 +23,7 @@ data "aws_iam_policy_document" "upload_to_safe" {
     sid = "SafeS3"
     actions = [
       "s3:PutObject",
+      "s3:PutObjectTagging",
     ]
     resources = [
       "${module.uploaded_files_bucket.bucket_arn}/*",
