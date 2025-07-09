@@ -58,6 +58,10 @@ data "aws_ssm_parameter" "quarantine_bucket" {
   name = "${local.environment_name}-prsdb-quarantine-bucket"
 }
 
+data "aws_ssm_parameter" "safe_bucket" {
+  name = "${local.environment_name}-prsdb-uploaded-files"
+}
+
 data "aws_secretsmanager_secret" "epc_client_secret" {
   name = "tf-${local.environment_name}-prsdb-epc-client-secret"
 }

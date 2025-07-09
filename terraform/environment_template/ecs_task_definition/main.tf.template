@@ -64,6 +64,10 @@ locals {
       value = data.aws_ssm_parameter.quarantine_bucket.value
     },
     {
+      name  = "AWS_SAFE_BUCKET"
+      value = data.aws_ssm_parameter.safe_bucket.value
+    },
+    {
       name  = "EPC_REGISTER_CLIENT_ID"
       value = data.aws_ssm_parameter.epc_client_id.value
     },
