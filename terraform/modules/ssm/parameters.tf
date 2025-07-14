@@ -69,3 +69,23 @@ resource "aws_ssm_parameter" "epc_certificate_base_url" {
     ignore_changes = [value]
   }
 }
+
+resource "aws_ssm_parameter" "landlord_base_url" {
+  name  = "${var.environment_name}-prsdb-landlord-base-url"
+  type  = "String"
+  value = var.landlord_base_url
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "local_authority_base_url" {
+  name  = "${var.environment_name}-prsdb-local-authority-base-url"
+  type  = "String"
+  value = var.local_authority_base_url
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}

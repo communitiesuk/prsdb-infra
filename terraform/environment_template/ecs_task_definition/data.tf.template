@@ -81,3 +81,11 @@ data "aws_ssm_parameter" "epc_base_url" {
 data "aws_ssm_parameter" "epc_certificate_base_url" {
   name = "${local.environment_name}-prsdb-epc-certificate-base-url"
 }
+
+data "aws_ssm_parameter" "landlord_base_url" {
+  name = "${local.environment_name}-prsdb-landlord-base-url"
+}
+
+data "aws_ssm_parameter" "local_authority_base_url" {
+  name = "${local.environment_name}-prsdb-local-authority-base-url"
+}

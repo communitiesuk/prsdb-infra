@@ -83,6 +83,14 @@ locals {
       name  = "EPC_CERTIFICATE_BASE_URL"
       value = data.aws_ssm_parameter.epc_certificate_base_url.value
     },
+    {
+      name  = "LANDLORD_BASE_URL"
+      value = data.aws_ssm_parameter.landlord_base_url.value
+    },
+    {
+      name  = "LOCAL_AUTHORITY_BASE_URL"
+      value = data.aws_ssm_parameter.local_authority_base_url.value
+    }
   ]
   secrets = [
     {
