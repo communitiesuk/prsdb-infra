@@ -114,17 +114,6 @@ describe('url_rewriter', () => {
             expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/id-verification');
         });
 
-        it('returns the original url for the /login endpoint', () => {
-            // given
-            const event = createRequestEvent(registerHomeToRentHost, '/login');
-
-            // when
-            const new_event = url_rewriter(event);
-
-            // then
-            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/login');
-        });
-
         it('returns the original url for the /logout endpoint', () => {
             // given
             const event = createRequestEvent(registerHomeToRentHost, '/logout');
@@ -145,6 +134,17 @@ describe('url_rewriter', () => {
 
             // then
             expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/oauth2');
+        });
+
+        it('returns the original url for the /healthcheck endpoint', () => {
+            // given
+            const event = createRequestEvent(registerHomeToRentHost, '/healthcheck');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/healthcheck');
         });
     });
 
@@ -249,17 +249,6 @@ describe('url_rewriter', () => {
             expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/id-verification');
         });
 
-        it('returns the original url for the /login endpoint', () => {
-            // given
-            const event = createRequestEvent(searchLandlordHomeInformationHost, '/login');
-
-            // when
-            const new_event = url_rewriter(event);
-
-            // then
-            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/login');
-        });
-
         it('returns the original url for the /logout endpoint', () => {
             // given
             const event = createRequestEvent(searchLandlordHomeInformationHost, '/logout');
@@ -280,6 +269,17 @@ describe('url_rewriter', () => {
 
             // then
             expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/oauth2');
+        });
+
+        it('returns the original url for the /healthcheck endpoint', () => {
+            // given
+            const event = createRequestEvent(searchLandlordHomeInformationHost, '/healthcheck');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/healthcheck');
         });
     });
 });
