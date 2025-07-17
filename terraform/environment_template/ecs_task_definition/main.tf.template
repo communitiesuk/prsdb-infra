@@ -64,6 +64,10 @@ locals {
       value = data.aws_ssm_parameter.quarantine_bucket.value
     },
     {
+      name  = "AWS_SAFE_BUCKET"
+      value = data.aws_ssm_parameter.safe_bucket.value
+    },
+    {
       name  = "EPC_REGISTER_CLIENT_ID"
       value = data.aws_ssm_parameter.epc_client_id.value
     },
@@ -79,6 +83,14 @@ locals {
       name  = "EPC_CERTIFICATE_BASE_URL"
       value = data.aws_ssm_parameter.epc_certificate_base_url.value
     },
+    {
+      name = "LANDLORD_BASE_URL"
+      value = data.aws_ssm_parameter.landlord_base_url.value
+    },
+    {
+      name = "LOCAL_AUTHORITY_BASE_URL"
+      value = data.aws_ssm_parameter.local_authority_base_url.value
+    }
   ]
   secrets = [
     {

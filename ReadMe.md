@@ -135,6 +135,11 @@ The terraform will applied when your PR is merged.
 
 If there are problems, it may be necessary to make updates manually from the terminal using `terrform apply`, but we should aim to apply terraform via the git pipeline where possible.
 
+### Running tests
+We have javascript testing setup, initially this is for testing cloudfront functions.
+
+Tests can be run using the "npm test" command from the root of the repository.
+
 ## Setting up a new environment from scratch
 
 In order to interact with the environment in an AWS account you will need make sure you have a developer profile set up

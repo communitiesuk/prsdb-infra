@@ -58,6 +58,10 @@ data "aws_ssm_parameter" "quarantine_bucket" {
   name = "${local.environment_name}-prsdb-quarantine-bucket"
 }
 
+data "aws_ssm_parameter" "safe_bucket" {
+  name = "${local.environment_name}-prsdb-uploaded-files"
+}
+
 data "aws_secretsmanager_secret" "epc_client_secret" {
   name = "tf-${local.environment_name}-prsdb-epc-client-secret"
 }
@@ -76,4 +80,12 @@ data "aws_ssm_parameter" "epc_base_url" {
 
 data "aws_ssm_parameter" "epc_certificate_base_url" {
   name = "${local.environment_name}-prsdb-epc-certificate-base-url"
+}
+
+data "aws_ssm_parameter" "landlord_base_url" {
+  name = "${local.environment_name}-prsdb-landlord-base-url"
+}
+
+data "aws_ssm_parameter" "local_authority_base_url" {
+  name = "${local.environment_name}-prsdb-local-authority-base-url"
 }
