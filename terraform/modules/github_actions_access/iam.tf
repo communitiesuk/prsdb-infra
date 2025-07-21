@@ -214,10 +214,28 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
   }
 }
 
+data "aws_iam_policy_document" "update_ecs_service" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecs:UpdateService",
+    ]
+    resources = [
+      "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:service/${var.environment_name}-app/${var.environment_name}-app"
+    ]
+  }
+}
+
 resource "aws_iam_policy" "ssm_port_forwarding" {
   name        = "${var.environment_name}-ssm-port-forwarding"
   description = "Policy that allows SSM port forwarding for RDS access"
   policy      = data.aws_iam_policy_document.ssm_port_forwarding.json
+}
+
+resource "aws_iam_policy" "update_ecs_service" {
+  name        = "${var.environment_name}-update-ecs-service"
+  description = "Policy that allows updating ECS service"
+  policy      = data.aws_iam_policy_document.update_ecs_service.json
 }
 
 resource "aws_iam_role" "rds_access" {
@@ -228,5 +246,10 @@ resource "aws_iam_role" "rds_access" {
 resource "aws_iam_role_policy_attachment" "allow_rds_access_policy_attachment" {
   role       = aws_iam_role.rds_access.name
   policy_arn = aws_iam_policy.ssm_port_forwarding.arn
+}
+
+resource "aws_iam_role_policy_attachment" "allow_update_ecs_service_policy_attachment" {
+  role       = aws_iam_role.rds_access.name
+  policy_arn = aws_iam_policy.update_ecs_service.arn
 }
 
