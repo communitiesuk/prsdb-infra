@@ -124,6 +124,9 @@ module "github_actions_access" {
   db_password_secret_arn        = module.secrets.database_password_secret_arn
   secrets_kms_key_arn           = module.secrets.secrets_kms_key_arn
   bastion_host_arns             = module.bastion.bastion_instance_arns
+  ecs_service_arn               = module.ecs_service[0].ecs_service_arn
+  ecs_task_execution_role_arn   = module.ecr.ecs_task_execution_role_arn
+  webapp_ecs_task_role_arn      = module.ecr.webapp_ecs_task_role_arn
 }
 
 module "secrets" {
