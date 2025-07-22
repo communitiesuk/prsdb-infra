@@ -42,3 +42,13 @@ variable "ecs_service_arn" {
   description = "ARN of the ECS service to restart"
   type        = string
 }
+
+variable "ecs_task_execution_role_arn" {
+  description = "ARN of role used by ECS to execute tasks from the ecr repository"
+  type        = string
+}
+
+variable "webapp_ecs_task_role_arn" {
+  description = "ARN of role used by the webapp ECS task definition"
+  type        = string
+}

@@ -222,6 +222,14 @@ data "aws_iam_policy_document" "update_ecs_service" {
     ]
     resources = [var.ecs_service_arn]
   }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "iam:PassRole",
+    ]
+    resources = [var.ecs_task_execution_role_arn, var.webapp_ecs_task_role_arn]
+  }
 }
 
 resource "aws_iam_policy" "ssm_port_forwarding" {
