@@ -37,3 +37,8 @@ variable "bastion_host_arns" {
   type        = list(string)
   default     = []
 }
+
+variable "ecs_service_arn" {
+  description = "ARN of the ECS service to restart"
+  type        = string
+}

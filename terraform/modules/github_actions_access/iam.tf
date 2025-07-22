@@ -220,9 +220,7 @@ data "aws_iam_policy_document" "update_ecs_service" {
     actions = [
       "ecs:UpdateService",
     ]
-    resources = [
-      "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:service/${var.environment_name}-app/${var.environment_name}-app"
-    ]
+    resources = [var.ecs_service_arn]
   }
 }
 
