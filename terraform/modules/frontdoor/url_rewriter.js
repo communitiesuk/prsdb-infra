@@ -1,5 +1,5 @@
 function handler(event) {
-    const exceptions = ["signout","confirm-sign-out", "error", "assets", "id-verification", "logout", "oauth2", "healthcheck"];
+    const exceptions = ["signout","confirm-sign-out", "error", "assets", "id-verification", "logout", "oauth2", "healthcheck", "cookies"];
     const request = event.request;
     const hostName = request.headers.host.value;
     let pathSegments = request.uri.split('/');

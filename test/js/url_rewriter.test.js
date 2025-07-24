@@ -146,6 +146,17 @@ describe('url_rewriter', () => {
             // then
             expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/healthcheck');
         });
+
+        it('returns the original url for the /cookies endpoint', () => {
+            // given
+            const event = createRequestEvent(registerHomeToRentHost, '/cookies');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/cookies');
+        });
     });
 
     describe('for the search-landlord-home-information domain', () => {
@@ -280,6 +291,17 @@ describe('url_rewriter', () => {
 
             // then
             expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/healthcheck');
+        });
+
+        it('returns the original url for the /cookies endpoint', () => {
+            // given
+            const event = createRequestEvent(searchLandlordHomeInformationHost, '/cookies');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/cookies');
         });
     });
 });
