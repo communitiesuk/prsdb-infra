@@ -64,7 +64,7 @@ locals {
       value = data.aws_ssm_parameter.quarantine_bucket.value
     },
     {
-      name  = "AWS_SAFE_BUCKET"
+      name  = "S3_SAFE_BUCKET_KEY"
       value = data.aws_ssm_parameter.safe_bucket.value
     },
     {
