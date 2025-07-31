@@ -27,9 +27,11 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
   }
   input_transformer {
     input_paths = {
-      "scanResultStatus" = "$.detail.scanResultDetails.scanResultStatus",
-      "s3ObjectKey"      = "$.detail.s3ObjectDetails.objectKey",
-      "s3BucketName"     = "$.detail.s3ObjectDetails.bucketName"
+      "scanResultStatus"  = "$.detail.scanResultDetails.scanResultStatus",
+      "s3ObjectKey"       = "$.detail.s3ObjectDetails.objectKey",
+      "s3BucketName"      = "$.detail.s3ObjectDetails.bucketName",
+      "s3ObjectEtag"      = "$.detail.s3ObjectDetails.eTag",
+      "s3ObjectVersionId" = "$.detail.s3ObjectDetails.versionId"
     }
     input_template = <<INPUT_TEMPLATE
 {
@@ -52,6 +54,14 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
         {
           "name": "S3_QUARANTINE_BUCKET_KEY",
           "value": <s3BucketName>
+        },
+        {
+          "name": "S3_OBJECT_ETAG",
+          "value": <s3ObjectEtag>
+        },
+        {
+          "name": "S3_OBJECT_VERSION_ID",
+          "value": <s3ObjectVersionId>
         }
       ]
     }
