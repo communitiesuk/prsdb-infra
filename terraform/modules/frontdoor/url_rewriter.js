@@ -20,7 +20,7 @@ function insert_service_segment_for_domain(pathSegments, hostName) {
     }
 
     if (hostName.includes("search-landlord-home-information")) {
-        pathSegments.splice(1,0,"local-authority");
+        pathSegments.splice(1,0,"local-council");
     }
     return pathSegments;
 }
@@ -28,5 +28,5 @@ function insert_service_segment_for_domain(pathSegments, hostName) {
 function url_should_be_rewritten(pathSegments, hostName, exceptions) {
     return !(exceptions.includes(pathSegments[1]) ||
         (hostName.includes("register-home-to-rent") && pathSegments[1] === "landlord") ||
-        (hostName.includes("search-landlord-home-information") && pathSegments[1] === "local-authority"));
+        (hostName.includes("search-landlord-home-information") && pathSegments[1] === "local-council"));
 }

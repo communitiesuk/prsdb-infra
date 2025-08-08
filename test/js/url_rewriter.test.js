@@ -48,15 +48,15 @@ describe('url_rewriter', () => {
 
         })
 
-        it('inserts /landlord into a URL where the first path segment is /local-authority', () => {
+        it('inserts /landlord into a URL where the first path segment is /local-council', () => {
             // given
-            const event = createRequestEvent(registerHomeToRentHost, '/local-authority/dashboard');
+            const event = createRequestEvent(registerHomeToRentHost, '/local-council/dashboard');
 
             // when
             const new_event = url_rewriter(event);
 
             // then
-            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/landlord/local-authority/dashboard');
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/landlord/local-council/dashboard');
         });
 
         it('returns the original url for the /signout endpoint', () => {
@@ -160,7 +160,7 @@ describe('url_rewriter', () => {
     });
 
     describe('for the search-landlord-home-information domain', () => {
-        it('inserts /local-authority into the dashboard URL', () => {
+        it('inserts /local-council into the dashboard URL', () => {
             // given
             const event = createRequestEvent(searchLandlordHomeInformationHost, '/dashboard');
 
@@ -168,33 +168,33 @@ describe('url_rewriter', () => {
             const new_event = url_rewriter(event);
 
             // then
-            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-authority/dashboard');
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-council/dashboard');
         });
 
-        it('returns the original url if the first path segment after the domain is already /local-authority', () => {
+        it('returns the original url if the first path segment after the domain is already /local-council', () => {
             // given
-            const event = createRequestEvent(searchLandlordHomeInformationHost, '/local-authority/dashboard');
+            const event = createRequestEvent(searchLandlordHomeInformationHost, '/local-council/dashboard');
 
             // when
             const new_event = url_rewriter(event);
 
             // then
-            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-authority/dashboard');
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-council/dashboard');
         });
 
-        it('inserts /local-authority into a URL which has a /local-authority segment, but not as the first path segment', () => {
+        it('inserts /local-council into a URL which has a /local-council segment, but not as the first path segment', () => {
             // given
-            const event = createRequestEvent(searchLandlordHomeInformationHost, '/dashboard/local-authority');
+            const event = createRequestEvent(searchLandlordHomeInformationHost, '/dashboard/local-council');
 
             // when
             const new_event = url_rewriter(event);
 
             // then
-            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-authority/dashboard/local-authority');
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-council/dashboard/local-council');
 
         })
 
-        it('inserts /local-authority into a URL where the first path segment is /landlord', () => {
+        it('inserts /local-council into a URL where the first path segment is /landlord', () => {
             // given
             const event = createRequestEvent(searchLandlordHomeInformationHost, '/landlord/dashboard');
 
@@ -202,7 +202,7 @@ describe('url_rewriter', () => {
             const new_event = url_rewriter(event);
 
             // then
-            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-authority/landlord/dashboard');
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/local-council/landlord/dashboard');
         });
 
         it('returns the original url for the /signout endpoint', () => {
