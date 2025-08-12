@@ -89,3 +89,15 @@ data "aws_ssm_parameter" "landlord_base_url" {
 data "aws_ssm_parameter" "local_authority_base_url" {
   name = "${local.environment_name}-prsdb-local-authority-base-url"
 }
+
+data "aws_ssm_parameter" "plausible_analytics_domain_id" {
+  name = "${local.environment_name}-prsdb-plausible-analytics-domain-id"
+}
+
+data "aws_ssm_parameter" "google_analytics_measurement_id" {
+  name = "${local.environment_name}-prsdb-google-analytics-measurement-id"
+}
+
+data "aws_ssm_parameter" "google_analytics_cookie_domain" {
+  name = "${local.environment_name}-prsdb-google-analytics-cookie-domain"
+}
