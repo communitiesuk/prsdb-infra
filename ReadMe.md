@@ -157,13 +157,13 @@ You can use `aws-vault` to create a terminal session with the appropriate creden
 
 ### Setting up the environment folder
 
-- In your new `terraform/<environment name>` folder, you can now also remove the `.template` from the end of all of the filenames, replace all instances of the string `<environment name>` with your actual environment name, and more generally look through `main.tf` for any sets of `<>` that require environment-specific input, e.g. the domains of any 3rd party integrations.
+- In your new `terraform/<environment name>` folder, you can now also remove the `.template` from the end of all of the filenames, replace all instances of the string `<environment name>` with your actual environment name, and more generally look through `main.tf` for any sets of `<>` that require environment-specific input, e.g. the list of allowed IP addresses.
 
 ### Setting up the initial networking and requesting the ssl certificates
 
 - Before we can create the environment as a whole, we must first create the initial networking infrastructure, and then request the DNS names and certificates from MHCLG.
 - One of the files in your new `terraform/<environment name>` folder will be `terraform.tfvars`. Check that this contains the line `ssl_certs_created = false`
-- Once this is done, `cd` into `terraform/<environment name>` and run `terraform init` followed by `terraform plan -target module.networking -target module.frontdoor`. If the output of the plan looks correct, run `terraform apply -target module.networking -target module.frontdoor` to bring up the networking and ECR repository for the new environment.
+- Once this is done, `cd` into `terraform/<environment name>` and run `terraform init` followed by `terraform plan -target module.networking -target module.frontdoor`. If the output of the plan looks correct, run `terraform apply -target module.networking -target module.frontdoor` to bring up the networking for the new environment.
 - Use the values in the terraform output to complete the request to MHCLG for changes to their DNS records
 
 ### Requesting DNS changes from MHCLG
@@ -223,12 +223,14 @@ Get the One-Login admin to add these for each of the cloudfront domains used abo
 - Terraform will create the webapp secrets and SSM parameters but (apart from those related to the database and Redis) will not populate them. Ask the team lead where you can find the appropriate values, and then populate them via the AWS console.
   - For Notify, this will involve creating a new API Key to use for the new environment.
 - To create the task definition, in `terraform/<environment name>/ecs_task_definition`, if you haven't already, remove the `.template` from the end of any file names in the folder, and replace all instances of the string `<environment name>` with your actual environment name.
+- In `terraform/<environment name>/ecs_task_definition/terraform.tfvars`, set the `file_upload_created` variable to `false`.
 - Next, cd into `terraform/<environment name>/ecs_task_definition` and run `terraform init` followed by `terraform plan`. This should show you one resource being created - the task definition. If the output looks correct, run `terraform apply`.
 
 ### Setting up the rest of the environment
 
 - In `terraform.tfvars` set `ssl_certs_created` to `true` and `task_definition_created` to `true`.
 - Then run `terraform plan`. If the output looks correct, run `terraform apply` to bring up the environment.
+- Finally, in `terrafrom/<environment name>/ecs_task_definition`, set the `file_upload_created` variable to `true`, and run `terraform plan` followed by `terraform apply` to update the environment variables in the task definition.
 
 ## tfsec
 

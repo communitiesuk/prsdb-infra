@@ -1,10 +1,28 @@
-[profile mhclg]
-mfa_serial=<your-mfa-serial>
-region=eu-west-2
-output=json
+[sso-session mhclg-sso]
+sso_start_url = <MHCLG aws start url>
+sso_region = eu-west-2
+sso_registration_scopes = sso:account:access
 
 [profile mhclg-int]
-source_profile=mhclg
-mfa_serial=<your-mfa-serial>
-region=eu-west-2
-role_arn=arn:aws:iam::794038239680:role/developer
+sso_session = mhclg-sso
+sso_account_id = <int account id>
+sso_role_name = developer_role
+region = eu-west-2
+
+[profile mhclg-test]
+sso_session = mhclg-sso
+sso_account_id = <test account id>
+sso_role_name = developer_role
+region = eu-west-2
+
+[profile mhclg-staging]
+sso_session = mhclg-sso
+sso_account_id = <staging account id>
+sso_role_name = developer_role
+region = eu-west-2
+
+[profile mhclg-prod]
+sso_session = mhclg-sso
+sso_account_id = <prod account id>
+sso_role_name = developer_role
+region = eu-west-2

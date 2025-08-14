@@ -55,10 +55,12 @@ data "aws_secretsmanager_secret" "os_places_api_key" {
 }
 
 data "aws_ssm_parameter" "quarantine_bucket" {
+  count = var.file_upload_buckets_created ? 1 : 0
   name = "${local.environment_name}-prsdb-quarantine-bucket"
 }
 
 data "aws_ssm_parameter" "safe_bucket" {
+  count = var.file_upload_buckets_created ? 1 : 0
   name = "${local.environment_name}-prsdb-uploaded-files"
 }
 

@@ -1,8 +1,8 @@
 variable "environment_name" {
-  description = "must be one of: integration, test"
+  description = "must be one of: integration, test, nft, or production"
   type        = string
   validation {
-    condition     = contains(["integration", "test"], var.environment_name)
+    condition     = contains(["integration", "test", "nft", "production"], var.environment_name)
     error_message = "Environment must be one of: integration, test"
   }
 }
@@ -51,4 +51,10 @@ variable "ecs_task_execution_role_arn" {
 variable "webapp_ecs_task_role_arn" {
   description = "ARN of role used by the webapp ECS task definition"
   type        = string
+}
+
+variable "task_definition_created" {
+  description = "Boolean indicating if the ECS task definition has been created"
+  type        = bool
+  default     = true
 }

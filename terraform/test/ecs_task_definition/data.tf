@@ -55,11 +55,13 @@ data "aws_secretsmanager_secret" "os_places_api_key" {
 }
 
 data "aws_ssm_parameter" "quarantine_bucket" {
-  name = "${local.environment_name}-prsdb-quarantine-bucket"
+  count = var.file_upload_buckets_created ? 1 : 0
+  name  = "${local.environment_name}-prsdb-quarantine-bucket"
 }
 
 data "aws_ssm_parameter" "safe_bucket" {
-  name = "${local.environment_name}-prsdb-uploaded-files"
+  count = var.file_upload_buckets_created ? 1 : 0
+  name  = "${local.environment_name}-prsdb-uploaded-files"
 }
 
 data "aws_secretsmanager_secret" "epc_client_secret" {

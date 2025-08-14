@@ -9,16 +9,16 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "prsdb-tfstate-test"
-    dynamodb_table = "tfstate-lock-test"
+    bucket         = "prsdb-tfstate-production"
+    dynamodb_table = "tfstate-lock-production"
     encrypt        = true
-    key            = "prsdb-infra-test-task-definition"
+    key            = "prsdb-infra-production-task-definition"
     region         = "eu-west-2"
   }
 }
 
 locals {
-  environment_name = "test"
+  environment_name = "production"
 }
 
 provider "aws" {
@@ -107,10 +107,6 @@ locals {
       name  = "SPRING_PROFILES_ACTIVE"
       value = "default,require-passcode"
     },
-    {
-      name  = "EMAILNOTIFICATIONS_USE_PRODUCTION_NOTIFY"
-      value = contains(["production"], local.environment_name) ? "true" : "false"
-    },
   ]
   secrets = [
     {
@@ -147,10 +143,9 @@ module "webapp_ecs_task_definition" {
   container_port              = 8080
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
-  # TODO: consider what our requirements are for the instance
-  task_cpu              = 512
-  task_memory           = 1024
-  task_name             = "prsdb-webapp"
-  environment_variables = local.environment_variables
-  secrets               = local.secrets
+  task_cpu                    = 2048
+  task_memory                 = 4096
+  task_name                   = "prsdb-webapp"
+  environment_variables       = local.environment_variables
+  secrets                     = local.secrets
 }
