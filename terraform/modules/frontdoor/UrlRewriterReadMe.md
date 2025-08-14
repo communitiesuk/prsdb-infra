@@ -1,6 +1,6 @@
 # URL Rewriter
 
-url_writer is a cloudfront function that inserts a service path segment (i.e. `/landlord` or `/local-authority`) into the request URL.
+url_writer is a cloudfront function that inserts a service path segment (i.e. `/landlord` or `/local-council`) into the request URL.
 
 ## Excluded endpoints
 Endpoints which are common between services such as `/error` and `/signout` are excluded from the rewriting, so do not include the service name.
