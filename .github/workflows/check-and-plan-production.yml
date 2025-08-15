@@ -1,0 +1,13 @@
+name: Check and Plan - Production
+on:
+  pull_request:
+    branches:
+      - production
+
+jobs:
+  check-and-plan:
+    name: Check and Plan
+    uses: ./.github/workflows/check-and-plan.yml
+    with:
+      environment: production
+      aws-account-id: 879161327637

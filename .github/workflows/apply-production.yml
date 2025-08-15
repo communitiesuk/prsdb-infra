@@ -1,0 +1,14 @@
+name: Apply - Production
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  apply:
+    name: Apply
+    uses: ./.github/workflows/apply.yml
+    with:
+      environment: production
+      aws-account-id: 879161327637
+    secrets: inherit
