@@ -107,6 +107,10 @@ locals {
       name  = "SPRING_PROFILES_ACTIVE"
       value = "require-passcode"
     },
+    {
+      name  = "EMAILNOTIFICATIONS_USE_PRODUCTION_NOTIFY"
+      value = data.aws_ssm_parameter.use_production_notify.value
+    },
   ]
   secrets = [
     {

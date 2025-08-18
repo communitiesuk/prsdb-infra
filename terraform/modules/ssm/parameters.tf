@@ -111,3 +111,13 @@ resource "aws_ssm_parameter" "google_analytics_cookie_domain" {
     ignore_changes = [value]
   }
 }
+
+resource "aws_ssm_parameter" "notify_use_production" {
+  name  = "${var.environment_name}-prsdb-notify-use-production"
+  type  = "String"
+  value = contains(["production"], var.environment_name) ? "true" : "false"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
