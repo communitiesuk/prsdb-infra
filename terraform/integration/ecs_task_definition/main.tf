@@ -103,6 +103,10 @@ locals {
       name  = "GOOGLE_ANALYTICS_COOKIE_DOMAIN"
       value = data.aws_ssm_parameter.google_analytics_cookie_domain.value
     },
+    {
+      name  = "SPRING_PROFILES_ACTIVE"
+      value = "require-passcode"
+    },
   ]
   secrets = [
     {
