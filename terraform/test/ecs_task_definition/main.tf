@@ -109,7 +109,7 @@ locals {
     },
     {
       name  = "EMAILNOTIFICATIONS_USE_PRODUCTION_NOTIFY"
-      value = data.aws_ssm_parameter.use_production_notify.value
+      value = contains(["production"], local.environment_name) ? "true" : "false"
     },
   ]
   secrets = [

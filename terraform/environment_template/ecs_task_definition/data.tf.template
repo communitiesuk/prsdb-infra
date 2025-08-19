@@ -101,7 +101,3 @@ data "aws_ssm_parameter" "google_analytics_measurement_id" {
 data "aws_ssm_parameter" "google_analytics_cookie_domain" {
   name = "${local.environment_name}-prsdb-google-analytics-cookie-domain"
 }
-
-data "aws_ssm_parameter" "use_production_notify" {
-  name = "${local.environment_name}-prsdb-notify-use-production"
-}
