@@ -211,3 +211,11 @@ module "file_upload" {
   private_subnet_ids              = module.networking.private_subnets[*].id
   ecs_security_group_ids          = module.ecs_service[0].ecs_security_group_ids
 }
+
+module "monitoring" {
+  source = "../modules/monitoring"
+
+  environment_name               = local.environment_name
+  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
+  alarm_email_address            = var.alarm_slack_email_address
+}

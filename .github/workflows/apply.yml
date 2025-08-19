@@ -9,6 +9,10 @@ on:
         required: true
         type: string
 
+env:
+  TF_VAR_alarm_email_address: ${{ secrets.ALARMS_EMAIL }}
+
+
 jobs:
   validate-target-environment:
     name: Validate Target Environment
