@@ -215,6 +215,7 @@ data "aws_iam_policy_document" "ssm_port_forwarding" {
 }
 
 data "aws_iam_policy_document" "update_ecs_service" {
+  count = var.task_definition_created ? 1 : 0
   statement {
     effect = "Allow"
     actions = [
@@ -239,9 +240,10 @@ resource "aws_iam_policy" "ssm_port_forwarding" {
 }
 
 resource "aws_iam_policy" "update_ecs_service" {
+  count       = var.task_definition_created ? 1 : 0
   name        = "${var.environment_name}-update-ecs-service"
   description = "Policy that allows updating ECS service"
-  policy      = data.aws_iam_policy_document.update_ecs_service.json
+  policy      = data.aws_iam_policy_document.update_ecs_service[0].json
 }
 
 resource "aws_iam_role" "rds_access" {
@@ -255,7 +257,8 @@ resource "aws_iam_role_policy_attachment" "allow_rds_access_policy_attachment" {
 }
 
 resource "aws_iam_role_policy_attachment" "allow_update_ecs_service_policy_attachment" {
+  count      = var.task_definition_created ? 1 : 0
   role       = aws_iam_role.rds_access.name
-  policy_arn = aws_iam_policy.update_ecs_service.arn
+  policy_arn = aws_iam_policy.update_ecs_service[0].arn
 }
 
