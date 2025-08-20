@@ -124,9 +124,10 @@ module "github_actions_access" {
   db_password_secret_arn        = module.secrets.database_password_secret_arn
   secrets_kms_key_arn           = module.secrets.secrets_kms_key_arn
   bastion_host_arns             = module.bastion.bastion_instance_arns
-  ecs_service_arn               = module.ecs_service[0].ecs_service_arn
+  ecs_service_arn               = var.task_definition_created ? module.ecs_service[0].ecs_service_arn : ""
   ecs_task_execution_role_arn   = module.ecr.ecs_task_execution_role_arn
   webapp_ecs_task_role_arn      = module.ecr.webapp_ecs_task_role_arn
+  task_definition_created       = var.task_definition_created
 }
 
 module "secrets" {
@@ -201,7 +202,7 @@ module "ecs_service" {
   vpc_id                    = module.networking.vpc.id
 }
 
-# This should be updated to use `count = length(module.ecs_service)` and index via `module.ecs_service[0]`, but we don't want to recreate these items yet
+# This should be updated to use `count = var.task_definition_created ? 1 : 0` and index via `module.ecs_service[0]`, but we don't want to recreate these items yet
 module "file_upload" {
   source                          = "../modules/file_upload"
   environment_name                = local.environment_name

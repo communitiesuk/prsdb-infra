@@ -9,10 +9,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "prsdb-tfstate-test"
-    dynamodb_table = "tfstate-lock-test"
+    bucket         = "prsdb-tfstate-production"
+    dynamodb_table = "tfstate-lock-production"
     encrypt        = true
-    key            = "prsdb-infra-test"
+    key            = "prsdb-infra-production"
     region         = "eu-west-2"
   }
 }
@@ -27,18 +27,17 @@ provider "aws" {
 }
 
 locals {
-  environment_name = "test"
+  environment_name = "production"
   multi_az         = false
   application_port = 8080
   database_port    = 5432
   redis_port       = 6379
 
-  app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
-  search_landlord_host      = "${local.environment_name}.search-landlord-home-information.test.communities.gov.uk"
-  check_home_to_rent_host   = "${local.environment_name}.check-home-to-rent-registration.test.communities.gov.uk"
-  load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+  app_host                  = "register-home-to-rent.communities.gov.uk"
+  search_landlord_host      = "search-landlord-home-information.communities.gov.uk"
+  load_balancer_domain_name = "lb.register-home-to-rent.communities.gov.uk"
 
-  cloudwatch_log_expiration_days = 60
+  cloudwatch_log_expiration_days = 90
 }
 
 module "networking" {
@@ -66,9 +65,8 @@ module "frontdoor" {
   cloudfront_domain_names = [
     local.app_host,
     local.search_landlord_host,
-    local.check_home_to_rent_host
   ]
-  load_balancer_domain_name     = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+  load_balancer_domain_name     = local.load_balancer_domain_name
   cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
   load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
   ip_allowlist = [
@@ -99,11 +97,9 @@ module "certificates" {
   load_balancer_domain_name = local.load_balancer_domain_name
   cloudfront_additional_names = [
     local.search_landlord_host,
-    local.check_home_to_rent_host
   ]
   load_balancer_additional_names = [
-    "${local.environment_name}.lb.search-landlord-home-information.test.communities.gov.uk",
-    "${local.environment_name}.lb.check-home-to-rent-registration.test.communities.gov.uk"
+    "lb.search-landlord-home-information.communities.gov.uk",
   ]
 }
 
@@ -111,7 +107,7 @@ module "ecr" {
   source = "../modules/ecr"
 
   environment_name      = local.environment_name
-  image_retention_count = 3
+  image_retention_count = 10
 }
 
 module "github_actions_access" {
@@ -202,8 +198,8 @@ module "ecs_service" {
   vpc_id                    = module.networking.vpc.id
 }
 
-# This should be updated to use `count = var.task_definition_created ? 1 : 0` and index via `module.ecs_service[0]`, but we don't want to recreate these items yet
 module "file_upload" {
+  count                           = var.task_definition_created ? 1 : 0
   source                          = "../modules/file_upload"
   environment_name                = local.environment_name
   webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
