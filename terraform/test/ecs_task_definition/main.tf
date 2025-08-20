@@ -105,7 +105,7 @@ locals {
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = "default,require-passcode"
+      value = "default"
     },
     {
       name  = "EMAILNOTIFICATIONS_USE_PRODUCTION_NOTIFY"
