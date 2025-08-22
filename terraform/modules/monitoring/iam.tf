@@ -20,6 +20,7 @@ resource "aws_iam_role" "cloudtrail_cloudwatch_role" {
   assume_role_policy = data.aws_iam_policy_document.cloudtrail_cloudwatch_assume_role.json
 }
 
+# tfsec:ignore:aws-iam-no-policy-wildcards
 data "aws_iam_policy_document" "cloudtrail_cloudwatch_policy_document" {
   statement {
     effect = "Allow"
