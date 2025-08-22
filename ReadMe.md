@@ -222,6 +222,7 @@ Get the One-Login admin to add these for each of the cloudfront domains used abo
 - If the output of the plan looks correct, run `terraform apply` to create the pre-requisite resources.
 - Terraform will create the webapp secrets and SSM parameters but (apart from those related to the database and Redis) will not populate them. Ask the team lead where you can find the appropriate values, and then populate them via the AWS console.
   - For Notify, this will involve creating a new API Key to use for the new environment.
+  - You will also need to add a new environment secret in Github called `ALARMS_EMAIL` with the email address to use for alarms in the new environment.
 - To create the task definition, in `terraform/<environment name>/ecs_task_definition`, if you haven't already, remove the `.template` from the end of any file names in the folder, and replace all instances of the string `<environment name>` with your actual environment name.
 - In `terraform/<environment name>/ecs_task_definition/terraform.tfvars`, set the `file_upload_created` variable to `false`.
 - Next, cd into `terraform/<environment name>/ecs_task_definition` and run `terraform init` followed by `terraform plan`. This should show you one resource being created - the task definition. If the output looks correct, run `terraform apply`.

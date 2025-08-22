@@ -29,6 +29,8 @@ locals {
     "monitoring",
     "logs",
     "s3tables",
+    "cloudtrail",
+    "sns",
   ]
 }
 
