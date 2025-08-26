@@ -47,7 +47,7 @@ resource "aws_iam_role_policy_attachment" "cloudtrail_cloudwatch_policy_attachme
 }
 
 resource "aws_sns_topic_policy" "cloudwatch_to_alarm_sns" {
-  arn    = aws_sns_topic.alarm_sns_topic.id
+  arn    = aws_sns_topic.alarm_sns_topic.arn
   policy = data.aws_iam_policy_document.cloudwatch_to_sns_policy_document.json
 }
 
