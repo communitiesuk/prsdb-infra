@@ -10,8 +10,8 @@ variable "task_definition_created" {
   default     = true
 }
 
-variable "alarm_slack_email_address" {
-  description = "Email addresses to receive CloudWatch alarm notifications"
+variable "alarm_email_address" {
+  description = "Email address to receive CloudWatch alarm notifications"
   type        = string
   sensitive   = true
 }
