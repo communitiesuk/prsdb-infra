@@ -107,10 +107,10 @@ locals {
       name  = "GOOGLE_ANALYTICS_COOKIE_DOMAIN"
       value = data.aws_ssm_parameter.google_analytics_cookie_domain.value
     },
-    # {
-    #   name  = "SPRING_PROFILES_ACTIVE"
-    #   value = "default,require-passcode"
-    # }
+    {
+      name  = "SPRING_PROFILES_ACTIVE"
+      value = "default,require-passcode"
+    },
     {
       name  = "EMAILNOTIFICATIONS_USE_PRODUCTION_NOTIFY"
       value = contains(["production"], local.environment_name) ? "true" : "false"
