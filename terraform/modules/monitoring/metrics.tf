@@ -1,12 +1,12 @@
-resource "aws_cloudwatch_log_metric_filter" "console_login" {
+resource "aws_cloudwatch_log_metric_filter" "assume_role_with_saml" {
   log_group_name = module.cloudtrail_cloudwatch_group.name
-  name           = "console_login_${var.environment_name}"
+  name           = "assume_role_with_saml_${var.environment_name}"
   pattern        = <<EOT
-    {($.eventName = "ConsoleLogin") && ($.responseElements.ConsoleLogin = "Success")}
+    {($.eventName = "AssumeRoleWithSAML")}
   EOT
 
   metric_transformation {
-    name      = "console_login_${var.environment_name}"
+    name      = "assume_role_with_saml_${var.environment_name}"
     namespace = "prsd/${var.environment_name}/security"
     value     = "1"
   }
