@@ -1,9 +1,9 @@
-resource "aws_cloudwatch_metric_alarm" "console_login" {
-  alarm_name          = "console-login-${var.environment_name}"
-  alarm_description   = "Someone has logged in to the AWS console"
+resource "aws_cloudwatch_metric_alarm" "assume_role_with_saml" {
+  alarm_name          = "assume-role-with-saml-${var.environment_name}"
+  alarm_description   = "Someone has assumed an AWS role from AWS Console or from the command line using AWS Vault"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
-  metric_name         = aws_cloudwatch_log_metric_filter.console_login.name
+  metric_name         = aws_cloudwatch_log_metric_filter.assume_role_with_saml.name
   evaluation_periods  = 1
   period              = 60
   threshold           = 1
@@ -14,5 +14,3 @@ resource "aws_cloudwatch_metric_alarm" "console_login" {
     aws_sns_topic.alarm_sns_topic.arn,
   ]
 }
-
-
