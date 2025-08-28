@@ -107,3 +107,7 @@ data "aws_ssm_parameter" "google_analytics_measurement_id" {
 data "aws_ssm_parameter" "google_analytics_cookie_domain" {
   name = "${local.environment_name}-prsdb-google-analytics-cookie-domain"
 }
+
+data "aws_ssm_parameter" "beta_feedback_team_email_address" {
+  name = "${local.environment_name}-prsdb-beta-feedback-team-email-address"
+}
