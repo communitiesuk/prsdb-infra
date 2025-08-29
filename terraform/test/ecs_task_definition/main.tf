@@ -109,11 +109,15 @@ locals {
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = "default"
+      value = "default,require-passcode"
     },
     {
       name  = "EMAILNOTIFICATIONS_USE_PRODUCTION_NOTIFY"
       value = contains(["production"], local.environment_name) ? "true" : "false"
+    },
+    {
+      name  = "BETA_FEEDBACK_TEAM_EMAIL_ADDRESS"
+      value = data.aws_ssm_parameter.beta_feedback_team_email_address.value
     },
   ]
   secrets = [
