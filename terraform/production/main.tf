@@ -38,6 +38,21 @@ locals {
   load_balancer_domain_name = "lb.register-home-to-rent.communities.gov.uk"
 
   cloudwatch_log_expiration_days = 90
+
+  ip_allowlist = var.ip_restrictions_on ? [] : [
+    # Softwire
+    "31.221.86.178/32",
+    "167.98.33.82/32",
+    "82.163.115.98/32",
+    "87.224.105.250/32",
+    "87.224.116.242/32",
+    "45.150.142.210/32",
+    # Made Tech
+    "79.173.131.202/32",
+    "172.166.224.214/32",
+    # MHCLG
+    "4.158.35.41/32",
+  ]
 }
 
 module "networking" {
@@ -66,23 +81,10 @@ module "frontdoor" {
     local.app_host,
     local.search_landlord_host,
   ]
-  load_balancer_domain_name     = local.load_balancer_domain_name
-  cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
-  load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
-  ip_allowlist = [
-    # Softwire
-    "31.221.86.178/32",
-    "167.98.33.82/32",
-    "82.163.115.98/32",
-    "87.224.105.250/32",
-    "87.224.116.242/32",
-    "45.150.142.210/32",
-    # Made Tech
-    "79.173.131.202/32",
-    "172.166.224.214/32",
-    # MHCLG
-    "4.158.35.41/32",
-  ]
+  load_balancer_domain_name      = local.load_balancer_domain_name
+  cloudfront_certificate_arn     = module.certificates.cloudfront_certificate_arn
+  load_balancer_certificate_arn  = module.certificates.load_balancer_certificate_arn
+  ip_allowlist                   = local.ip_allowlist
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
