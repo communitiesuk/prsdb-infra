@@ -39,7 +39,7 @@ locals {
 
   cloudwatch_log_expiration_days = 90
 
-  ip_allowlist = var.ip_restrictions_on ? [] : [
+  ip_allowlist = var.ip_restrictions_on ? [
     # Softwire
     "31.221.86.178/32",
     "167.98.33.82/32",
@@ -52,7 +52,7 @@ locals {
     "172.166.224.214/32",
     # MHCLG
     "4.158.35.41/32",
-  ]
+  ] : []
 }
 
 module "networking" {
