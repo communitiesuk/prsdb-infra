@@ -23,7 +23,6 @@ resource "aws_ssm_maintenance_window_task" "bastion_patch" {
   task_type        = "RUN_COMMAND"
   task_arn         = "AWS-RunPatchBaseline"
   priority         = 1
-  service_role_arn = data.aws_iam_role.aws_service_role_for_amazon_ssm.arn
 
   targets {
     key    = "InstanceIds"
