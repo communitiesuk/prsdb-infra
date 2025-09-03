@@ -45,6 +45,6 @@ resource "aws_iam_role_policy" "ssm_bastion_send_command_role_policy" {
 }
 
 # Allows running SSM remote commands on EC2 instances
-data "aws_iam_role" "aws_service_role_for_ssm" {
-  name = "${var.environment_name}-aws-service-role-for-ssm"
+data "aws_iam_role" "aws_service_role_for_amazon_ssm" {
+  name = "AWSServiceRoleForAmazonSSM"
 }
