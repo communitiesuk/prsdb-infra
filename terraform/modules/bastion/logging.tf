@@ -3,7 +3,7 @@ resource "aws_flow_log" "bastion_ssm_patch" {
   iam_role_arn    = aws_iam_role.bastion_logs.arn
   log_destination = module.bastion_logs.log_group_arn
   traffic_type    = "ALL"
-  vpc_id          = var.bastion_subnet_ids[count.index]
+  subnet_id       = var.bastion_subnet_ids[count.index]
   tags = {
     Name = "${var.environment_name}-bastion-${count.index + 1}"
   }
