@@ -19,10 +19,6 @@ resource "aws_ssm_maintenance_window_task" "bastion_patch" {
   task_invocation_parameters {
     run_command_parameters {
       comment = "Default Baseline Install"
-      cloudwatch_config {
-        cloudwatch_log_group_name = aws_cloudwatch_log_group.bastion_log_group.id
-        cloudwatch_output_enabled = true
-      }
       parameter {
         name   = "Operation"
         values = ["Install"]

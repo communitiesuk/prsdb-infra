@@ -30,11 +30,6 @@ resource "aws_iam_role_policy_attachment" "ssm_bastion_maintenance_window" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonSSMMaintenanceWindowRole"
 }
 
-resource "aws_iam_role_policy_attachment" "ssm_bastion_managed_instance_core" {
-  role       = aws_iam_role.ssm_bastion.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
