@@ -21,3 +21,8 @@ variable "bastion_subnet_ids" {
   type        = list(string)
   description = "The private subnets into which to deploy a bastion"
 }
+
+variable "bastion_ssm_patch_cloudwatch_log_expiration_days" {
+  type        = number
+  description = "Number of days to retain SSM bastion patch logs for"
+}

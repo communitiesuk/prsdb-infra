@@ -1,9 +1,12 @@
-#tfsec:ignore:aws-cloudwatch-log-group-customer-key
-resource "aws_cloudwatch_log_group" "bastion_log_group" {
-  name              = "${var.environment_name}-bastion"
-  retention_in_days = 60
+resource "aws_flow_log" "bastion_ssm_patch" {
+  iam_role_arn    = aws_iam_role.bastion_logs.arn
+  log_destination = module.bastion_logs.log_group_arn
+  traffic_type    = "ALL"
+}
 
-  tags = {
-    Application = var.environment_name
-  }
+module "bastion_logs" {
+  source = "../../modules/encrypted_log_group"
+
+  log_group_name     = "${var.environment_name}-bastion-ssm-patch-logs"
+  log_retention_days = var.bastion_ssm_patch_cloudwatch_log_expiration_days
 }
