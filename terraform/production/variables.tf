@@ -15,3 +15,9 @@ variable "alarm_email_address" {
   type        = string
   sensitive   = true
 }
+
+variable "ip_restrictions_on" {
+  description = "Enable IP restrictions for the web application"
+  type        = bool
+  default     = false
+}
