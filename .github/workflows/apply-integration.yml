@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - feat/prsd-981-update-ssm-patch-manager
 
 jobs:
   apply:
