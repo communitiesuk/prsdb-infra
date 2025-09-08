@@ -151,6 +151,8 @@ module "bastion" {
   environment_name   = local.environment_name
   main_vpc_id        = module.networking.vpc.id
   vpc_cidr_block     = module.networking.vpc.cidr_block
+
+  bastion_ssm_patch_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "database" {
