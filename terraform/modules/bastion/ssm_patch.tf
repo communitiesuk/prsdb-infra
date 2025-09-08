@@ -7,6 +7,8 @@ resource "aws_ssm_maintenance_window" "bastion_patch" {
 
 resource "aws_ssm_maintenance_window_task" "bastion_patch" {
   window_id = aws_ssm_maintenance_window.bastion_patch.id
+  max_errors = 1
+  max_concurrency = 1
   task_type = "RUN_COMMAND"
   task_arn  = "AWS-RunPatchBaseline"
   priority  = 1
