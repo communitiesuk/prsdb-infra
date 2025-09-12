@@ -7,7 +7,7 @@ resource "aws_cloudwatch_log_metric_filter" "assume_role_with_saml" {
 
   metric_transformation {
     name      = "assume-role-with-saml-${var.environment_name}"
-    namespace = "prsd/${var.environment_name}/security"
+    namespace = "LogMetrics"
     value     = "1"
   }
 }
@@ -22,7 +22,7 @@ resource "aws_cloudwatch_log_metric_filter" "unauthorized_api_calls" {
 
   metric_transformation {
     name      = "unauthorized-api-calls-${var.environment_name}"
-    namespace = "prsd/${var.environment_name}/security"
+    namespace = "LogMetrics"
     value     = "1"
   }
 }
@@ -51,7 +51,7 @@ resource "aws_cloudwatch_log_metric_filter" "iam_policy_changes" {
 
   metric_transformation {
     name      = "iam-policy-changes-${var.environment_name}"
-    namespace = "prsd/${var.environment_name}/security"
+    namespace = "LogMetrics"
     value     = "1"
   }
 }
@@ -69,7 +69,7 @@ resource "aws_cloudwatch_log_metric_filter" "cloudtrail_config_changes" {
 
   metric_transformation {
     name      = "cloudtrail-config-changes-${var.environment_name}"
-    namespace = "prsd/${var.environment_name}/security"
+    namespace = "LogMetrics"
     value     = "1"
   }
 }
@@ -92,7 +92,7 @@ resource "aws_cloudwatch_log_metric_filter" "s3_bucket_policy_changes" {
 
   metric_transformation {
     name      = "s3-bucket-policy-changes-${var.environment_name}"
-    namespace = "prsd/${var.environment_name}/security"
+    namespace = "LogMetrics"
     value     = "1"
   }
 }
@@ -111,7 +111,7 @@ resource "aws_cloudwatch_log_metric_filter" "network_gateway_changes" {
 
   metric_transformation {
     name      = "network-gateway-changes-${var.environment_name}"
-    namespace = "prsd/${var.environment_name}/security"
+    namespace = "LogMetrics"
     value     = "1"
   }
 }
@@ -131,7 +131,7 @@ resource "aws_cloudwatch_log_metric_filter" "route_tables_changes" {
 
   metric_transformation {
     name      = "route-tables-changes-${var.environment_name}"
-    namespace = "prsd/${var.environment_name}/security"
+    namespace = "LogMetrics"
     value     = "1"
   }
 }
@@ -155,7 +155,7 @@ resource "aws_cloudwatch_log_metric_filter" "vpc_changes" {
 
   metric_transformation {
     name      = "vpc-changes-${var.environment_name}"
-    namespace = "prsd/${var.environment_name}/security"
+    namespace = "LogMetrics"
     value     = "1"
   }
 }
@@ -187,7 +187,7 @@ resource "aws_cloudwatch_log_metric_filter" "organization_changes" {
 
   metric_transformation {
     name      = "organization-changes-${var.environment_name}"
-    namespace = "prsd/${var.environment_name}/security"
+    namespace = "LogMetrics"
     value     = "1"
   }
 }

@@ -4,11 +4,11 @@ resource "aws_cloudwatch_metric_alarm" "assume_role_with_saml" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.assume_role_with_saml.name
+  namespace           = "LogMetrics"
   evaluation_periods  = 1
   period              = 60
   threshold           = 1
   statistic           = "Sum"
-  namespace           = "prsd/${var.environment_name}/security"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
@@ -21,11 +21,11 @@ resource "aws_cloudwatch_metric_alarm" "unauthorized_api_calls" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.unauthorized_api_calls.name
+  namespace           = "LogMetrics"
   evaluation_periods  = 1
   period              = 60
   threshold           = 3
   statistic           = "Sum"
-  namespace           = "prsd/${var.environment_name}/security"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
@@ -38,11 +38,11 @@ resource "aws_cloudwatch_metric_alarm" "iam_policy_changes" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.iam_policy_changes.name
+  namespace           = "LogMetrics"
   evaluation_periods  = 1
   period              = 60
   threshold           = 1
   statistic           = "Sum"
-  namespace           = "prsd/${var.environment_name}/security"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
@@ -55,11 +55,11 @@ resource "aws_cloudwatch_metric_alarm" "cloudtrail_config_changes" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.cloudtrail_config_changes.name
+  namespace           = "LogMetrics"
   evaluation_periods  = 1
   period              = 60
   threshold           = 1
   statistic           = "Sum"
-  namespace           = "prsd/${var.environment_name}/security"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
@@ -72,11 +72,11 @@ resource "aws_cloudwatch_metric_alarm" "s3_bucket_policy_changes" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.s3_bucket_policy_changes.name
+  namespace           = "LogMetrics"
   evaluation_periods  = 1
   period              = 60
   threshold           = 1
   statistic           = "Sum"
-  namespace           = "prsd/${var.environment_name}/security"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
@@ -89,11 +89,11 @@ resource "aws_cloudwatch_metric_alarm" "network_gateway_changes" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.network_gateway_changes.name
+  namespace           = "LogMetrics"
   evaluation_periods  = 1
   period              = 60
   threshold           = 1
   statistic           = "Sum"
-  namespace           = "prsd/${var.environment_name}/security"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
@@ -106,11 +106,11 @@ resource "aws_cloudwatch_metric_alarm" "route_tables_changes" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.route_tables_changes.name
+  namespace           = "LogMetrics"
   evaluation_periods  = 1
   period              = 60
   threshold           = 1
   statistic           = "Sum"
-  namespace           = "prsd/${var.environment_name}/security"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
@@ -123,11 +123,11 @@ resource "aws_cloudwatch_metric_alarm" "vpc_changes" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.vpc_changes.name
+  namespace           = "LogMetrics"
   evaluation_periods  = 1
   period              = 60
   threshold           = 1
   statistic           = "Sum"
-  namespace           = "prsd/${var.environment_name}/security"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
@@ -140,11 +140,11 @@ resource "aws_cloudwatch_metric_alarm" "organization_changes" {
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.organization_changes.name
+  namespace           = "LogMetrics"
   evaluation_periods  = 1
   period              = 60
   threshold           = 1
   statistic           = "Sum"
-  namespace           = "prsd/${var.environment_name}/security"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
