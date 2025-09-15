@@ -27,12 +27,12 @@ variable "ecs_service_name" {
   type        = string
 }
 
-variable "rds_instance_id" {
-  description = "ID of RDS instance to create alarms for"
+variable "database_identifier" {
+  description = "Identifier of DB instance to create alarms for"
   type        = string
 }
 
-variable "rds_instance_allocated_storage" {
+variable "database_allocated_storage" {
   description = "Allocated storage of RDS instance to create alarms for"
   type        = number
 }

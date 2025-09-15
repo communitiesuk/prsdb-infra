@@ -57,7 +57,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_start_failure" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_cpu_usage" {
-  alarm_name          = "${var.rds_instance_id}-cpu-usage"
+  alarm_name          = "${var.database_identifier}-cpu-usage"
   alarm_description   = "RDS Database CPU utilization has been >90% for over a minute"
   comparison_operator = "GreaterThanThreshold"
   metric_name         = "CPUUtilization"
@@ -68,7 +68,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_usage" {
   statistic           = "Average"
 
   dimensions = {
-    DBInstanceIdentifier = var.rds_instance_id
+    DBInstanceIdentifier = var.database_identifier
   }
 
   alarm_actions = [
@@ -77,18 +77,18 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_usage" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_storage" {
-  alarm_name          = "${var.rds_instance_id}-storage"
+  alarm_name          = "${var.database_identifier}-storage"
   alarm_description   = "RDS Database storage space has been >90% full for over a minute"
   comparison_operator = "LessThanThreshold"
   metric_name         = "FreeStorageSpace"
   namespace           = "AWS/RDS"
   evaluation_periods  = 1
   period              = 60
-  threshold           = var.rds_instance_allocated_storage * 0.1
+  threshold           = var.database_allocated_storage * 0.1
   statistic           = "Minimum"
 
   dimensions = {
-    DBInstanceIdentifier = var.rds_instance_id
+    DBInstanceIdentifier = var.database_identifier
   }
 
   alarm_actions = [

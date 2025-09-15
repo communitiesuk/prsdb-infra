@@ -224,7 +224,7 @@ module "monitoring" {
   ecs_service_name               = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
   elasticache_cluster_id         = module.redis.redis_cluster_id
   elasticache_node_ids           = toset(module.redis.redis_node_ids)
-  rds_instance_allocated_storage = local.database_allocated_storage
-  rds_instance_id                = module.database.rds_instance_id
+  database_allocated_storage     = local.database_allocated_storage
+  database_identifier            = module.database.database_identifier
   waf_acl_name                   = module.frontdoor.waf_acl_name
 }
