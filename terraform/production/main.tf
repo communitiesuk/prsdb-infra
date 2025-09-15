@@ -38,6 +38,7 @@ locals {
   load_balancer_domain_name = "lb.register-home-to-rent.communities.gov.uk"
 
   cloudwatch_log_expiration_days = 90
+  database_allocated_storage     = 50
 
   ip_allowlist = var.ip_restrictions_on ? [
     # Softwire
@@ -160,7 +161,7 @@ module "database" {
   environment_name                = local.environment_name
   database_password               = module.secrets.database_password.result
   database_port                   = local.database_port
-  allocated_storage               = 50
+  allocated_storage               = local.database_allocated_storage
   backup_retention_period         = 7
   db_subnet_group_name            = module.networking.db_subnet_group_name
   instance_class                  = "db.t4g.small"
@@ -217,4 +218,13 @@ module "monitoring" {
   environment_name               = local.environment_name
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   alarm_email_address            = var.alarm_email_address
+  alb_arn_suffix                 = module.frontdoor.load_balancer.arn_suffix
+  alb_target_group_arn           = module.frontdoor.load_balancer.target_group_arn
+  ecs_cluster_name               = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
+  ecs_service_name               = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
+  elasticache_cluster_id         = module.redis.redis_cluster_id
+  elasticache_node_ids           = toset(module.redis.redis_node_ids)
+  rds_instance_allocated_storage = local.database_allocated_storage
+  rds_instance_id                = module.database.rds_instance_id
+  waf_acl_name                   = module.frontdoor.waf_acl_name
 }
