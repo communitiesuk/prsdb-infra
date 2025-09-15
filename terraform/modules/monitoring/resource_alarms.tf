@@ -17,12 +17,6 @@ resource "aws_cloudwatch_metric_alarm" "ecs_cpu_usage" {
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
 }
 
 resource "aws_cloudwatch_metric_alarm" "ecs_memory_usage" {
@@ -42,12 +36,6 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_usage" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
 }
@@ -86,12 +74,6 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_usage" {
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_storage" {
@@ -110,12 +92,6 @@ resource "aws_cloudwatch_metric_alarm" "rds_storage" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
 }
@@ -141,12 +117,6 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_cpu_usage" {
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
 }
 
 resource "aws_cloudwatch_metric_alarm" "elasticache_memory_usage" {
@@ -165,12 +135,6 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_memory_usage" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
 }
@@ -193,12 +157,6 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_4xx_errors" {
@@ -217,12 +175,6 @@ resource "aws_cloudwatch_metric_alarm" "alb_4xx_errors" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
 }
@@ -246,12 +198,6 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_hosts" {
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
 }
 
 resource "aws_cloudwatch_metric_alarm" "waf_blocked_requests" {
@@ -271,12 +217,6 @@ resource "aws_cloudwatch_metric_alarm" "waf_blocked_requests" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  ok_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-  insufficient_data_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
   ]
 }
