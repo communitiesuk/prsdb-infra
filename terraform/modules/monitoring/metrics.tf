@@ -193,7 +193,7 @@ resource "aws_cloudwatch_log_metric_filter" "organization_changes" {
 }
 
 resource "aws_cloudwatch_log_metric_filter" "ecs_task_start_failure" {
-  log_group_name = aws_cloudwatch_log_group.ecs_events.name
+  log_group_name = module.ecs_events_log_group.name
   name           = "ecs-task-start-failure-${var.environment_name}"
   pattern        = <<EOT
     {($.detail.stopCode = "TaskFailedToStart") &&
