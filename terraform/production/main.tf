@@ -218,8 +218,9 @@ module "monitoring" {
   environment_name               = local.environment_name
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   alarm_email_address            = var.alarm_email_address
+  alb_name                       = module.frontdoor.load_balancer.name
   alb_arn_suffix                 = module.frontdoor.load_balancer.arn_suffix
-  alb_target_group_arn           = module.frontdoor.load_balancer.target_group_arn
+  alb_target_group_arn_suffix    = module.frontdoor.load_balancer.target_group_arn_suffix
   ecs_cluster_name               = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
   ecs_service_name               = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
   elasticache_cluster_ids        = toset(module.redis.redis_cluster_ids)

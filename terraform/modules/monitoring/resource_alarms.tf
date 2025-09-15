@@ -141,10 +141,10 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_memory_usage" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
-  alarm_name          = "${var.alb_arn_suffix}-5xx-errors"
+  alarm_name          = "${var.alb_name}-5xx-errors"
   alarm_description   = "There have been >100 5xx responses at the ALB in a minute"
   comparison_operator = "GreaterThanThreshold"
-  metric_name         = "HTTPCode_ELB_5XX_Count"
+  metric_name         = "HTTPCode_Target_5XX_Count"
   namespace           = "AWS/ApplicationELB"
   evaluation_periods  = 1
   period              = 60
@@ -161,10 +161,10 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_4xx_errors" {
-  alarm_name          = "${var.alb_arn_suffix}-4xx-errors"
+  alarm_name          = "${var.alb_name}-4xx-errors"
   alarm_description   = "There have been >100 4xx responses at the ALB in a minute"
   comparison_operator = "GreaterThanThreshold"
-  metric_name         = "HTTPCode_ELB_4XX_Count"
+  metric_name         = "HTTPCode_Target_4XX_Count"
   namespace           = "AWS/ApplicationELB"
   evaluation_periods  = 1
   period              = 60
@@ -181,7 +181,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_4xx_errors" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_hosts" {
-  alarm_name          = "${var.alb_arn_suffix}-no-healthy-hosts"
+  alarm_name          = "${var.alb_name}-no-healthy-hosts"
   alarm_description   = "There have been no healthy ALB hosts for over a minute"
   comparison_operator = "LessThanThreshold"
   metric_name         = "HealthyHostCount"
@@ -193,7 +193,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_hosts" {
 
   dimensions = {
     LoadBalancer = var.alb_arn_suffix
-    TargetGroup  = var.alb_target_group_arn
+    TargetGroup  = var.alb_target_group_arn_suffix
   }
 
   alarm_actions = [

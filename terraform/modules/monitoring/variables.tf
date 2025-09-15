@@ -42,13 +42,18 @@ variable "elasticache_cluster_ids" {
   type        = set(string)
 }
 
+variable "alb_name" {
+  description = "Name of ALB to create alarms for"
+  type        = string
+}
+
 variable "alb_arn_suffix" {
   description = "ARN suffix of ALB to create alarms for"
   type        = string
 }
 
-variable "alb_target_group_arn" {
-  description = "Target group ARN of ALB to create alarms for"
+variable "alb_target_group_arn_suffix" {
+  description = "ARN suffix of target group of ALB to create alarms for"
   type        = string
 }
 
