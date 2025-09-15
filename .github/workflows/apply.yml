@@ -71,7 +71,6 @@ jobs:
         run: exit 1
 
       - name: Report pipeline status
-        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: slack
         uses: slackapi/slack-github-action@v1.26.0
         with:
@@ -121,7 +120,6 @@ jobs:
         working-directory: terraform/${{ inputs.environment }}
 
       - name: Report pipeline status
-        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: slack
         uses: slackapi/slack-github-action@v1.26.0
         with:
