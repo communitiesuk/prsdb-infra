@@ -191,3 +191,18 @@ resource "aws_cloudwatch_log_metric_filter" "organization_changes" {
     value     = "1"
   }
 }
+
+resource "aws_cloudwatch_log_metric_filter" "ecs_task_start_failure" {
+  log_group_name = module.ecs_events_log_group.name
+  name           = "ecs-task-start-failure-${var.environment_name}"
+  pattern        = <<EOT
+    {($.detail.stopCode = "TaskFailedToStart") &&
+     ($.detail-type = "ECS Task State Change")}
+  EOT
+
+  metric_transformation {
+    name      = "ecs-task-start-failure-${var.environment_name}"
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+}

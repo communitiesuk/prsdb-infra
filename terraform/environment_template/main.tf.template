@@ -39,6 +39,7 @@ locals {
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 
   cloudwatch_log_expiration_days = <log retention period>
+  database_allocated_storage     = <storage amount>
 }
 
 module "networking" {
@@ -152,7 +153,7 @@ module "database" {
   environment_name                = local.environment_name
   database_password               = module.secrets.database_password.result
   database_port                   = local.database_port
-  allocated_storage               = <storage amount>
+  allocated_storage               = local.database_allocated_storage
   backup_retention_period         = <backup retention period>
   db_subnet_group_name            = module.networking.db_subnet_group_name
   instance_class                  = "<instance class>"
@@ -201,4 +202,21 @@ module "file_upload" {
   ecs_cluster_arn                 = module.ecs_service[0].ecs_cluster_arn
   private_subnet_ids              = module.networking.private_subnets[*].id
   ecs_security_group_ids          = module.ecs_service[0].ecs_security_group_ids
+}
+
+module "monitoring" {
+  source = "../modules/monitoring"
+
+  environment_name               = local.environment_name
+  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
+  alarm_email_address            = var.alarm_email_address
+  alb_arn_suffix                 = module.frontdoor.load_balancer.arn_suffix
+  alb_target_group_arn           = module.frontdoor.load_balancer.target_group_arn
+  ecs_cluster_name               = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
+  ecs_service_name               = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
+  elasticache_cluster_id         = module.redis.redis_cluster_id
+  elasticache_node_ids           = toset(module.redis.redis_node_ids)
+  rds_instance_allocated_storage = local.database_allocated_storage
+  rds_instance_id                = module.database.rds_instance_id
+  waf_acl_name                   = module.frontdoor.waf_acl_name
 }
