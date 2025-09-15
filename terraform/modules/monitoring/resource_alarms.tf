@@ -266,7 +266,7 @@ resource "aws_cloudwatch_metric_alarm" "waf_blocked_requests" {
   statistic           = "Sum"
 
   dimensions = {
-    Rule  = "ALL"
+    Rule   = "ALL"
     WebACL = var.waf_acl_name
   }
 
