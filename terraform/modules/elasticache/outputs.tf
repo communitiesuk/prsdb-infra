@@ -3,12 +3,7 @@ output "redis_security_group_id" {
   description = "ID for the security group for redis"
 }
 
-output "redis_cluster_id" {
-  value       = aws_elasticache_replication_group.main.id
-  description = "ID of the redis cluster"
-}
-
-output "redis_node_ids" {
+output "redis_cluster_ids" {
   value       = aws_elasticache_replication_group.main.member_clusters
-  description = "IDs of the redis nodes"
+  description = "IDs of the redis clusters"
 }

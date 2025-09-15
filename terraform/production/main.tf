@@ -222,8 +222,7 @@ module "monitoring" {
   alb_target_group_arn           = module.frontdoor.load_balancer.target_group_arn
   ecs_cluster_name               = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
   ecs_service_name               = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
-  elasticache_cluster_id         = module.redis.redis_cluster_id
-  elasticache_node_ids           = toset(module.redis.redis_node_ids)
+  elasticache_cluster_ids        = toset(module.redis.redis_cluster_ids)
   database_allocated_storage     = local.database_allocated_storage
   database_identifier            = module.database.database_identifier
   waf_acl_name                   = module.frontdoor.waf_acl_name

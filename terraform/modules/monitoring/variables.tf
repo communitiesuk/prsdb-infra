@@ -37,13 +37,8 @@ variable "database_allocated_storage" {
   type        = number
 }
 
-variable "elasticache_cluster_id" {
-  description = "ID of ElastiCache cluster to create alarms for"
-  type        = string
-}
-
-variable "elasticache_node_ids" {
-  description = "IDs of ElastiCache nodes to create alarms for"
+variable "elasticache_cluster_ids" {
+  description = "IDs of ElastiCache clusters to create alarms for"
   type        = set(string)
 }
 

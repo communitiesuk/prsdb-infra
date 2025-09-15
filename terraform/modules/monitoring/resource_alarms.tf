@@ -97,7 +97,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_storage" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "elasticache_cpu_usage" {
-  for_each = var.elasticache_node_ids
+  for_each = var.elasticache_cluster_ids
 
   alarm_name          = "${each.value}-cpu-usage"
   alarm_description   = "ElastiCache CPU utilization has been >90% for over a minute"
@@ -110,8 +110,7 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_cpu_usage" {
   statistic           = "Average"
 
   dimensions = {
-    CacheClusterId = var.elasticache_cluster_id
-    CacheNodeId    = each.value
+    CacheClusterId = each.value
   }
 
   alarm_actions = [
@@ -120,8 +119,10 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_cpu_usage" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "elasticache_memory_usage" {
-  alarm_name          = "${var.elasticache_cluster_id}-memory-usage"
-  alarm_description   = "Elasticache memory usage has been >90% for over a minute"
+  for_each = var.elasticache_cluster_ids
+
+  alarm_name          = "${each.value}-memory-usage"
+  alarm_description   = "ElastiCache memory usage has been >90% for over a minute"
   comparison_operator = "GreaterThanThreshold"
   metric_name         = "DatabaseMemoryUsagePercentage"
   namespace           = "AWS/ElastiCache"
@@ -131,7 +132,7 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_memory_usage" {
   statistic           = "Average"
 
   dimensions = {
-    CacheClusterId = var.elasticache_cluster_id
+    CacheClusterId = each.value
   }
 
   alarm_actions = [
