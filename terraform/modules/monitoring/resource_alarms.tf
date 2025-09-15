@@ -52,6 +52,22 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_usage" {
   ]
 }
 
+resource "aws_cloudwatch_metric_alarm" "ecs_task_start_failure" {
+  alarm_name          = "${var.ecs_service_name}-ecs-task-start-failure"
+  alarm_description   = "An ECS task has failed to start and reach a healthy state"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  metric_name         = "ecs_task_start_failure"
+  namespace           = "LogMetrics"
+  evaluation_periods  = 1
+  period              = 60
+  threshold           = 1
+  statistic           = "Sum"
+
+  alarm_actions = [
+    aws_sns_topic.alarm_sns_topic.arn,
+  ]
+}
+
 resource "aws_cloudwatch_metric_alarm" "rds_cpu_usage" {
   alarm_name          = "${var.rds_instance_id}-cpu-usage"
   alarm_description   = "RDS Database CPU utilization has been >90% for over a minute"
