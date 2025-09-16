@@ -16,8 +16,9 @@ resource "aws_cloudwatch_log_metric_filter" "unauthorized_api_calls" {
   log_group_name = module.cloudtrail_cloudwatch_group.name
   name           = "unauthorized-api-calls-${var.environment_name}"
   pattern        = <<EOT
-    {($.errorCode = UnauthorizedOperation) ||
-     ($.errorCode = AccessDenied)}
+    {(($.errorCode = UnauthorizedOperation) ||
+      ($.errorCode = AccessDenied)) &&
+     ($.userIdentity.sessionContext.sessionIssuer.userName != "WizAccess-Role")}
   EOT
 
   metric_transformation {
