@@ -11,6 +11,8 @@ resource "aws_sns_topic_subscription" "alarm_email_subscription" {
   endpoint  = var.alarm_email_address
 }
 
+# non-sensitive
+# tfsec:ignore:aws-sns-enable-topic-encryption
 resource "aws_sns_topic" "us_alarm_sns_topic" {
   name         = "${var.environment_name}-us-alarm-sns-topic"
   display_name = "Notifications for cloudwatch alarms in ${var.environment_name} environment and us-east-1 region"
