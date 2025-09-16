@@ -207,6 +207,10 @@ module "file_upload" {
 module "monitoring" {
   source = "../modules/monitoring"
 
+  providers = {
+    aws.us-east-1 = aws.us-east-1
+  }
+
   environment_name               = local.environment_name
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   alarm_email_address            = var.alarm_email_address

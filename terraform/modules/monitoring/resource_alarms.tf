@@ -211,6 +211,7 @@ resource "aws_cloudwatch_metric_alarm" "waf_blocked_requests" {
   period              = 60
   threshold           = 100
   statistic           = "Sum"
+  provider            = aws.us-east-1
 
   dimensions = {
     Rule   = "ALL"
@@ -218,6 +219,6 @@ resource "aws_cloudwatch_metric_alarm" "waf_blocked_requests" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.us_alarm_sns_topic.arn,
   ]
 }
