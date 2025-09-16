@@ -50,6 +50,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_start_failure" {
   period              = 60
   threshold           = 1
   statistic           = "Sum"
+  treat_missing_data  = "notBreaching"
 
   alarm_actions = [
     aws_sns_topic.alarm_sns_topic.arn,
@@ -150,6 +151,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
   period              = 60
   threshold           = 100
   statistic           = "Sum"
+  treat_missing_data  = "notBreaching"
 
   dimensions = {
     LoadBalancer = var.alb_arn_suffix
@@ -170,6 +172,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_4xx_errors" {
   period              = 60
   threshold           = 100
   statistic           = "Sum"
+  treat_missing_data  = "notBreaching"
 
   dimensions = {
     LoadBalancer = var.alb_arn_suffix
@@ -211,6 +214,7 @@ resource "aws_cloudwatch_metric_alarm" "waf_blocked_requests" {
   period              = 60
   threshold           = 100
   statistic           = "Sum"
+  treat_missing_data  = "notBreaching"
   provider            = aws.us-east-1
 
   dimensions = {
