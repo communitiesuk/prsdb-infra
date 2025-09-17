@@ -22,8 +22,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: "arn:aws:iam::${{ inputs.account_id }}:role/github-actions-terraform-admin"
-          aws-region: "eu-west-2"
+          role-to-assume: arn:aws:iam::${{ inputs.account_id }}:role/github-actions-terraform-admin
+          aws-region: eu-west-2
 
       - name: Update ECS service
         run: aws ecs update-service --cluster ${{ inputs.environment }}-app --service ${{ inputs.environment }}-app --task-definition prsdb-webapp-${{ inputs.environment }} --force-new-deployment
