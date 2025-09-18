@@ -15,3 +15,9 @@ variable "alarm_email_address" {
   type        = string
   sensitive   = true
 }
+
+variable "use_aws_shield_advanced" {
+  description = "Indicates whether AWS Shield Advanced should be enabled"
+    type        = bool
+    default     = true
+}
