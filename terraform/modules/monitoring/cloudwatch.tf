@@ -10,7 +10,7 @@ resource "aws_cloudwatch_event_rule" "ecs_events" {
 module "ecs_events_log_group" {
   source = "../encrypted_log_group"
 
-  log_group_name     = "/aws/events/ecs/${var.environment_name}-ecs-events"
+  log_group_name     = "${var.environment_name}-ecs-events"
   log_retention_days = 1
 }
 

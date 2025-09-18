@@ -18,7 +18,7 @@ resource "aws_cloudwatch_log_metric_filter" "unauthorized_api_calls" {
   pattern        = <<EOT
     {(($.errorCode = UnauthorizedOperation) ||
       ($.errorCode = AccessDenied)) &&
-     ($.userIdentity.sessionContext.sessionIssuer.userName != "WizAccess-Role")}
+     ($.userIdentity.sessionContext.sessionIssuer.arn != "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/WizAccess-Role")}
   EOT
 
   metric_transformation {
