@@ -122,3 +122,10 @@ resource "aws_cloudfront_function" "url_rewriter" {
   publish = true
   code    = file("${path.module}/url_rewriter.js")
 }
+
+resource "aws_shield_protection" "cloudfront" {
+  count = var.use_aws_shield_advanced ? 1 : 0
+
+  name         = "cloudfront"
+  resource_arn = var.cloudfront_certificate_arn
+}

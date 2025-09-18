@@ -86,6 +86,7 @@ module "frontdoor" {
   load_balancer_certificate_arn  = module.certificates.load_balancer_certificate_arn
   ip_allowlist                   = local.ip_allowlist
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
+  use_aws_shield_advanced        = false
 }
 
 module "certificates" {
