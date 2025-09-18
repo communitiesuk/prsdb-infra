@@ -86,7 +86,7 @@ module "frontdoor" {
     "4.158.35.41/32",
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
-  use_aws_shield_advanced = var.use_aws_shield_advanced
+  use_aws_shield_advanced = false
 }
 
 module "certificates" {

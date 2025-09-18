@@ -60,6 +60,7 @@ module "frontdoor" {
   }
 
   ssl_certs_created             = var.ssl_certs_created
+  ssl_certs_created             = var.ssl_certs_created
   environment_name              = local.environment_name
   public_subnet_ids             = module.networking.public_subnets[*].id
   vpc_id                        = module.networking.vpc.id
@@ -76,7 +77,7 @@ module "frontdoor" {
     <Allowed IPs if IP whitelisting is to be turned on, empty otherwise>
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
-  use_aws_shield_advanced = var.use_aws_shield_advanced
+  use_aws_shield_advanced = true
 }
 
 module "certificates" {

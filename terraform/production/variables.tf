@@ -21,9 +21,3 @@ variable "ip_restrictions_on" {
   type        = bool
   default     = false
 }
-
-variable "use_aws_shield_advanced" {
-  description = "Indicates whether AWS Shield Advanced should be enabled"
-    type        = bool
-    default     = false
-}
