@@ -217,16 +217,20 @@ module "file_upload" {
 module "monitoring" {
   source = "../modules/monitoring"
 
+  providers = {
+    aws.us-east-1 = aws.us-east-1
+  }
+
   environment_name               = local.environment_name
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   alarm_email_address            = var.alarm_email_address
+  alb_name                       = module.frontdoor.load_balancer.name
   alb_arn_suffix                 = module.frontdoor.load_balancer.arn_suffix
-  alb_target_group_arn           = module.frontdoor.load_balancer.target_group_arn
+  alb_target_group_arn_suffix    = module.frontdoor.load_balancer.target_group_arn_suffix
   ecs_cluster_name               = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
   ecs_service_name               = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
-  elasticache_cluster_id         = module.redis.redis_cluster_id
-  elasticache_node_ids           = toset(module.redis.redis_node_ids)
-  rds_instance_allocated_storage = local.database_allocated_storage
-  rds_instance_id                = module.database.rds_instance_id
+  elasticache_cluster_ids        = toset(module.redis.redis_cluster_ids)
+  database_allocated_storage     = local.database_allocated_storage
+  database_identifier            = module.database.database_identifier
   waf_acl_name                   = module.frontdoor.waf_acl_name
 }

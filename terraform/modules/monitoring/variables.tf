@@ -27,24 +27,24 @@ variable "ecs_service_name" {
   type        = string
 }
 
-variable "rds_instance_id" {
-  description = "ID of RDS instance to create alarms for"
+variable "database_identifier" {
+  description = "Identifier of DB instance to create alarms for"
   type        = string
 }
 
-variable "rds_instance_allocated_storage" {
+variable "database_allocated_storage" {
   description = "Allocated storage of RDS instance to create alarms for"
   type        = number
 }
 
-variable "elasticache_cluster_id" {
-  description = "ID of ElastiCache cluster to create alarms for"
-  type        = string
+variable "elasticache_cluster_ids" {
+  description = "IDs of ElastiCache clusters to create alarms for"
+  type        = set(string)
 }
 
-variable "elasticache_node_ids" {
-  description = "IDs of ElastiCache nodes to create alarms for"
-  type        = set(string)
+variable "alb_name" {
+  description = "Name of ALB to create alarms for"
+  type        = string
 }
 
 variable "alb_arn_suffix" {
@@ -52,8 +52,8 @@ variable "alb_arn_suffix" {
   type        = string
 }
 
-variable "alb_target_group_arn" {
-  description = "Target group ARN of ALB to create alarms for"
+variable "alb_target_group_arn_suffix" {
+  description = "ARN suffix of target group of ALB to create alarms for"
   type        = string
 }
 
