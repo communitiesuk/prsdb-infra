@@ -27,3 +27,8 @@ output "push_ecr_image_policy_arn" {
   value       = aws_iam_policy.push_images.arn
   description = "iam policy allowing pushing to the ecr repository"
 }
+
+output "describe_ecr_images_policy_arn" {
+  value       = aws_iam_policy.describe_images.arn
+  description = "iam policy allowing describing images in the ecr repository"
+}
