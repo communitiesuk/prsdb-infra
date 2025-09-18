@@ -262,3 +262,36 @@ resource "aws_iam_role_policy_attachment" "allow_update_ecs_service_policy_attac
   policy_arn = aws_iam_policy.update_ecs_service[0].arn
 }
 
+# ECR Describe Images role for infra repo
+data "aws_iam_policy_document" "github_actions_assume_ecr_describe_images_role" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.main.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = "token.actions.githubusercontent.com:aud"
+    }
+
+    condition {
+      test     = "StringLike"
+      values   = ["repo:communitiesuk/prsdb-infra:*"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+
+resource "aws_iam_role" "ecr_describe_images" {
+  name               = "${var.environment_name}-ecr-describe-images"
+  assume_role_policy = data.aws_iam_policy_document.github_actions_assume_ecr_describe_images_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_describe_images" {
+  role       = aws_iam_role.ecr_describe_images.name
+  policy_arn = var.ecr_describe_images_policy_arn
+}

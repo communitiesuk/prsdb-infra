@@ -117,17 +117,18 @@ module "ecr" {
 module "github_actions_access" {
   source = "../modules/github_actions_access"
 
-  environment_name              = local.environment_name
-  push_ecr_image_policy_arn     = module.ecr.push_ecr_image_policy_arn
-  db_username_ssm_parameter_arn = module.database.database_username_ssm_parameter_arn
-  db_url_ssm_parameter_arn      = module.database.database_url_ssm_parameter_arn
-  db_password_secret_arn        = module.secrets.database_password_secret_arn
-  secrets_kms_key_arn           = module.secrets.secrets_kms_key_arn
-  bastion_host_arns             = module.bastion.bastion_instance_arns
-  ecs_service_arn               = var.task_definition_created ? module.ecs_service[0].ecs_service_arn : ""
-  ecs_task_execution_role_arn   = module.ecr.ecs_task_execution_role_arn
-  webapp_ecs_task_role_arn      = module.ecr.webapp_ecs_task_role_arn
-  task_definition_created       = var.task_definition_created
+  environment_name               = local.environment_name
+  push_ecr_image_policy_arn      = module.ecr.push_ecr_image_policy_arn
+  db_username_ssm_parameter_arn  = module.database.database_username_ssm_parameter_arn
+  db_url_ssm_parameter_arn       = module.database.database_url_ssm_parameter_arn
+  db_password_secret_arn         = module.secrets.database_password_secret_arn
+  secrets_kms_key_arn            = module.secrets.secrets_kms_key_arn
+  bastion_host_arns              = module.bastion.bastion_instance_arns
+  ecs_service_arn                = var.task_definition_created ? module.ecs_service[0].ecs_service_arn : ""
+  ecs_task_execution_role_arn    = module.ecr.ecs_task_execution_role_arn
+  webapp_ecs_task_role_arn       = module.ecr.webapp_ecs_task_role_arn
+  task_definition_created        = var.task_definition_created
+  ecr_describe_images_policy_arn = module.ecr.describe_ecr_images_policy_arn
 }
 
 module "secrets" {
