@@ -73,6 +73,6 @@ variable "cloudwatch_log_expiration_days" {
 }
 
 variable "use_aws_shield_advanced" {
-    type        = bool
-    description = "Indicates whether AWS Shield Advanced should be enabled"
+  type        = bool
+  description = "Indicates whether AWS Shield Advanced should be enabled"
 }

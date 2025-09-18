@@ -126,6 +126,6 @@ resource "aws_cloudfront_function" "url_rewriter" {
 resource "aws_shield_protection" "cloudfront" {
   count = var.use_aws_shield_advanced ? 1 : 0
 
-  name          = "cloudfront"
-  resource_arn  =  var.cloudfront_certificate_arn
+  name         = "cloudfront"
+  resource_arn = var.cloudfront_certificate_arn
 }
