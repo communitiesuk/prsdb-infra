@@ -76,6 +76,7 @@ module "frontdoor" {
     <Allowed IPs if IP whitelisting is to be turned on, empty otherwise>
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
+  use_aws_shield_advanced = var.use_aws_shield_advanced
 }
 
 module "certificates" {
