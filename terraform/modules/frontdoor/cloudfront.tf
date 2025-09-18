@@ -127,5 +127,5 @@ resource "aws_shield_protection" "cloudfront" {
   count = var.use_aws_shield_advanced ? 1 : 0
 
   name         = "cloudfront"
-  resource_arn = var.cloudfront_certificate_arn
+  resource_arn = aws_cloudfront_distribution.main.arn
 }
