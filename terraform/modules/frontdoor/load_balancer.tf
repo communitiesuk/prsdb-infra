@@ -91,3 +91,10 @@ resource "aws_vpc_security_group_ingress_rule" "load_balancer_https_ingress" {
   prefix_list_id    = data.aws_ec2_managed_prefix_list.cloudfront.id
   security_group_id = aws_security_group.load_balancer.id
 }
+
+resource "aws_shield_protection" "load_balancer" {
+  count = var.use_aws_shield_advanced ? 1 : 0
+
+  name         = "load_balancer"
+  resource_arn = aws_lb.main.arn
+}
