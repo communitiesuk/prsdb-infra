@@ -26,20 +26,23 @@ jobs:
     name: Retrieve Latest ECR Image
     needs: validate-target-environment
     runs-on: ubuntu-latest
+    env:
+      AWS_REGION: eu-west-2
     outputs:
-      image_tag: ${{ steps.retrieve-image.outputs.image_tag }}
+      image_uri: ${{ steps.retrieve-image.outputs.image_uri }}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ inputs.account_id }}:role/${{ inputs.environment }}-ecr-describe-images
-          aws-region: eu-west-2
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Retrieve Latest Image Tag
+      - name: Retrieve Latest Image URI
         id: retrieve-image
         run: |
           IMAGE_TAG=$(aws ecr describe-images --repository-name ${{ inputs.environment }}-webapp --query 'sort_by(imageDetails, &imagePushedAt)[-1].imageTags[0]' --output text)
-          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+          IMAGE_URI="${{ inputs.account_id }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ inputs.environment }}-webapp:${IMAGE_TAG}"
+          echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT
 
   update-task-definition:
     name: Update ECS task definition
@@ -48,7 +51,7 @@ jobs:
     with:
       environment_name: ${{ inputs.environment }}
       account_id: ${{ inputs.account_id }}
-      image_name: ${{ needs.retrieve-image.outputs.image_tag }}
+      image_name: ${{ needs.retrieve-image.outputs.image_uri }}
 
   update-ecs-service:
     name: Update ECS service
