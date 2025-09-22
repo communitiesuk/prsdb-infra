@@ -24,14 +24,10 @@ resource "aws_s3_bucket_website_configuration" "maintenance_page_bucket_website"
   }
 }
 
-locals {
-  maintenance_files = fileset("maintenance_page", "**")
-}
-
 resource "aws_s3_object" "maintenance_page" {
-  for_each = { for file in local.maintenance_files : file => file }
+  for_each = fileset("maintenance_page", "**")
 
   bucket = aws_s3_bucket.maintenance_page_bucket.id
-  key    = each.key
-  source = "maintenance_page/${each.key}"
+  key    = each.value
+  source = "maintenance_page/${each.value}"
 }
