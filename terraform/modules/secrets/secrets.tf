@@ -46,9 +46,9 @@ resource "aws_secretsmanager_secret" "notify_api_key" {
   kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
 }
 
-resource "aws_secretsmanager_secret" "os_places_api_key" {
-  name                    = "tf-${var.environment_name}-os-places-api-key"
-  description             = "API key for OS Places"
+resource "aws_secretsmanager_secret" "os_api_key" {
+  name                    = "tf-${var.environment_name}-os-api-key"
+  description             = "API key for OS"
   recovery_window_in_days = 0
   kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
 }
