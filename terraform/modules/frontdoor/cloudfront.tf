@@ -1,5 +1,6 @@
 locals {
   origin_id = "origin-${var.environment_name}"
+  maintenance_origin_id = "maintenance-origin-${var.environment_name}"
 }
 
 #tfsec:ignore:aws-cloudfront-enable-logging: TODO we will be implementing logging later
@@ -42,6 +43,26 @@ resource "aws_cloudfront_distribution" "main" {
       event_type   = "viewer-request"
       function_arn = aws_cloudfront_function.url_rewriter.arn
     }
+  }
+
+  origin {
+    domain_name = aws_s3_bucket.maintenance_page_bucket.website_endpoint
+    origin_id   = local.maintenance_origin_id
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  ordered_cache_behavior {
+    allowed_methods = ["GET", "HEAD"]
+    cached_methods = ["GET", "HEAD"]
+    path_pattern           = "/maintenance"
+    target_origin_id       = local.maintenance_origin_id
+    viewer_protocol_policy = "allow-all"
   }
 
   viewer_certificate {
