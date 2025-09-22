@@ -92,6 +92,11 @@ resource "aws_vpc_security_group_ingress_rule" "load_balancer_https_ingress" {
   security_group_id = aws_security_group.load_balancer.id
 }
 
+resource "aws_wafv2_web_acl_association" "load_balancer" {
+  resource_arn = aws_lb.main.arn
+  web_acl_arn  = aws_wafv2_web_acl.main.arn
+}
+
 resource "aws_shield_protection" "load_balancer" {
   count = var.use_aws_shield_advanced ? 1 : 0
 
