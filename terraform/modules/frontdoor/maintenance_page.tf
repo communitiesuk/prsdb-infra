@@ -6,10 +6,10 @@ resource "aws_s3_bucket" "maintenance_page_bucket" {
 resource "aws_s3_bucket_public_access_block" "maintenance_page_bucket_public_access" {
   bucket = aws_s3_bucket.maintenance_page_bucket.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_website_configuration" "maintenance_page_bucket_website" {
@@ -30,4 +30,27 @@ resource "aws_s3_object" "maintenance_page" {
   bucket = aws_s3_bucket.maintenance_page_bucket.id
   key    = each.value
   source = "maintenance_page/${each.value}"
+}
+
+resource "aws_s3_bucket_policy" "maintenance_page" {
+  bucket = aws_s3_bucket.maintenance_page_bucket.id
+  policy = data.aws_iam_policy_document.maintenance_page.json
+}
+
+data "aws_iam_policy_document" "maintenance_page" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.maintenance_page_bucket.arn}/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudfront_distribution.main.arn]
+    }
+  }
 }
