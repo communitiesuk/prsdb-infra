@@ -11,4 +11,5 @@ jobs:
     with:
       environment: test
       aws-account-id: 869935096717
+      maintenance-mode-on: false
     secrets: inherit
