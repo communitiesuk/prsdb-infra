@@ -55,6 +55,11 @@ resource "aws_cloudfront_distribution" "main" {
       origin_protocol_policy = "http-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
+
+    custom_header {
+      name  = local.cloudfront_header_name
+      value = random_password.cloudfront_header.result
+    }
   }
 
   ordered_cache_behavior {
