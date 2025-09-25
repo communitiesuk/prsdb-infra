@@ -1,6 +1,6 @@
 
 resource "aws_s3_bucket" "maintenance_page_bucket" {
-  bucket        = "${var.environment_name}-maintenance-page-bucket"
+  bucket = "${var.environment_name}-maintenance-page-bucket"
 }
 
 resource "aws_s3_bucket_public_access_block" "maintenance_page_bucket_public_access" {

@@ -78,7 +78,7 @@ variable "use_aws_shield_advanced" {
 }
 
 variable "maintenance_mode_on" {
-    type        = bool
-    description = "Indicates whether maintenance mode is on"
-    default     = false
+  type        = bool
+  description = "Indicates whether maintenance mode is on"
+  default     = false
 }
