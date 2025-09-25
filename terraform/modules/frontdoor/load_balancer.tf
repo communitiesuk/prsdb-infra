@@ -94,7 +94,7 @@ resource "aws_vpc_security_group_ingress_rule" "load_balancer_https_ingress" {
 
 resource "aws_wafv2_web_acl_association" "load_balancer" {
   resource_arn = aws_lb.main.arn
-  web_acl_arn  = aws_wafv2_web_acl.main.arn
+  web_acl_arn  = aws_wafv2_web_acl.load_balancer.arn
 }
 
 resource "aws_shield_protection" "load_balancer" {
