@@ -15,12 +15,12 @@ resource "aws_wafv2_web_acl" "load_balancer" {
   }
 
   rule {
-      name     = "valid-cloudfront-header"
+    name     = "validate-cloudfront-header"
     priority = 3
 
     action {
-          block {}
-        }
+      block {}
+    }
 
     statement {
       not_statement {
