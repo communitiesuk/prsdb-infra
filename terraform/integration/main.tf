@@ -98,7 +98,7 @@ module "frontdoor" {
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   use_aws_shield_advanced        = true
-  maintenance_mode_on = var.maintenance_mode_on
+  maintenance_mode_on            = var.maintenance_mode_on
 
 }
 
