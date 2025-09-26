@@ -1,7 +1,6 @@
 resource "aws_wafv2_web_acl" "load_balancer" {
-  name        = var.environment_name
+  name        = "${var.environment_name}-load-balancer-waf"
   description = "Web ACL to restrict traffic to load balancer"
-  provider    = aws.us-east-1
   scope       = "REGIONAL"
 
   default_action {
