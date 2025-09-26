@@ -58,3 +58,8 @@ variable "task_definition_created" {
   type        = bool
   default     = true
 }
+
+variable "ecr_describe_images_policy_arn" {
+  description = "arn of the iam policy for describing ecr images"
+  type        = string
+}

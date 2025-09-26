@@ -138,8 +138,8 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.notify_api_key.arn
     },
     {
-      name      = "OS_PLACES_API_KEY"
-      valueFrom = data.aws_secretsmanager_secret.os_places_api_key.arn
+      name      = "OS_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.os_api_key.arn
     },
     {
       name      = "EPC_REGISTER_CLIENT_SECRET"

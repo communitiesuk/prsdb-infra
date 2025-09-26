@@ -39,6 +39,7 @@ locals {
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 
   cloudwatch_log_expiration_days = <log retention period>
+  database_allocated_storage     = <storage amount>
 }
 
 module "networking" {
@@ -59,6 +60,7 @@ module "frontdoor" {
   }
 
   ssl_certs_created             = var.ssl_certs_created
+  ssl_certs_created             = var.ssl_certs_created
   environment_name              = local.environment_name
   public_subnet_ids             = module.networking.public_subnets[*].id
   vpc_id                        = module.networking.vpc.id
@@ -75,6 +77,7 @@ module "frontdoor" {
     <Allowed IPs if IP whitelisting is to be turned on, empty otherwise>
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
+  use_aws_shield_advanced = true
 }
 
 module "certificates" {
@@ -106,17 +109,18 @@ module "ecr" {
 module "github_actions_access" {
   source = "../modules/github_actions_access"
 
-  environment_name          = local.environment_name
-  push_ecr_image_policy_arn = module.ecr.push_ecr_image_policy_arn
-  db_username_ssm_parameter_arn = module.database.database_username_ssm_parameter_arn
-  db_url_ssm_parameter_arn      = module.database.database_url_ssm_parameter_arn
-  db_password_secret_arn = module.secrets.database_password_secret_arn
-  secrets_kms_key_arn = module.secrets.secrets_kms_key_arn
-  bastion_host_arns             = module.bastion.bastion_instance_arns
-  ecs_service_arn               = var.task_definition_created ? module.ecs_service[0].ecs_service_arn : ""
-  ecs_task_execution_role_arn   = module.ecr.ecs_task_execution_role_arn
-  webapp_ecs_task_role_arn      = module.ecr.webapp_ecs_task_role_arn
-  task_definition_created = var.task_definition_created
+  environment_name               = local.environment_name
+  push_ecr_image_policy_arn      = module.ecr.push_ecr_image_policy_arn
+  db_username_ssm_parameter_arn  = module.database.database_username_ssm_parameter_arn
+  db_url_ssm_parameter_arn       = module.database.database_url_ssm_parameter_arn
+  db_password_secret_arn         = module.secrets.database_password_secret_arn
+  secrets_kms_key_arn            = module.secrets.secrets_kms_key_arn
+  bastion_host_arns              = module.bastion.bastion_instance_arns
+  ecs_service_arn                = var.task_definition_created ? module.ecs_service[0].ecs_service_arn : ""
+  ecs_task_execution_role_arn    = module.ecr.ecs_task_execution_role_arn
+  webapp_ecs_task_role_arn       = module.ecr.webapp_ecs_task_role_arn
+  task_definition_created        = var.task_definition_created
+  ecr_describe_images_policy_arn = module.ecr.describe_ecr_images_policy_arn
 }
 
 module "secrets" {
@@ -142,6 +146,8 @@ module "bastion" {
   environment_name   = local.environment_name
   main_vpc_id        = module.networking.vpc.id
   vpc_cidr_block     = module.networking.vpc.cidr_block
+
+  bastion_ssm_patch_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
 
 module "database" {
@@ -150,7 +156,7 @@ module "database" {
   environment_name                = local.environment_name
   database_password               = module.secrets.database_password.result
   database_port                   = local.database_port
-  allocated_storage               = <storage amount>
+  allocated_storage               = local.database_allocated_storage
   backup_retention_period         = <backup retention period>
   db_subnet_group_name            = module.networking.db_subnet_group_name
   instance_class                  = "<instance class>"
@@ -199,4 +205,25 @@ module "file_upload" {
   ecs_cluster_arn                 = module.ecs_service[0].ecs_cluster_arn
   private_subnet_ids              = module.networking.private_subnets[*].id
   ecs_security_group_ids          = module.ecs_service[0].ecs_security_group_ids
+}
+
+module "monitoring" {
+  source = "../modules/monitoring"
+
+  providers = {
+    aws.us-east-1 = aws.us-east-1
+  }
+
+  environment_name               = local.environment_name
+  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
+  alarm_email_address            = var.alarm_email_address
+  alb_name                       = module.frontdoor.load_balancer.name
+  alb_arn_suffix                 = module.frontdoor.load_balancer.arn_suffix
+  alb_target_group_arn_suffix    = module.frontdoor.load_balancer.target_group_arn_suffix
+  ecs_cluster_name               = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
+  ecs_service_name               = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
+  elasticache_cluster_ids        = toset(module.redis.redis_cluster_ids)
+  database_allocated_storage     = local.database_allocated_storage
+  database_identifier            = module.database.database_identifier
+  waf_acl_name                   = module.frontdoor.waf_acl_name
 }

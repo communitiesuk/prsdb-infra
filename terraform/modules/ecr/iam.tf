@@ -88,3 +88,21 @@ resource "aws_iam_role_policy_attachment" "task_allow_ecs_exec" {
   policy_arn = aws_iam_policy.allow_ecs_exec.arn
 }
 
+data "aws_iam_policy_document" "describe_images" {
+  statement {
+    actions   = ["ecr:DescribeImages"]
+    resources = [aws_ecr_repository.main.arn]
+    effect    = "Allow"
+  }
+
+  statement {
+    actions   = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+    effect    = "Allow"
+  }
+}
+
+resource "aws_iam_policy" "describe_images" {
+  name   = "ecr-describe-images"
+  policy = data.aws_iam_policy_document.describe_images.json
+}

@@ -71,12 +71,13 @@ jobs:
         run: exit 1
 
       - name: Report pipeline status
-        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: always()
         id: slack
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {
+              "environment": "${{ (inputs.environment == 'integration') && 'Integration' || (inputs.environment == 'production') && 'Production' || (inputs.environment == 'test') && 'Test' || inputs.environment }}",
               "commit": ${{ toJson(github.event.head_commit.message) }},
               "result": "${{ job.status == 'success' && 'Success :tick:' || 'Failure :no-cross:' }}",
               "url": "${{ format('https://github.com/communitiesuk/prsdb-infra/actions/runs/{0}', github.run_id) }}"
@@ -121,12 +122,13 @@ jobs:
         working-directory: terraform/${{ inputs.environment }}
 
       - name: Report pipeline status
-        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: always()
         id: slack
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {
+              "environment": "${{ (inputs.environment == 'integration') && 'Integration' || (inputs.environment == 'production') && 'Production' || (inputs.environment == 'test') && 'Test' || inputs.environment }}",
               "commit": ${{ toJson(github.event.head_commit.message) }},
               "result": "${{ job.status == 'success' && 'Success :tick:' || 'Failure :no-cross:' }}",
               "url": "${{ format('https://github.com/communitiesuk/prsdb-infra/actions/runs/{0}', github.run_id) }}"
