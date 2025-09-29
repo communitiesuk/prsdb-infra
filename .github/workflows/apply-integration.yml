@@ -11,4 +11,5 @@ jobs:
     with:
       environment: integration
       aws-account-id: 794038239680
+      maintenance-mode-on: false
     secrets: inherit

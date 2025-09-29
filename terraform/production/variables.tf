@@ -21,3 +21,9 @@ variable "ip_restrictions_on" {
   type        = bool
   default     = false
 }
+
+variable "maintenance_mode_on" {
+  type        = bool
+  description = "Indicates whether maintenance mode is on"
+  default     = false
+}
