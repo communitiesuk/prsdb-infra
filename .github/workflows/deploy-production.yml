@@ -1,0 +1,11 @@
+name: Deploy - Production
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+      account_id: 879161327637

@@ -1,0 +1,62 @@
+name: Deploy
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "The name of the environment to deploy to"
+        type: string
+        required: true
+      account_id:
+        description: "The id of the AWS account to deploy to"
+        type: string
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate-target-environment:
+    name: Validate Target Environment
+    uses: ./.github/workflows/validate-target-environment.yml
+    with:
+      environment: ${{ inputs.environment }}
+
+  retrieve-image:
+    name: Retrieve Latest ECR Image
+    needs: validate-target-environment
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: eu-west-2
+    outputs:
+      image_uri: ${{ steps.retrieve-image.outputs.image_uri }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.account_id }}:role/${{ inputs.environment }}-ecr-describe-images
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Retrieve Latest Image URI
+        id: retrieve-image
+        run: |
+          IMAGE_TAG=$(aws ecr describe-images --repository-name ${{ inputs.environment }}-webapp --query 'sort_by(imageDetails, &imagePushedAt)[-1].imageTags[0]' --output text)
+          IMAGE_URI="${{ inputs.account_id }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ inputs.environment }}-webapp:${IMAGE_TAG}"
+          echo "image_uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+  update-task-definition:
+    name: Update ECS task definition
+    needs: retrieve-image
+    uses: ./.github/workflows/update-task-definition.yml
+    with:
+      environment_name: ${{ inputs.environment }}
+      account_id: ${{ inputs.account_id }}
+      image_name: ${{ needs.retrieve-image.outputs.image_uri }}
+
+  update-ecs-service:
+    name: Update ECS service
+    needs: update-task-definition
+    uses: ./.github/workflows/update-ecs-service.yml
+    with:
+      environment_name: ${{ inputs.environment }}
+      account_id: ${{ inputs.account_id }}
