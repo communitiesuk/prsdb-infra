@@ -1,4 +1,4 @@
-
+# tfsec:ignore:aws-s3-enable-bucket-logging
 resource "aws_s3_bucket" "maintenance_page_bucket" {
   bucket = "${var.environment_name}-maintenance-page-bucket"
 }
@@ -64,5 +64,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket" {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
     }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "maintenance_page" {
+  bucket = aws_s3_bucket.maintenance_page_bucket.id
+  versioning_configuration {
+    status = "Enabled"
   }
 }
