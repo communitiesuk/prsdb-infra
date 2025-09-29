@@ -67,7 +67,7 @@ resource "aws_cloudfront_distribution" "main" {
     cached_methods         = ["GET", "HEAD"]
     path_pattern           = var.maintenance_mode_on ? "/maintenance" : "*"
     target_origin_id       = local.maintenance_origin_id
-    viewer_protocol_policy = "allow-all"
+    viewer_protocol_policy = "redirect-to-https"
   }
 
   viewer_certificate {
