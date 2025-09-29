@@ -54,3 +54,15 @@ data "aws_iam_policy_document" "maintenance_page" {
     }
   }
 }
+
+# KMS encryption is not supported for s3 buckets configured as a static website endpoint
+# tfsec:ignore:aws-s3-encryption-customer-key
+resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket" {
+  bucket = aws_s3_bucket.maintenance_page_bucket.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
