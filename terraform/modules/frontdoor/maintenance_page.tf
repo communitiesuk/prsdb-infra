@@ -25,11 +25,11 @@ resource "aws_s3_bucket_website_configuration" "maintenance_page_bucket_website"
 }
 
 resource "aws_s3_object" "maintenance_page" {
-  for_each = fileset("maintenance_page", "**")
+  for_each = fileset("..\\modules\\frontdoor\\maintenance_page", "**")
 
   bucket = aws_s3_bucket.maintenance_page_bucket.id
   key    = each.value
-  source = "maintenance_page/${each.value}"
+  source = "..\\modules\\frontdoor\\maintenance_page\\${each.value}"
 }
 
 resource "aws_s3_bucket_policy" "maintenance_page" {
