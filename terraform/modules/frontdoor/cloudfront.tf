@@ -65,6 +65,7 @@ resource "aws_cloudfront_distribution" "main" {
   ordered_cache_behavior {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
+    cache_policy_id            = aws_cloudfront_cache_policy.main.id
     path_pattern           = var.maintenance_mode_on ? "/maintenance" : "*"
     target_origin_id       = local.maintenance_origin_id
     viewer_protocol_policy = "redirect-to-https"
