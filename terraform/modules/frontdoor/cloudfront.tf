@@ -46,7 +46,7 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   origin {
-    domain_name = aws_s3_bucket.maintenance_page_bucket.website_endpoint
+    domain_name = aws_s3_bucket_website_configuration.maintenance_page_bucket_website.website_endpoint
     origin_id   = local.maintenance_origin_id
 
     custom_origin_config {
