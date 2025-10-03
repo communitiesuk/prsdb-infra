@@ -1,0 +1,11 @@
+name: Deploy - Integration
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: integration
+      account_id: 794038239680
