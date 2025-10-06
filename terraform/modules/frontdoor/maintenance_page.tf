@@ -6,26 +6,34 @@ resource "aws_s3_bucket" "maintenance_page_bucket" {
 resource "aws_s3_bucket_public_access_block" "maintenance_page_bucket_public_access" {
   bucket = aws_s3_bucket.maintenance_page_bucket.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_object" "maintenance_page" {
-  for_each = fileset("..\\modules\\frontdoor\\maintenance_page", "**")
+  for_each = { for f in fileset("..\\modules\\frontdoor\\maintenance_page", "**") : f => f if f != "index.html" }
 
   bucket = aws_s3_bucket.maintenance_page_bucket.id
   key    = each.value
   source = "..\\modules\\frontdoor\\maintenance_page\\${each.value}"
-  content_type = "text/html"
 }
 
+// The index file needs to match the path name so it can be found
 resource "aws_s3_object" "maintenance_page_index_file" {
   bucket = aws_s3_bucket.maintenance_page_bucket.id
   key    = "maintenance"
   source = "..\\modules\\frontdoor\\maintenance_page\\index.html"
   content_type = "text/html"
+}
+
+// The index file needs to match the path name so it can be found
+resource "aws_s3_object" "maintenance_page_style_file" {
+  bucket = aws_s3_bucket.maintenance_page_bucket.id
+  key    = "govuk-frontend-5.11.2.min.css"
+  source = "..\\modules\\frontdoor\\maintenance_page\\govuk-frontend-5.11.2.min.css"
+  content_type = "text/css"
 }
 
 resource "aws_s3_bucket_policy" "maintenance_page" {
