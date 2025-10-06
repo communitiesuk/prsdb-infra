@@ -12,39 +12,39 @@ resource "aws_s3_bucket_public_access_block" "maintenance_page_bucket_public_acc
   restrict_public_buckets = true
 }
 
-// The index file needs to match the path name so it can be found
+# The index file needs to match the path name so it can be found
 resource "aws_s3_object" "maintenance_page_index_file" {
-  bucket = aws_s3_bucket.maintenance_page_bucket.id
-  key    = "maintenance"
-  source = "..\\modules\\frontdoor\\maintenance_page\\index.html"
+  bucket       = aws_s3_bucket.maintenance_page_bucket.id
+  key          = "maintenance"
+  source       = "..\\modules\\frontdoor\\maintenance_page\\index.html"
   content_type = "text/html"
 }
 
 resource "aws_s3_object" "maintenance_page_style_file" {
-  bucket = aws_s3_bucket.maintenance_page_bucket.id
-  key    = "govuk-frontend-5.11.2.min.css"
-  source = "..\\modules\\frontdoor\\maintenance_page\\govuk-frontend-5.11.2.min.css"
+  bucket       = aws_s3_bucket.maintenance_page_bucket.id
+  key          = "govuk-frontend-5.11.2.min.css"
+  source       = "..\\modules\\frontdoor\\maintenance_page\\govuk-frontend-5.11.2.min.css"
   content_type = "text/css"
 }
 
 resource "aws_s3_object" "govuk_crest_svg" {
-  bucket = aws_s3_bucket.maintenance_page_bucket.id
-  key    = "/assets/images/govuk-crest.svg"
-  source = "..\\modules\\frontdoor\\maintenance_page\\assets\\images\\govuk-crest.svg"
+  bucket       = aws_s3_bucket.maintenance_page_bucket.id
+  key          = "/assets/images/govuk-crest.svg"
+  source       = "..\\modules\\frontdoor\\maintenance_page\\assets\\images\\govuk-crest.svg"
   content_type = "image/svg+xml"
 }
 
 resource "aws_s3_object" "gds_font_bold" {
-  bucket = aws_s3_bucket.maintenance_page_bucket.id
-  key    = "/assets/fonts/bold-b542beb274-v2.woff2"
-  source = "..\\modules\\frontdoor\\maintenance_page\\assets\\fonts\\bold-b542beb274-v2.woff2"
+  bucket       = aws_s3_bucket.maintenance_page_bucket.id
+  key          = "/assets/fonts/bold-b542beb274-v2.woff2"
+  source       = "..\\modules\\frontdoor\\maintenance_page\\assets\\fonts\\bold-b542beb274-v2.woff2"
   content_type = "font/woff2"
 }
 
 resource "aws_s3_object" "gds_font_light" {
-  bucket = aws_s3_bucket.maintenance_page_bucket.id
-  key    = "/assets/fonts/light-94a07e06a1-v2.woff2"
-  source = "..\\modules\\frontdoor\\maintenance_page\\assets\\fonts\\light-94a07e06a1-v2.woff2"
+  bucket       = aws_s3_bucket.maintenance_page_bucket.id
+  key          = "/assets/fonts/light-94a07e06a1-v2.woff2"
+  source       = "..\\modules\\frontdoor\\maintenance_page\\assets\\fonts\\light-94a07e06a1-v2.woff2"
   content_type = "font/woff2"
 }
 
