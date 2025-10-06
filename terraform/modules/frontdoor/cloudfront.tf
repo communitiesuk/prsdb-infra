@@ -3,6 +3,10 @@ locals {
   maintenance_origin_id = "maintenance-origin-${var.environment_name}"
 }
 
+resource "aws_cloudfront_origin_access_identity" "maintenance_oai" {
+  comment = "OAI for maintenance page S3 bucket"
+}
+
 #tfsec:ignore:aws-cloudfront-enable-logging: TODO we will be implementing logging later
 resource "aws_cloudfront_distribution" "main" {
   aliases         = var.ssl_certs_created ? var.cloudfront_domain_names : []
@@ -46,14 +50,11 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   origin {
-    domain_name = aws_s3_bucket_website_configuration.maintenance_page_bucket_website.website_endpoint
+    domain_name = aws_s3_bucket.maintenance_page_bucket.bucket_regional_domain_name
     origin_id   = local.maintenance_origin_id
 
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.maintenance_oai.cloudfront_access_identity_path
     }
 
     custom_header {

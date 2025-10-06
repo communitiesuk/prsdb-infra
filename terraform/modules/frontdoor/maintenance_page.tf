@@ -12,24 +12,20 @@ resource "aws_s3_bucket_public_access_block" "maintenance_page_bucket_public_acc
   restrict_public_buckets = false
 }
 
-resource "aws_s3_bucket_website_configuration" "maintenance_page_bucket_website" {
-  bucket = aws_s3_bucket.maintenance_page_bucket.id
-
-  index_document {
-    suffix = "index.html"
-  }
-
-  error_document {
-    key = "index.html"
-  }
-}
-
 resource "aws_s3_object" "maintenance_page" {
   for_each = fileset("..\\modules\\frontdoor\\maintenance_page", "**")
 
   bucket = aws_s3_bucket.maintenance_page_bucket.id
   key    = each.value
   source = "..\\modules\\frontdoor\\maintenance_page\\${each.value}"
+  content_type = "text/html"
+}
+
+resource "aws_s3_object" "maintenance_page_index_file" {
+  bucket = aws_s3_bucket.maintenance_page_bucket.id
+  key    = "maintenance"
+  source = "..\\modules\\frontdoor\\maintenance_page\\index.html"
+  content_type = "text/html"
 }
 
 resource "aws_s3_bucket_policy" "maintenance_page" {
@@ -40,18 +36,12 @@ resource "aws_s3_bucket_policy" "maintenance_page" {
 data "aws_iam_policy_document" "maintenance_page" {
   statement {
     principals {
-      type        = "Service"
-      identifiers = ["cloudfront.amazonaws.com"]
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.maintenance_oai.iam_arn]
     }
 
     actions   = ["s3:GetObject"]
     resources = ["${aws_s3_bucket.maintenance_page_bucket.arn}/*"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.main.arn]
-    }
   }
 }
 
