@@ -1,6 +1,6 @@
 # tfsec:ignore:aws-s3-enable-bucket-logging
 resource "aws_s3_bucket" "maintenance_page_bucket" {
-  bucket = "${var.environment_name}-maintenance-page-bucket"
+  bucket = "prsdb-maintenance-page-${var.environment_name}"
 }
 
 resource "aws_s3_bucket_public_access_block" "maintenance_page_bucket_public_access" {
@@ -81,5 +81,120 @@ resource "aws_s3_bucket_versioning" "maintenance_page" {
   bucket = aws_s3_bucket.maintenance_page_bucket.id
   versioning_configuration {
     status = "Enabled"
+  }
+}
+
+# Access logs bucket
+# tfsec:ignore:aws-s3-enable-bucket-logging tfsec:ignore:aws-s3-enable-versioning
+resource "aws_s3_bucket" "log_bucket" {
+  bucket        = "prsdb-maintenance-page-access-logs-${var.environment_name}"
+  force_destroy = var.force_destroy
+}
+
+resource "aws_s3_bucket_logging" "maintenance_page_bucket" {
+  bucket = aws_s3_bucket.maintenance_page_bucket.id
+
+  target_bucket = aws_s3_bucket.log_bucket.id
+  target_prefix = "log/"
+}
+
+# KMS encryption is not supported for logging target buckets
+# tfsec:ignore:aws-s3-encryption-customer-key
+resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket" {
+  bucket = aws_s3_bucket.log_bucket.bucket
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "log_bucket" {
+  bucket = aws_s3_bucket.log_bucket.id
+
+  rule {
+    id = "expire-old-logs"
+
+    filter {}
+
+    expiration {
+      days = var.access_s3_log_expiration_days
+    }
+
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "log_bucket" {
+  bucket = aws_s3_bucket.log_bucket.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "allow_log_writes" {
+  bucket = aws_s3_bucket.log_bucket.id
+  policy = data.aws_iam_policy_document.allow_log_writes.json
+}
+
+data "aws_caller_identity" "current" {}
+
+data "aws_iam_policy_document" "allow_log_writes" {
+  source_policy_documents = [data.aws_iam_policy_document.allow_ssl_requests_only.json]
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["logging.s3.amazonaws.com"]
+    }
+
+    actions = [
+      "s3:PutObject"
+    ]
+
+    resources = [
+      "${aws_s3_bucket.log_bucket.arn}/*"
+    ]
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = [aws_s3_bucket.maintenance_page_bucket.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+}
+
+# Apply policy to enforce SSL connections.
+data "aws_iam_policy_document" "allow_ssl_requests_only" {
+  statement {
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions = [
+      "s3:*"
+    ]
+
+    effect = "Deny"
+
+    resources = [
+      aws_s3_bucket.log_bucket.arn,
+      "${aws_s3_bucket.log_bucket.arn}/*",
+    ]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
   }
 }
