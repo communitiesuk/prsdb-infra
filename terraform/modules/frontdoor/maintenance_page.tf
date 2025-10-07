@@ -1,10 +1,10 @@
 module "maintenance_page_bucket" {
-    source = "../s3_bucket"
-    bucket_name = "prsdb-maintenance-page-${var.environment_name}"
-    access_log_bucket_name      = "prsdb-maintenance-page-access-logs-${var.environment_name}"
-    access_s3_log_expiration_days = 700
-    policy = data.aws_iam_policy_document.maintenance_page.json
-    kms_key_arn = aws_kms_key.maintenance_page_encryption_key.arn
+  source                        = "../s3_bucket"
+  bucket_name                   = "prsdb-maintenance-page-${var.environment_name}"
+  access_log_bucket_name        = "prsdb-maintenance-page-access-logs-${var.environment_name}"
+  access_s3_log_expiration_days = 700
+  policy                        = data.aws_iam_policy_document.maintenance_page.json
+  kms_key_arn                   = aws_kms_key.maintenance_page_encryption_key.arn
 }
 
 # The index file needs to match the path name so it can be found
@@ -45,12 +45,12 @@ resource "aws_s3_object" "gds_font_light" {
 
 data "aws_iam_policy_document" "maintenance_page" {
   statement {
-    sid       = "AllowGetFromCloudfront"
+    sid = "AllowGetFromCloudfront"
     principals {
       type        = "AWS"
       identifiers = [aws_cloudfront_origin_access_identity.maintenance_oai.iam_arn]
     }
-    effect = "Allow"
+    effect    = "Allow"
     actions   = ["s3:GetObject"]
     resources = ["${module.maintenance_page_bucket.bucket_arn}/*"]
   }
