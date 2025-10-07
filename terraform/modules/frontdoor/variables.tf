@@ -82,15 +82,3 @@ variable "maintenance_mode_on" {
   description = "Indicates whether maintenance mode is on"
   default     = false
 }
-
-variable "force_destroy" {
-  description = "Allow the buckets to be destroyed by Terraform even if they are not empty."
-  type        = bool
-  default     = false
-}
-
-variable "access_s3_log_expiration_days" {
-  type        = number
-  description = "The number of days to retain s3 access logs"
-  default     = 700
-}
