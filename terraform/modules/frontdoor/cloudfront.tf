@@ -67,7 +67,7 @@ resource "aws_cloudfront_distribution" "main" {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     cache_policy_id        = aws_cloudfront_cache_policy.main.id
-    path_pattern           = var.maintenance_mode_on ? "*" : "/maintenance"
+    path_pattern           = var.maintenance_mode_on ? "*" : "/not-a-path"
     target_origin_id       = local.maintenance_origin_id
     viewer_protocol_policy = "redirect-to-https"
     function_association {
@@ -75,6 +75,8 @@ resource "aws_cloudfront_distribution" "main" {
       function_arn = var.maintenance_mode_on ? aws_cloudfront_function.url_rewriter_maintenance.arn : aws_cloudfront_function.url_rewriter.arn
     }
   }
+
+
 
   viewer_certificate {
     cloudfront_default_certificate = var.ssl_certs_created ? false : true
