@@ -56,11 +56,6 @@ resource "aws_cloudfront_distribution" "main" {
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.maintenance_oai.cloudfront_access_identity_path
     }
-
-    custom_header {
-      name  = local.cloudfront_header_name
-      value = random_password.cloudfront_header.result
-    }
   }
 
   ordered_cache_behavior {
