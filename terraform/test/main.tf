@@ -84,6 +84,17 @@ module "frontdoor" {
     "172.166.224.214/32",
     # MHCLG
     "4.158.35.41/32",
+    # Detectify
+    "52.17.9.21",
+    "52.17.98.131",
+    # Detectify N. Virginia
+    "107.20.158.220",
+    "3.234.180.95",
+    "34.234.177.119",
+    # Detectify Mumbai
+    "13.126.5.12",
+    "3.7.157.159",
+    "3.7.173.162",
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   use_aws_shield_advanced        = true
