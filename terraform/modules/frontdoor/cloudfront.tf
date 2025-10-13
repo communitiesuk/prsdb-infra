@@ -1,5 +1,10 @@
 locals {
-  origin_id = "origin-${var.environment_name}"
+  origin_id             = "origin-${var.environment_name}"
+  maintenance_origin_id = "maintenance-origin-${var.environment_name}"
+}
+
+resource "aws_cloudfront_origin_access_identity" "maintenance_oai" {
+  comment = "OAI for maintenance page S3 bucket"
 }
 
 #tfsec:ignore:aws-cloudfront-enable-logging: TODO we will be implementing logging later
@@ -42,6 +47,37 @@ resource "aws_cloudfront_distribution" "main" {
       event_type   = "viewer-request"
       function_arn = aws_cloudfront_function.url_rewriter.arn
     }
+  }
+
+  origin {
+    domain_name = module.maintenance_page_bucket.bucket_regional_domain_name
+    origin_id   = local.maintenance_origin_id
+
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.maintenance_oai.cloudfront_access_identity_path
+    }
+  }
+
+  ordered_cache_behavior {
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    cache_policy_id        = aws_cloudfront_cache_policy.main.id
+    path_pattern           = var.maintenance_mode_on ? "*" : "/maintenance"
+    target_origin_id       = local.maintenance_origin_id
+    viewer_protocol_policy = "redirect-to-https"
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = var.maintenance_mode_on ? aws_cloudfront_function.url_rewriter_maintenance.arn : aws_cloudfront_function.url_rewriter.arn
+    }
+  }
+
+  ordered_cache_behavior {
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    cache_policy_id        = aws_cloudfront_cache_policy.main.id
+    path_pattern           = "/govuk-frontend-5.11.2.min.css"
+    target_origin_id       = local.maintenance_origin_id
+    viewer_protocol_policy = "redirect-to-https"
   }
 
   viewer_certificate {
@@ -121,6 +157,14 @@ resource "aws_cloudfront_function" "url_rewriter" {
   comment = "Rewrites URLs to include the service line as the first path segment"
   publish = true
   code    = file("${path.module}/url_rewriter.js")
+}
+
+resource "aws_cloudfront_function" "url_rewriter_maintenance" {
+  name    = "url-rewriter-maintenance"
+  runtime = "cloudfront-js-2.0"
+  comment = "Rewrites URLs to be maintenance"
+  publish = true
+  code    = file("${path.module}/url_rewriter_maintenance.js")
 }
 
 resource "aws_shield_subscription" "cloudfront" {

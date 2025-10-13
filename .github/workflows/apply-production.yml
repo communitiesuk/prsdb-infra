@@ -11,4 +11,5 @@ jobs:
     with:
       environment: production
       aws-account-id: 879161327637
+      maintenance-mode-on: false
     secrets: inherit
