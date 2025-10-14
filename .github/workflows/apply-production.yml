@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - production
+  workflow_dispatch:
 
 jobs:
   apply:
@@ -11,5 +12,5 @@ jobs:
     with:
       environment: production
       aws-account-id: 879161327637
-      maintenance-mode-on: false
+      maintenance-mode-on: ${{ vars.MAINTENANCE_MODE_ON_PRODUCTION == 'true'}}
     secrets: inherit
