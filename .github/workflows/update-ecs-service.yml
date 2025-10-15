@@ -33,4 +33,4 @@ jobs:
           aws-region: eu-west-2
 
       - name: Update ECS service
-        run: aws ecs update-service --cluster ${{ inputs.environment }}-app --service ${{ inputs.environment_name }}-app --task-definition prsdb-webapp-${{ inputs.environment_name }} --force-new-deployment
+        run: aws ecs update-service --cluster ${{ inputs.environment }}-app --service ${{ inputs.environment }}-app --task-definition prsdb-webapp-${{ inputs.environment }} --force-new-deployment
