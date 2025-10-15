@@ -8,4 +8,4 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: production
-      account_id: 879161327637
+      aws-account-id: 879161327637
