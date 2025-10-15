@@ -12,13 +12,18 @@ on:
         required: true
         type: boolean
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
+  AWS_REGION: "eu-west-2"
   TF_VAR_alarm_email_address: ${{ secrets.ALARMS_EMAIL }}
   TF_VAR_maintenance_mode_on: ${{ inputs.maintenance-mode-on }}
 
 jobs:
   validate-target-environment:
-    name: Validate Target Environment
+    name: Validate target environment
     uses: ./.github/workflows/validate-target-environment.yml
     with:
       environment: ${{ inputs.environment }}
@@ -27,24 +32,19 @@ jobs:
     name: Terraform plan
     needs: validate-target-environment
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     concurrency: tfstate-${{ inputs.environment }}
     outputs:
       plan: ${{ steps.plan.outputs.stdout }}
-      plan_exitcode: ${{ steps.plan.outputs.exitcode }}
+      plan-exit-code: ${{ steps.plan.outputs.exitcode }}
     defaults:
       run:
         working-directory: terraform/${{ inputs.environment }}
-    env:
-      AWS_REGION: "eu-west-2"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/github-actions-terraform-ci-plan-read-only
           aws-region: ${{ env.AWS_REGION }}
@@ -56,16 +56,14 @@ jobs:
           terraform_version: 1.9.1
 
       - name: Terraform init
-        id: init
         run: terraform init -input=false
         working-directory: terraform/${{ inputs.environment }}
 
-      - name: Terraform Plan
+      - name: Terraform plan
         id: plan
         # Terraform's "detailed-exitcode" codes are: 0 for "no changes", 1 for errors, 2 for "valid changes"
         # We don't save the plan as an artefact as it's sensitive and this repo is public
-        run: >
-          terraform plan -input=false -detailed-exitcode
+        run: terraform plan -input=false -detailed-exitcode
         continue-on-error: true
         working-directory: terraform/${{ inputs.environment }}
 
@@ -75,7 +73,6 @@ jobs:
 
       - name: Report pipeline status
         if: always()
-        id: slack
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
@@ -92,20 +89,15 @@ jobs:
     name: Terraform apply
     needs: plan
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     concurrency: tfstate-${{ inputs.environment }}
     environment: ${{ inputs.environment }}
-    if: needs.plan.outputs.plan_exitcode == 2
-    env:
-      AWS_REGION: "eu-west-2"
+    if: needs.plan.outputs.plan-exit-code == 2
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/github-actions-terraform-admin
           aws-region: ${{ env.AWS_REGION }}
@@ -116,17 +108,15 @@ jobs:
           terraform_version: 1.9.1
 
       - name: Terraform init
-        id: init
         run: terraform init -input=false
         working-directory: terraform/${{ inputs.environment }}
 
-      - name: Terraform Apply
+      - name: Terraform apply
         run: terraform apply -auto-approve -input=false
         working-directory: terraform/${{ inputs.environment }}
 
       - name: Report pipeline status
         if: always()
-        id: slack
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |

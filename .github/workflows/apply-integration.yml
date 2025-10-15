@@ -12,5 +12,5 @@ jobs:
     with:
       environment: integration
       aws-account-id: 794038239680
-      maintenance-mode-on: ${{ vars.MAINTENANCE_MODE_ON_INTEGRATION == 'true'}}
+      maintenance-mode-on: ${{ vars.MAINTENANCE_MODE_ON_INTEGRATION == 'true' }}
     secrets: inherit
