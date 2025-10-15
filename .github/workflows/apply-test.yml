@@ -3,13 +3,15 @@ on:
   push:
     branches:
       - test
+  workflow_dispatch:
 
 jobs:
   apply:
+    if: github.ref == 'refs/heads/test'
     name: Apply
     uses: ./.github/workflows/apply.yml
     with:
       environment: test
       aws-account-id: 869935096717
-      maintenance-mode-on: false
+      maintenance-mode-on: ${{ vars.MAINTENANCE_MODE_ON_TEST == 'true'}}
     secrets: inherit
