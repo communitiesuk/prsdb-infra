@@ -4,7 +4,6 @@ module "maintenance_page_bucket" {
   access_log_bucket_name        = "prsdb-maintenance-page-access-logs-${var.environment_name}"
   access_s3_log_expiration_days = 700
   policy                        = data.aws_iam_policy_document.maintenance_page.json
-  kms_key_arn                   = aws_kms_key.maintenance_page_encryption_key.arn
 }
 
 # The index file needs to match the path name so it can be found
@@ -54,14 +53,4 @@ data "aws_iam_policy_document" "maintenance_page" {
     actions   = ["s3:GetObject"]
     resources = ["${module.maintenance_page_bucket.bucket_arn}/*"]
   }
-}
-
-resource "aws_kms_key" "maintenance_page_encryption_key" {
-  description         = "Quarantine bucket encryption key"
-  enable_key_rotation = true
-}
-
-resource "aws_kms_alias" "maintenance_page_encryption_key" {
-  name          = "alias/maintenance-page-encryption-${var.environment_name}"
-  target_key_id = aws_kms_key.maintenance_page_encryption_key.key_id
 }
