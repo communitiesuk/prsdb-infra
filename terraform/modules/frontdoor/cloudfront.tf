@@ -76,39 +76,39 @@ resource "aws_cloudfront_distribution" "main" {
     viewer_protocol_policy = "redirect-to-https"
     function_association {
       event_type   = "viewer-request"
-      function_arn =  aws_cloudfront_function.url_rewriter.arn
+      function_arn = aws_cloudfront_function.url_rewriter.arn
     }
   }
 
   custom_error_response {
-    error_code = 501
-    response_code = 501
+    error_code         = 501
+    response_code      = 501
     response_page_path = "/maintenance"
   }
 
   custom_error_response {
-    error_code = 502
-    response_code = 502
+    error_code         = 502
+    response_code      = 502
     response_page_path = "/maintenance"
   }
 
   custom_error_response {
-    error_code = 503
-    response_code = 503
+    error_code         = 503
+    response_code      = 503
     response_page_path = "/maintenance"
   }
 
   custom_error_response {
-    error_code = 504
-    response_code = 504
+    error_code         = 504
+    response_code      = 504
     response_page_path = "/maintenance"
   }
 
   dynamic "custom_error_response" {
     for_each = var.maintenance_mode_on ? ["this"] : []
     content {
-      error_code = 404
-      response_code = 200
+      error_code         = 404
+      response_code      = 200
       response_page_path = "/maintenance"
     }
   }
@@ -116,8 +116,8 @@ resource "aws_cloudfront_distribution" "main" {
   dynamic "custom_error_response" {
     for_each = var.maintenance_mode_on ? ["this"] : []
     content {
-      error_code = 403
-      response_code = 200
+      error_code         = 403
+      response_code      = 200
       response_page_path = "/maintenance"
     }
   }
