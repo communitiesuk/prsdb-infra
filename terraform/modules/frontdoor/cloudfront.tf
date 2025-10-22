@@ -67,7 +67,7 @@ resource "aws_cloudfront_distribution" "main" {
     viewer_protocol_policy = "redirect-to-https"
     function_association {
       event_type   = "viewer-request"
-      function_arn = var.maintenance_mode_on ? aws_cloudfront_function.url_rewriter_maintenance.arn : aws_cloudfront_function.url_rewriter.arn
+      function_arn =  aws_cloudfront_function.url_rewriter.arn
     }
   }
 
@@ -102,6 +102,24 @@ resource "aws_cloudfront_distribution" "main" {
     error_code = 504
     response_code = 504
     response_page_path = "/maintenance"
+  }
+
+  dynamic "custom_error_response" {
+    for_each = var.maintenance_mode_on ? ["this"] : []
+    content {
+      error_code = 404
+      response_code = 200
+      response_page_path = "/maintenance"
+    }
+  }
+
+  dynamic "custom_error_response" {
+    for_each = var.maintenance_mode_on ? ["this"] : []
+    content {
+      error_code = 403
+      response_code = 200
+      response_page_path = "/maintenance"
+    }
   }
 
   viewer_certificate {
