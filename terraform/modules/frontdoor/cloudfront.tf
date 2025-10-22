@@ -62,22 +62,64 @@ resource "aws_cloudfront_distribution" "main" {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     cache_policy_id        = aws_cloudfront_cache_policy.main.id
-    path_pattern           = var.maintenance_mode_on ? "*" : "/maintenance"
+    path_pattern           = "/govuk-frontend-5.11.2.min.css"
     target_origin_id       = local.maintenance_origin_id
     viewer_protocol_policy = "redirect-to-https"
-    function_association {
-      event_type   = "viewer-request"
-      function_arn = var.maintenance_mode_on ? aws_cloudfront_function.url_rewriter_maintenance.arn : aws_cloudfront_function.url_rewriter.arn
-    }
   }
 
   ordered_cache_behavior {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     cache_policy_id        = aws_cloudfront_cache_policy.main.id
-    path_pattern           = "/govuk-frontend-5.11.2.min.css"
+    path_pattern           = var.maintenance_mode_on ? "*" : "/maintenance"
     target_origin_id       = local.maintenance_origin_id
     viewer_protocol_policy = "redirect-to-https"
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.url_rewriter.arn
+    }
+  }
+
+  custom_error_response {
+    error_code         = 501
+    response_code      = 501
+    response_page_path = "/maintenance"
+  }
+
+  custom_error_response {
+    error_code         = 502
+    response_code      = 502
+    response_page_path = "/maintenance"
+  }
+
+  custom_error_response {
+    error_code         = 503
+    response_code      = 503
+    response_page_path = "/maintenance"
+  }
+
+  custom_error_response {
+    error_code         = 504
+    response_code      = 504
+    response_page_path = "/maintenance"
+  }
+
+  dynamic "custom_error_response" {
+    for_each = var.maintenance_mode_on ? ["this"] : []
+    content {
+      error_code         = 404
+      response_code      = 200
+      response_page_path = "/maintenance"
+    }
+  }
+
+  dynamic "custom_error_response" {
+    for_each = var.maintenance_mode_on ? ["this"] : []
+    content {
+      error_code         = 403
+      response_code      = 200
+      response_page_path = "/maintenance"
+    }
   }
 
   viewer_certificate {
@@ -157,14 +199,6 @@ resource "aws_cloudfront_function" "url_rewriter" {
   comment = "Rewrites URLs to include the service line as the first path segment"
   publish = true
   code    = file("${path.module}/url_rewriter.js")
-}
-
-resource "aws_cloudfront_function" "url_rewriter_maintenance" {
-  name    = "url-rewriter-maintenance"
-  runtime = "cloudfront-js-2.0"
-  comment = "Rewrites URLs to be maintenance"
-  publish = true
-  code    = file("${path.module}/url_rewriter_maintenance.js")
 }
 
 resource "aws_shield_subscription" "cloudfront" {
