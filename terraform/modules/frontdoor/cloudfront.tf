@@ -80,6 +80,30 @@ resource "aws_cloudfront_distribution" "main" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
+  custom_error_response {
+    error_code = 501
+    response_code = 501
+    response_page_path = "/maintenance"
+  }
+
+  custom_error_response {
+    error_code = 502
+    response_code = 502
+    response_page_path = "/maintenance"
+  }
+
+  custom_error_response {
+    error_code = 503
+    response_code = 503
+    response_page_path = "/maintenance"
+  }
+
+  custom_error_response {
+    error_code = 504
+    response_code = 504
+    response_page_path = "/maintenance"
+  }
+
   viewer_certificate {
     cloudfront_default_certificate = var.ssl_certs_created ? false : true
     acm_certificate_arn            = var.ssl_certs_created ? var.cloudfront_certificate_arn : null
