@@ -12,6 +12,7 @@ resource "aws_s3_object" "maintenance_page_index_file" {
   key          = "maintenance"
   source       = "..\\modules\\frontdoor\\maintenance_page\\index.html"
   content_type = "text/html"
+  cache_control = "no-cache"
 }
 
 resource "aws_s3_object" "maintenance_page_style_file" {
