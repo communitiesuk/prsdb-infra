@@ -8,10 +8,10 @@ module "maintenance_page_bucket" {
 
 # The index file needs to match the path name so it can be found
 resource "aws_s3_object" "maintenance_page_index_file" {
-  bucket       = module.maintenance_page_bucket.bucket
-  key          = "maintenance"
-  source       = "../modules/frontdoor/maintenance_page/index.html"
-  content_type = "text/html"
+  bucket        = module.maintenance_page_bucket.bucket
+  key           = "maintenance"
+  source        = "../modules/frontdoor/maintenance_page/index.html"
+  content_type  = "text/html"
   cache_control = "no-cache"
 }
 
