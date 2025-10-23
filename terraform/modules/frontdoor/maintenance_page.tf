@@ -10,7 +10,7 @@ module "maintenance_page_bucket" {
 resource "aws_s3_object" "maintenance_page_index_file" {
   bucket       = module.maintenance_page_bucket.bucket
   key          = "maintenance"
-  source       = "..\\modules\\frontdoor\\maintenance_page\\index.html"
+  source       = "../modules/frontdoor/maintenance_page/index.html"
   content_type = "text/html"
   cache_control = "no-cache"
 }
@@ -18,28 +18,28 @@ resource "aws_s3_object" "maintenance_page_index_file" {
 resource "aws_s3_object" "maintenance_page_style_file" {
   bucket       = module.maintenance_page_bucket.bucket
   key          = "govuk-frontend-5.11.2.min.css"
-  source       = "..\\modules\\frontdoor\\maintenance_page\\govuk-frontend-5.11.2.min.css"
+  source       = "../modules/frontdoor/maintenance_page/govuk-frontend-5.11.2.min.css"
   content_type = "text/css"
 }
 
 resource "aws_s3_object" "govuk_crest_svg" {
   bucket       = module.maintenance_page_bucket.bucket
   key          = "/assets/images/govuk-crest.svg"
-  source       = "..\\modules\\frontdoor\\maintenance_page\\assets\\images\\govuk-crest.svg"
+  source       = "../modules/frontdoor/maintenance_page/assets/images/govuk-crest.svg"
   content_type = "image/svg+xml"
 }
 
 resource "aws_s3_object" "gds_font_bold" {
   bucket       = module.maintenance_page_bucket.bucket
   key          = "/assets/fonts/bold-b542beb274-v2.woff2"
-  source       = "..\\modules\\frontdoor\\maintenance_page\\assets\\fonts\\bold-b542beb274-v2.woff2"
+  source       = "../modules/frontdoor/maintenance_page/assets/fonts/bold-b542beb274-v2.woff2"
   content_type = "font/woff2"
 }
 
 resource "aws_s3_object" "gds_font_light" {
   bucket       = module.maintenance_page_bucket.bucket
   key          = "/assets/fonts/light-94a07e06a1-v2.woff2"
-  source       = "..\\modules\\frontdoor\\maintenance_page\\assets\\fonts\\light-94a07e06a1-v2.woff2"
+  source       = "../modules/frontdoor/maintenance_page/assets/fonts/light-94a07e06a1-v2.woff2"
   content_type = "font/woff2"
 }
 
