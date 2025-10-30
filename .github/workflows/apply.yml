@@ -28,6 +28,14 @@ jobs:
     with:
       environment: ${{ inputs.environment }}
 
+  refresh-task-definitions:
+    name: Refresh task definitions
+    needs: validate-target-environment
+    uses: ./.github/workflows/refresh-task-definitions.yml
+    with:
+      environment: ${{ inputs.environment }}
+      aws-account-id: ${{ inputs.aws-account-id }}
+
   plan:
     name: Terraform plan
     needs: validate-target-environment
