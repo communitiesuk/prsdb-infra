@@ -336,6 +336,17 @@ describe('url_rewriter', () => {
             // then
             expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/maintenance');
         });
+
+        it('returns the original url for the /.well-known endpoint', () => {
+            // given
+            const event = createRequestEvent(searchLandlordHomeInformationHost, '/.well-known/security.txt');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/.well-known/security.txt');
+        });
     });
 });
 
