@@ -168,6 +168,17 @@ describe('url_rewriter', () => {
             // then
             expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/maintenance');
         });
+
+        it('returns the original url for the /.well-known endpoint', () => {
+            // given
+            const event = createRequestEvent(registerHomeToRentHost, '/.well-known/security.txt');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/.well-known/security.txt');
+        })
     });
 
     describe('for the search-landlord-home-information domain', () => {
