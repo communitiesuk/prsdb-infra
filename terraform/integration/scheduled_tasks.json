@@ -1,5 +1,5 @@
 {
   "example": {
-    "schedule_expression": "rate(15 minutes)"
+    "schedule_expression": "rate(5 minutes)"
   }
 }

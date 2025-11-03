@@ -18,7 +18,7 @@ variable "security_group_ids" {
   default     = []
 }
 
-variable "scheduled_tasks" {
+variable "schedule_expressions" {
   description = "Map of scheduled tasks with their configurations"
   type = map(object({
     schedule_expression = string

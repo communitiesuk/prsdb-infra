@@ -192,4 +192,8 @@ module "scheduled_tasks_ecs_task_definitions" {
   task_name             = "prsdb-${each.key}-scheduled-task"
   environment_variables = concat(local.common_environment_variables, local.scheduled_tasks_only_environment_variables)
   secrets               = local.common_secrets
+  tags = {
+    Type              = "scheduled-task"
+    ScheduledTaskName = each.key
+  }
 }
