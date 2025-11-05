@@ -126,7 +126,7 @@ locals {
   scheduled_tasks_only_environment_variables = [
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = "web-server-deactivated,scan-processor"
+      value = "web-server-deactivated,scheduled-task"
     },
   ]
   common_secrets = [
