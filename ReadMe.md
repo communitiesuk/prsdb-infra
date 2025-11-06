@@ -244,3 +244,19 @@ docker run --pull=always --rm -it -v "$(pwd):/src" aquasec/tfsec /src
 
 Individual rules can be ignored with a comment on the line above with the form `tfsec:ignore:<rule-name>`
 e.g. `tfsec:ignore:aws-dynamodb-enable-at-rest-encryption`.
+
+## Creating a new scheduled task
+
+To create a new scheduled task, you need to add an object to the relevant scheduled_tasks json files located in `terraform/<environment name>/scheduled_tasks.json`. The format of the object is as follows:
+```
+{
+  ...
+  "<name of task": {
+    "schedule_expression": "<schedule expression>"
+  }
+}
+```
+
+Where schedule expression is a cron or rate expression as defined in the [AWS documentation](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-scheduled-rule-pattern.html).
+
+This will trigger a copy of the webapp container in line with the schedule. The container will have the Spring profiles set to `web-server-deactivated`, `scheduled-task`, and `<name-of-task>-scheduled-task` which should be used to select the correct application runner in the webapp for this particular task.

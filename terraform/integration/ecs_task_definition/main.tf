@@ -39,7 +39,7 @@ locals {
       name  = "RDS_USERNAME"
       value = data.aws_ssm_parameter.database_username.value
     },
-    # TODO: Move bucket environment variables to webapp only when virus scan result processing is integrated with the webapp
+    # TODO: Move bucket environment variables to ad-hoc tasks only when virus scan result processing has been moved
     {
       name  = "AWS_QUARANTINE_BUCKET"
       value = var.file_upload_buckets_created ? data.aws_ssm_parameter.quarantine_bucket[0].value : ""
