@@ -1,0 +1,47 @@
+name: Refresh Task Definition
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "The name of the environment to deploy to"
+        type: string
+        required: true
+      aws-account-id:
+        description: "The id of the AWS account to deploy to"
+        type: string
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  retrieve-image:
+    name: Retrieve latest ECR image
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: "eu-west-2"
+    outputs:
+      image-uri: ${{ steps.retrieve-image.outputs.image-uri }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/${{ inputs.environment }}-ecr-describe-images
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Retrieve latest image URI
+        id: retrieve-image
+        run: |
+          IMAGE_TAG=$(aws ecr describe-images --repository-name ${{ inputs.environment }}-webapp --query 'sort_by(imageDetails, &imagePushedAt)[-1].imageTags[0]' --output text)
+          IMAGE_URI="${{ inputs.aws-account-id }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ inputs.environment }}-webapp:${IMAGE_TAG}"
+          echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+  update-task-definition:
+    name: Update ECS task definition
+    needs: retrieve-image
+    uses: ./.github/workflows/update-task-definition.yml
+    with:
+      environment: ${{ inputs.environment }}
+      aws-account-id: ${{ inputs.aws-account-id }}
+      image-uri: ${{ needs.retrieve-image.outputs.image-uri }}
