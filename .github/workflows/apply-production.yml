@@ -3,12 +3,15 @@ on:
   push:
     branches:
       - production
+  workflow_dispatch:
 
 jobs:
   apply:
+    if: github.ref == 'refs/heads/production'
     name: Apply
     uses: ./.github/workflows/apply.yml
     with:
       environment: production
       aws-account-id: 879161327637
+      maintenance-mode-on: ${{ vars.MAINTENANCE_MODE_ON_PRODUCTION == 'true' }}
     secrets: inherit
