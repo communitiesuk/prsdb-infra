@@ -39,7 +39,7 @@ locals {
       name  = "RDS_USERNAME"
       value = data.aws_ssm_parameter.database_username.value
     },
-    # TODO: Move bucket environment variables to ad-hoc tasks only when virus scan result processing is moved there
+    # TODO PRSD-1325: Move bucket environment variables to ad-hoc tasks only when virus scan result processing is moved there
     {
       name  = "AWS_QUARANTINE_BUCKET"
       value = var.file_upload_buckets_created ? data.aws_ssm_parameter.quarantine_bucket[0].value : ""
@@ -123,6 +123,7 @@ locals {
       value = data.aws_ssm_parameter.beta_feedback_team_email_address.value
     },
   ]
+  # We set default Spring profiles for scheduled tasks to allow the application to correctly handle the case where a scheduled task is created without a dedicated profile. These should always be overridden by task-specific profiles.
   scheduled_tasks_only_environment_variables = [
     {
       name  = "SPRING_PROFILES_ACTIVE"

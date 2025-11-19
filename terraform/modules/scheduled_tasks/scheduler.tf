@@ -54,7 +54,7 @@ resource "aws_scheduler_schedule" "scheduled_tasks" {
     })
 
     retry_policy {
-      # ToDo: Consider sensible max retry attempts and cooldown period
+      # ToDo PRSD-1607: Consider sensible max retry attempts and cooldown period
       maximum_retry_attempts = 0
     }
 

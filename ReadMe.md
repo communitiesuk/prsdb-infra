@@ -251,7 +251,7 @@ To create a new scheduled task, you need to add an object to the relevant schedu
 ```
 {
   ...
-  "<name of task": {
+  "<name of task>": {
     "schedule_expression": "<schedule expression>"
   }
 }
