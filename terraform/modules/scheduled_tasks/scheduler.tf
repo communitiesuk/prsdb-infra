@@ -42,7 +42,7 @@ resource "aws_scheduler_schedule" "scheduled_tasks" {
     input = jsonencode({
       "containerOverrides" : [
         {
-          "name" : "${each.key}-scheduled-task",
+          "name" : "prsdb-${each.key}-scheduled-task",
           "environment" : [
             {
               "name" : "SPRING_PROFILES_ACTIVE",

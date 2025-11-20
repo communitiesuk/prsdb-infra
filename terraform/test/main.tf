@@ -258,6 +258,7 @@ module "scheduled_tasks" {
   private_subnet_ids      = module.networking.private_subnets[*].id
   security_group_ids      = module.ecs_service[0].ecs_security_group_ids
   schedule_expressions    = local.scheduled_tasks
+  task_role_arn           = module.ecr.webapp_ecs_task_role_arn
   task_execution_role_arn = module.ecr.ecs_task_execution_role_arn
   alarm_email_address     = var.alarm_email_address
 }

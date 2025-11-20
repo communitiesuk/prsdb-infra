@@ -25,6 +25,11 @@ variable "schedule_expressions" {
   }))
 }
 
+variable "task_role_arn" {
+  description = "ARN of the IAM role that scheduled tasks will assume"
+  type        = string
+}
+
 variable "task_execution_role_arn" {
   description = "ARN of the IAM role that scheduled tasks will use for execution"
   type        = string
