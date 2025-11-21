@@ -9,11 +9,17 @@ data "aws_resourcegroupstaggingapi_resources" "scheduled_task_definitions" {
 }
 
 locals {
-  tasks = {
-    for task_def in data.aws_resourcegroupstaggingapi_resources.scheduled_task_definitions.resource_tag_mapping_list :
-    task_def.tags["ScheduledTaskName"] => {
-      task_family_arn     = replace(task_def.resource_arn, "/:[0-9]+$/", "")
-      schedule_expression = var.schedule_expressions[task_def.tags["ScheduledTaskName"]].schedule_expression
+  task_name_tag = "ScheduledTaskName"
+  tasks = merge([
+    for task_def in data.aws_resourcegroupstaggingapi_resources.scheduled_task_definitions.resource_tag_mapping_list : {
+      (task_def.tags[local.task_name_tag]) = {
+        task_family_arn = replace(
+          task_def.resource_arn,
+          "/:[0-9]+$/",
+          ""
+        )
+        schedule_expression = var.schedule_expressions[task_def.tags[local.task_name_tag]].schedule_expression
+      }
     }
-  }
+  ]...)
 }

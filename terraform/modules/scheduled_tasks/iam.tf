@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "scheduled_tasks" {
     actions = [
       "iam:PassRole",
     ]
-    resources = [aws_iam_role.scheduled_tasks.arn, var.task_execution_role_arn]
+    resources = [var.task_role_arn, var.task_execution_role_arn]
     condition {
       test     = "StringLike"
       variable = "iam:PassedToService"
