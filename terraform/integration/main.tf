@@ -160,7 +160,7 @@ module "parameters" {
 
   environment_name         = local.environment_name
   landlord_base_url        = local.app_host
-  local_authority_base_url = local.search_landlord_host
+  local_council_base_url = local.search_landlord_host
 }
 
 module "bastion" {

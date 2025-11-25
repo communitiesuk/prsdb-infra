@@ -54,7 +54,7 @@ locals {
     },
     {
       name  = "LOCAL_COUNCIL_BASE_URL"
-      value = data.aws_ssm_parameter.local_authority_base_url.value
+      value = data.aws_ssm_parameter.local_council_base_url.value
     },
     {
       name  = "EMAILNOTIFICATIONS_USE_PRODUCTION_NOTIFY"
