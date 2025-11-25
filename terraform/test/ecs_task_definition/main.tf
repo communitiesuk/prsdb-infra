@@ -53,7 +53,7 @@ locals {
       value = data.aws_ssm_parameter.landlord_base_url.value
     },
     {
-      name  = "LOCAL_AUTHORITY_BASE_URL"
+      name  = "LOCAL_COUNCIL_BASE_URL"
       value = data.aws_ssm_parameter.local_authority_base_url.value
     },
     {
