@@ -86,10 +86,10 @@ resource "aws_ssm_parameter" "landlord_base_url" {
   value = var.landlord_base_url
 }
 
-resource "aws_ssm_parameter" "local_authority_base_url" {
-  name  = "${var.environment_name}-prsdb-local-authority-base-url"
+resource "aws_ssm_parameter" "local_council_base_url" {
+  name  = "${var.environment_name}-prsdb-local-council-base-url"
   type  = "String"
-  value = var.local_authority_base_url
+  value = var.local_council_base_url
 }
 
 resource "aws_ssm_parameter" "plausible_analytics_domain_id" {

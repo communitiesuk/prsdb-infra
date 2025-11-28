@@ -157,9 +157,9 @@ module "secrets" {
 module "parameters" {
   source = "../modules/ssm"
 
-  environment_name         = local.environment_name
-  landlord_base_url        = local.app_host
-  local_authority_base_url = local.search_landlord_host
+  environment_name       = local.environment_name
+  landlord_base_url      = local.app_host
+  local_council_base_url = local.search_landlord_host
 }
 
 module "bastion" {
