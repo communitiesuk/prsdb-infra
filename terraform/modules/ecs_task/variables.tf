@@ -60,3 +60,9 @@ variable "ecs_task_role_arn" {
   type        = string
   description = "The arn of the app task role"
 }
+
+variable "tags" {
+  description = "A map of tags to assign to the resource."
+  type        = map(string)
+  default     = {}
+}

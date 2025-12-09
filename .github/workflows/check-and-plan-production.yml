@@ -2,7 +2,7 @@ name: Check and Plan - Production
 on:
   pull_request:
     branches:
-      - production
+      - DISABLED-production
 
 jobs:
   check-and-plan:

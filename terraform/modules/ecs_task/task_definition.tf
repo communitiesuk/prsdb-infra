@@ -42,4 +42,6 @@ resource "aws_ecs_task_definition" "main" {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64"
   }
+
+  tags = var.tags
 }

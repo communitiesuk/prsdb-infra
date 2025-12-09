@@ -92,8 +92,8 @@ data "aws_ssm_parameter" "landlord_base_url" {
   name = "${local.environment_name}-prsdb-landlord-base-url"
 }
 
-data "aws_ssm_parameter" "local_authority_base_url" {
-  name = "${local.environment_name}-prsdb-local-authority-base-url"
+data "aws_ssm_parameter" "local_council_base_url" {
+  name = "${local.environment_name}-prsdb-local-council-base-url"
 }
 
 data "aws_ssm_parameter" "plausible_analytics_domain_id" {

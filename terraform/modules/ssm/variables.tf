@@ -12,7 +12,7 @@ variable "landlord_base_url" {
   type        = string
 }
 
-variable "local_authority_base_url" {
-  description = "base URL for the local authority service"
+variable "local_council_base_url" {
+  description = "base URL for the local council service"
   type        = string
 }

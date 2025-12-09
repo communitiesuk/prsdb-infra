@@ -40,6 +40,8 @@ locals {
 
   cloudwatch_log_expiration_days = 60
   database_allocated_storage     = 50
+
+  scheduled_tasks = jsondecode(file("${path.module}/scheduled_tasks.json"))
 }
 
 module "networking" {
@@ -155,9 +157,9 @@ module "secrets" {
 module "parameters" {
   source = "../modules/ssm"
 
-  environment_name         = local.environment_name
-  landlord_base_url        = local.app_host
-  local_authority_base_url = local.search_landlord_host
+  environment_name       = local.environment_name
+  landlord_base_url      = local.app_host
+  local_council_base_url = local.search_landlord_host
 }
 
 module "bastion" {
@@ -247,4 +249,16 @@ module "monitoring" {
   database_allocated_storage     = local.database_allocated_storage
   database_identifier            = module.database.database_identifier
   waf_acl_name                   = module.frontdoor.waf_acl_name
+}
+
+module "scheduled_tasks" {
+  count                   = var.task_definition_created ? 1 : 0
+  source                  = "../modules/scheduled_tasks"
+  environment_name        = local.environment_name
+  private_subnet_ids      = module.networking.private_subnets[*].id
+  security_group_ids      = module.ecs_service[0].ecs_security_group_ids
+  schedule_expressions    = local.scheduled_tasks
+  task_role_arn           = module.ecr.webapp_ecs_task_role_arn
+  task_execution_role_arn = module.ecr.ecs_task_execution_role_arn
+  alarm_email_address     = var.alarm_email_address
 }
