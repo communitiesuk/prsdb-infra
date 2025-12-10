@@ -2,7 +2,7 @@
   "example": {
     "schedule_expression": "rate(15 minutes)"
   },
-  "send_incomplete_property_reminder_email": {
+  "incomplete-property-reminder": {
     "schedule_expression": "cron(0 8 * * ? *)"
   }
 }
