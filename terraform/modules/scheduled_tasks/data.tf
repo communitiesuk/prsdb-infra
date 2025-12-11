@@ -21,5 +21,6 @@ locals {
         schedule_expression = var.schedule_expressions[task_def.tags[local.task_name_tag]].schedule_expression
       }
     }
+    if can(var.schedule_expressions[task_def.tags[local.task_name_tag]])
   ]...)
 }
