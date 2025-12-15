@@ -22,6 +22,8 @@ variable "schedule_expressions" {
   description = "Map of scheduled tasks with their configurations"
   type = map(object({
     schedule_expression = string
+    max_retry_attempts  = optional(number)
+    max_retry_time_seconds = optional(number)
   }))
 }
 

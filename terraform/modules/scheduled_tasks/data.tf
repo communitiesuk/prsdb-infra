@@ -19,6 +19,9 @@ locals {
           ""
         )
         schedule_expression = var.schedule_expressions[task_def.tags[local.task_name_tag]].schedule_expression
+        maximum_retry_attempts = var.schedule_expressions[task_def.tags[local.task_name_tag]].max_retry_attempts
+        maximum_retry_time_seconds = var.schedule_expressions[task_def.tags[local.task_name_tag]].max_retry_time_seconds
+
       }
     }
     if can(var.schedule_expressions[task_def.tags[local.task_name_tag]])

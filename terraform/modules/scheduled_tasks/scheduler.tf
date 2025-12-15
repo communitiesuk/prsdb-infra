@@ -55,7 +55,8 @@ resource "aws_scheduler_schedule" "scheduled_tasks" {
 
     retry_policy {
       # ToDo PRSD-1607: Consider sensible max retry attempts and cooldown period
-      maximum_retry_attempts = 0
+      maximum_retry_attempts = each.value.maximum_retry_attempts != null ? each.value.maximum_retry_attempts : 0
+      maximum_event_age_in_seconds = each.value.maximum_retry_time_seconds != null ? each.value.maximum_retry_time_seconds : 86400 # 24 hours, default, maximum
     }
 
     dead_letter_config {

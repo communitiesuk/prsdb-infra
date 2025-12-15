@@ -1,8 +1,12 @@
 {
   "example": {
-    "schedule_expression": "rate(15 minutes)"
+    "schedule_expression": "rate(15 minutes)",
+    "max_retry_attempts": 5,
+    "max_retry_time_seconds": 300
   },
   "incomplete-property-reminder": {
-    "schedule_expression": "cron(0 8 * * ? *)"
+    "schedule_expression": "cron(0 8 * * ? *)",
+    "max_retry_attempts": 5,
+    "max_retry_time_seconds": 3600
   }
 }
