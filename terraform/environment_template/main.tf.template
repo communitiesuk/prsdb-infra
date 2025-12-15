@@ -62,7 +62,6 @@ module "frontdoor" {
   }
 
   ssl_certs_created             = var.ssl_certs_created
-  ssl_certs_created             = var.ssl_certs_created
   environment_name              = local.environment_name
   public_subnet_ids             = module.networking.public_subnets[*].id
   vpc_id                        = module.networking.vpc.id
@@ -211,6 +210,7 @@ module "file_upload" {
 }
 
 module "monitoring" {
+  count = var.task_definition_created ? 1 : 0
   source = "../modules/monitoring"
 
   providers = {

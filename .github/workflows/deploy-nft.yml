@@ -1,0 +1,11 @@
+name: Deploy - NFT
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: nft
+      aws-account-id: 448120078528

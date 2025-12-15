@@ -15,7 +15,7 @@ sso_account_id = <test account id>
 sso_role_name = developer_role
 region = eu-west-2
 
-[profile mhclg-staging]
+[profile mhclg-nft]
 sso_session = mhclg-sso
 sso_account_id = <staging account id>
 sso_role_name = developer_role

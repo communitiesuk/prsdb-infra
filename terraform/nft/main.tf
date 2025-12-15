@@ -9,10 +9,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "prsdb-tfstate-production"
-    dynamodb_table = "tfstate-lock-production"
+    bucket         = "prsdb-tfstate-nft"
+    dynamodb_table = "tfstate-lock-nft"
     encrypt        = true
-    key            = "prsdb-infra-production"
+    key            = "prsdb-infra-nft"
     region         = "eu-west-2"
   }
 }
@@ -27,22 +27,54 @@ provider "aws" {
 }
 
 locals {
-  environment_name = "production"
-  multi_az         = false
+  environment_name = "nft"
+  multi_az = false
   application_port = 8080
-  database_port    = 5432
-  redis_port       = 6379
+    database_port    = 5432
+    redis_port       = 6379
 
-  app_host                  = "register-home-to-rent.communities.gov.uk"
-  search_landlord_host      = "search-landlord-home-information.communities.gov.uk"
-  load_balancer_domain_name = "lb.register-home-to-rent.communities.gov.uk"
+  app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
+  search_landlord_host      = "${local.environment_name}.search-landlord-home-information.test.communities.gov.uk"
+  check_home_to_rent_host   = "${local.environment_name}.check-home-to-rent-registration.test.communities.gov.uk"
+  load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 
-  cloudwatch_log_expiration_days = 90
+  cloudwatch_log_expiration_days = 60
   database_allocated_storage     = 50
 
   scheduled_tasks = jsondecode(file("${path.module}/scheduled_tasks.json"))
+}
 
-  ip_allowlist = var.ip_restrictions_on ? [
+module "networking" {
+  source                     = "../modules/networking"
+  vpc_cidr_block             = "10.1.0.0/16"
+  environment_name           = local.environment_name
+  number_of_availability_zones = 2
+  number_of_isolated_subnets = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
+
+  vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
+}
+
+module "frontdoor" {
+  source = "../modules/frontdoor"
+
+  providers = {
+    aws.us-east-1 = aws.us-east-1
+  }
+
+  ssl_certs_created             = var.ssl_certs_created
+  environment_name              = local.environment_name
+  public_subnet_ids             = module.networking.public_subnets[*].id
+  vpc_id                        = module.networking.vpc.id
+  application_port              = local.application_port
+  cloudfront_domain_names     = [
+    local.app_host,
+    local.search_landlord_host,
+    local.check_home_to_rent_host
+  ]
+  load_balancer_domain_name     = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+  cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
+  load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
+  ip_allowlist = [
     # Softwire
     "31.221.86.178/32",
     "167.98.33.82/32",
@@ -65,42 +97,10 @@ locals {
     "13.126.5.12/32",
     "3.7.157.159/32",
     "3.7.173.162/32",
-  ] : []
-}
-
-module "networking" {
-  source                       = "../modules/networking"
-  vpc_cidr_block               = "10.1.0.0/16"
-  environment_name             = local.environment_name
-  number_of_availability_zones = 2
-  number_of_isolated_subnets   = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
-
-  vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
-}
-
-module "frontdoor" {
-  source = "../modules/frontdoor"
-
-  providers = {
-    aws.us-east-1 = aws.us-east-1
-  }
-
-  ssl_certs_created = var.ssl_certs_created
-  environment_name  = local.environment_name
-  public_subnet_ids = module.networking.public_subnets[*].id
-  vpc_id            = module.networking.vpc.id
-  application_port  = local.application_port
-  cloudfront_domain_names = [
-    local.app_host,
-    local.search_landlord_host,
   ]
-  load_balancer_domain_name      = local.load_balancer_domain_name
-  cloudfront_certificate_arn     = module.certificates.cloudfront_certificate_arn
-  load_balancer_certificate_arn  = module.certificates.load_balancer_certificate_arn
-  ip_allowlist                   = local.ip_allowlist
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
-  use_aws_shield_advanced        = true
-  maintenance_mode_on            = var.maintenance_mode_on
+  use_aws_shield_advanced = true
+  maintenance_mode_on = var.maintenance_mode_on
 }
 
 module "certificates" {
@@ -114,9 +114,11 @@ module "certificates" {
   load_balancer_domain_name = local.load_balancer_domain_name
   cloudfront_additional_names = [
     local.search_landlord_host,
+    local.check_home_to_rent_host
   ]
   load_balancer_additional_names = [
-    "lb.search-landlord-home-information.communities.gov.uk",
+    "${local.environment_name}.lb.search-landlord-home-information.test.communities.gov.uk",
+    "${local.environment_name}.lb.check-home-to-rent-registration.test.communities.gov.uk"
   ]
 }
 
@@ -124,7 +126,7 @@ module "ecr" {
   source = "../modules/ecr"
 
   environment_name      = local.environment_name
-  image_retention_count = 10
+  image_retention_count = 3
 }
 
 module "github_actions_access" {
@@ -155,8 +157,8 @@ module "secrets" {
 module "parameters" {
   source = "../modules/ssm"
 
-  environment_name       = local.environment_name
-  landlord_base_url      = local.app_host
+  environment_name = local.environment_name
+  landlord_base_url = local.app_host
   local_council_base_url = local.search_landlord_host
 }
 
@@ -219,9 +221,9 @@ module "ecs_service" {
 }
 
 module "file_upload" {
-  count                           = var.task_definition_created ? 1 : 0
-  source                          = "../modules/file_upload"
-  environment_name                = local.environment_name
+  count = var.task_definition_created ? 1 : 0
+  source = "../modules/file_upload"
+  environment_name = local.environment_name
   webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
   ecs_cluster_arn                 = module.ecs_service[0].ecs_cluster_arn
   private_subnet_ids              = module.networking.private_subnets[*].id
