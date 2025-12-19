@@ -28,10 +28,10 @@ provider "aws" {
 
 locals {
   environment_name = "nft"
-  multi_az = false
+  multi_az         = false
   application_port = 8080
-    database_port    = 5432
-    redis_port       = 6379
+  database_port    = 5432
+  redis_port       = 6379
 
   app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
   search_landlord_host      = "${local.environment_name}.search-landlord-home-information.test.communities.gov.uk"
@@ -45,11 +45,11 @@ locals {
 }
 
 module "networking" {
-  source                     = "../modules/networking"
-  vpc_cidr_block             = "10.1.0.0/16"
-  environment_name           = local.environment_name
+  source                       = "../modules/networking"
+  vpc_cidr_block               = "10.1.0.0/16"
+  environment_name             = local.environment_name
   number_of_availability_zones = 2
-  number_of_isolated_subnets = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
+  number_of_isolated_subnets   = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
 
   vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
@@ -61,12 +61,12 @@ module "frontdoor" {
     aws.us-east-1 = aws.us-east-1
   }
 
-  ssl_certs_created             = var.ssl_certs_created
-  environment_name              = local.environment_name
-  public_subnet_ids             = module.networking.public_subnets[*].id
-  vpc_id                        = module.networking.vpc.id
-  application_port              = local.application_port
-  cloudfront_domain_names     = [
+  ssl_certs_created = var.ssl_certs_created
+  environment_name  = local.environment_name
+  public_subnet_ids = module.networking.public_subnets[*].id
+  vpc_id            = module.networking.vpc.id
+  application_port  = local.application_port
+  cloudfront_domain_names = [
     local.app_host,
     local.search_landlord_host,
     local.check_home_to_rent_host
@@ -99,8 +99,8 @@ module "frontdoor" {
     "3.7.173.162/32",
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
-  use_aws_shield_advanced = true
-  maintenance_mode_on = var.maintenance_mode_on
+  use_aws_shield_advanced        = true
+  maintenance_mode_on            = var.maintenance_mode_on
 }
 
 module "certificates" {
@@ -157,8 +157,8 @@ module "secrets" {
 module "parameters" {
   source = "../modules/ssm"
 
-  environment_name = local.environment_name
-  landlord_base_url = local.app_host
+  environment_name       = local.environment_name
+  landlord_base_url      = local.app_host
   local_council_base_url = local.search_landlord_host
 }
 
@@ -221,9 +221,9 @@ module "ecs_service" {
 }
 
 module "file_upload" {
-  count = var.task_definition_created ? 1 : 0
-  source = "../modules/file_upload"
-  environment_name = local.environment_name
+  count                           = var.task_definition_created ? 1 : 0
+  source                          = "../modules/file_upload"
+  environment_name                = local.environment_name
   webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
   ecs_cluster_arn                 = module.ecs_service[0].ecs_cluster_arn
   private_subnet_ids              = module.networking.private_subnets[*].id
@@ -231,7 +231,7 @@ module "file_upload" {
 }
 
 module "monitoring" {
-  count = var.task_definition_created ? 1 : 0
+  count  = var.task_definition_created ? 1 : 0
   source = "../modules/monitoring"
 
   providers = {

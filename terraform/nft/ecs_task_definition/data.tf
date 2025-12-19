@@ -19,7 +19,7 @@ data "aws_ssm_parameter" "one_login_issuer_url" {
 }
 
 data "aws_ssm_parameter" "one_login_did_url" {
-    name = "${local.environment_name}-one-login-did-url"
+  name = "${local.environment_name}-one-login-did-url"
 }
 
 data "aws_ssm_parameter" "database_username" {
@@ -60,12 +60,12 @@ data "aws_secretsmanager_secret" "os_api_key" {
 
 data "aws_ssm_parameter" "quarantine_bucket" {
   count = var.file_upload_buckets_created ? 1 : 0
-  name = "${local.environment_name}-prsdb-quarantine-bucket"
+  name  = "${local.environment_name}-prsdb-quarantine-bucket"
 }
 
 data "aws_ssm_parameter" "safe_bucket" {
   count = var.file_upload_buckets_created ? 1 : 0
-  name = "${local.environment_name}-prsdb-uploaded-files"
+  name  = "${local.environment_name}-prsdb-uploaded-files"
 }
 
 data "aws_secretsmanager_secret" "epc_client_secret" {

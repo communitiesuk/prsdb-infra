@@ -229,7 +229,7 @@ module "file_upload" {
 }
 
 module "monitoring" {
-  count = var.task_definition_created ? 1 : 0
+  count  = var.task_definition_created ? 1 : 0
   source = "../modules/monitoring"
 
   providers = {
