@@ -9,10 +9,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "prsdb-tfstate-production"
-    dynamodb_table = "tfstate-lock-production"
+    bucket         = "prsdb-tfstate-nft"
+    dynamodb_table = "tfstate-lock-nft"
     encrypt        = true
-    key            = "prsdb-infra-production"
+    key            = "prsdb-infra-nft"
     region         = "eu-west-2"
   }
 }
@@ -27,45 +27,21 @@ provider "aws" {
 }
 
 locals {
-  environment_name = "production"
+  environment_name = "nft"
   multi_az         = false
   application_port = 8080
   database_port    = 5432
   redis_port       = 6379
 
-  app_host                  = "register-home-to-rent.communities.gov.uk"
-  search_landlord_host      = "search-landlord-home-information.communities.gov.uk"
-  load_balancer_domain_name = "lb.register-home-to-rent.communities.gov.uk"
+  app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
+  search_landlord_host      = "${local.environment_name}.search-landlord-home-information.test.communities.gov.uk"
+  check_home_to_rent_host   = "${local.environment_name}.check-home-to-rent-registration.test.communities.gov.uk"
+  load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 
-  cloudwatch_log_expiration_days = 90
+  cloudwatch_log_expiration_days = 60
   database_allocated_storage     = 50
 
   scheduled_tasks = jsondecode(file("${path.module}/scheduled_tasks.json"))
-
-  ip_allowlist = var.ip_restrictions_on ? [
-    # Softwire
-    "31.221.86.178/32",
-    "167.98.33.82/32",
-    "87.224.105.250/32",
-    "87.224.116.242/32",
-    "45.150.142.210/32",
-    # Made Tech
-    "79.173.131.202/32",
-    "172.166.224.214/32",
-    # MHCLG
-    "4.158.35.41/32",
-    # Detectify
-    "52.17.9.21/32",
-    "52.17.98.131/32",
-    # Detectify N. Virginia
-    "107.20.158.220/32",
-    "3.234.180.95/32",
-    "34.234.177.119/32",
-    # Detectify Mumbai
-    "13.126.5.12/32",
-    "3.7.157.159/32",
-    "3.7.173.162/32",
-  ] : []
 }
 
 module "networking" {
@@ -93,11 +69,35 @@ module "frontdoor" {
   cloudfront_domain_names = [
     local.app_host,
     local.search_landlord_host,
+    local.check_home_to_rent_host
   ]
-  load_balancer_domain_name      = local.load_balancer_domain_name
-  cloudfront_certificate_arn     = module.certificates.cloudfront_certificate_arn
-  load_balancer_certificate_arn  = module.certificates.load_balancer_certificate_arn
-  ip_allowlist                   = local.ip_allowlist
+  load_balancer_domain_name     = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+  cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
+  load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
+  ip_allowlist = [
+    # Softwire
+    "31.221.86.178/32",
+    "167.98.33.82/32",
+    "87.224.105.250/32",
+    "87.224.116.242/32",
+    "45.150.142.210/32",
+    # Made Tech
+    "79.173.131.202/32",
+    "172.166.224.214/32",
+    # MHCLG
+    "4.158.35.41/32",
+    # Detectify
+    "52.17.9.21/32",
+    "52.17.98.131/32",
+    # Detectify N. Virginia
+    "107.20.158.220/32",
+    "3.234.180.95/32",
+    "34.234.177.119/32",
+    # Detectify Mumbai
+    "13.126.5.12/32",
+    "3.7.157.159/32",
+    "3.7.173.162/32",
+  ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   use_aws_shield_advanced        = true
   maintenance_mode_on            = var.maintenance_mode_on
@@ -114,9 +114,11 @@ module "certificates" {
   load_balancer_domain_name = local.load_balancer_domain_name
   cloudfront_additional_names = [
     local.search_landlord_host,
+    local.check_home_to_rent_host
   ]
   load_balancer_additional_names = [
-    "lb.search-landlord-home-information.communities.gov.uk",
+    "${local.environment_name}.lb.search-landlord-home-information.test.communities.gov.uk",
+    "${local.environment_name}.lb.check-home-to-rent-registration.test.communities.gov.uk"
   ]
 }
 
@@ -124,7 +126,7 @@ module "ecr" {
   source = "../modules/ecr"
 
   environment_name      = local.environment_name
-  image_retention_count = 10
+  image_retention_count = 3
 }
 
 module "github_actions_access" {
