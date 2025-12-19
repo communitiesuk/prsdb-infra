@@ -250,7 +250,7 @@ module "monitoring" {
 }
 
 module "scheduled_tasks" {
-  count                   = var.task_definition_created ? 1 : 0
+  count                   = var.task_definition_created && length(local.scheduled_tasks) > 0 ? 1 : 0
   source                  = "../modules/scheduled_tasks"
   environment_name        = local.environment_name
   private_subnet_ids      = module.networking.private_subnets[*].id
