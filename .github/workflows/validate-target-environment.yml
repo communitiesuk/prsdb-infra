@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Throw invalid target environment error
-        if: inputs.environment != 'integration' && inputs.environment != 'test' && inputs.environment != 'production'
+        if: inputs.environment != 'integration' && inputs.environment != 'test' && inputs.environment != 'nft' && inputs.environment != 'production'
         run: |
-          echo "::error ::Invalid Target Environment: ${{ inputs.environment }}. This action can only target integration, test, and production environments."
+          echo "::error ::Invalid Target Environment: ${{ inputs.environment }}. This action can only target integration, test, nft and production environments."
           exit 1
