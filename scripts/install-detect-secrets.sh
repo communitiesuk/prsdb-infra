@@ -41,6 +41,12 @@ HOOK_CONTENT='######## DETECT-SECRETS-HOOK START ########
 echo "Running detect-secrets-hook"
 
 git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline --exclude-files package-lock.json
+DETECT_SECRETS_EXIT_CODE=$?
+
+if [ $DETECT_SECRETS_EXIT_CODE -ne 0 ]; then
+    echo "detect-secrets-hook failed with exit code $DETECT_SECRETS_EXIT_CODE"
+    exit $DETECT_SECRETS_EXIT_CODE
+fi
 
 echo "Completed detect-secrets-hook"
 
@@ -77,6 +83,12 @@ else
 echo "Running detect-secrets-hook"
 
 git diff --staged --name-only -z | xargs -0 detect-secrets-hook --baseline .secrets.baseline --exclude-files package-lock.json
+DETECT_SECRETS_EXIT_CODE=$?
+
+if [ $DETECT_SECRETS_EXIT_CODE -ne 0 ]; then
+    echo "detect-secrets-hook failed with exit code $DETECT_SECRETS_EXIT_CODE"
+    exit $DETECT_SECRETS_EXIT_CODE
+fi
 
 echo "Completed detect-secrets-hook"
 
