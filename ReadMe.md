@@ -64,6 +64,14 @@ Create an access key in the AWS portal on the Security credentials page (just be
 
 You should now be able to start an `aws-vault exec` session using the instructions from the section above.
 
+## Setting up secret detection
+
+This repository uses a pre-commit hook to detect secrets before they are committed. To set this up, first make sure that Python 3 is installed on your machine.
+
+Then install pre-commit by executing either the powershell or bash script in the `scripts` folder:
+- `./scripts/install-detect-secrets.ps1` in powershell, or
+- `./scripts/install-detect-secrets.sh` in bash
+
 ## Setting up terraform
 
 Install the appropriate version of Terraform by following [these instructions](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli). We are currently using 1.9.x, so make sure you select that version. 
