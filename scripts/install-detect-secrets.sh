@@ -5,11 +5,17 @@
 echo "Installing detect-secrets pre-commit hook..."
 
 # Check if python3 is available
+# Note: On Windows (Git Bash/WSL), 'python3' may be an App Execution Alias that opens
+# the MS Store instead of failing, so we verify by checking the version output
 PYTHON_CMD=""
 if command -v python3 &> /dev/null; then
-    PYTHON_CMD="python3"
-    echo "Found python3"
-elif command -v python &> /dev/null; then
+    PYTHON_VERSION=$(python3 --version 2>&1)
+    if [[ $PYTHON_VERSION == *"Python 3."* ]]; then
+        PYTHON_CMD="python3"
+        echo "Found python3"
+    fi
+fi
+if [ -z "$PYTHON_CMD" ] && command -v python &> /dev/null; then
     # Check if python points to version 3.x
     PYTHON_VERSION=$(python --version 2>&1)
     if [[ $PYTHON_VERSION == *"Python 3."* ]]; then
@@ -20,7 +26,8 @@ elif command -v python &> /dev/null; then
         echo "Found: $PYTHON_VERSION"
         exit 1
     fi
-else
+fi
+if [ -z "$PYTHON_CMD" ]; then
     echo "ERROR: Python is not found on PATH"
     exit 1
 fi

@@ -5,11 +5,17 @@
 Write-Host "Installing detect-secrets pre-commit hook..." -ForegroundColor Cyan
 
 # Check if python3 is available
+# Note: On Windows, 'python3' may be an App Execution Alias that opens the MS Store
+# instead of failing, so we verify by checking the version output
 $pythonCmd = $null
 if (Get-Command python3 -ErrorAction SilentlyContinue) {
-    $pythonCmd = "python3"
-    Write-Host "Found python3" -ForegroundColor Green
-} elseif (Get-Command python -ErrorAction SilentlyContinue) {
+    $pythonVersion = & python3 --version 2>&1
+    if ($pythonVersion -match "Python 3\.") {
+        $pythonCmd = "python3"
+        Write-Host "Found python3" -ForegroundColor Green
+    }
+}
+if (-not $pythonCmd -and (Get-Command python -ErrorAction SilentlyContinue)) {
     # Check if python points to version 3.x
     $pythonVersion = & python --version 2>&1
     if ($pythonVersion -match "Python 3\.") {
@@ -20,7 +26,8 @@ if (Get-Command python3 -ErrorAction SilentlyContinue) {
         Write-Host "Found: $pythonVersion" -ForegroundColor Red
         exit 1
     }
-} else {
+}
+if (-not $pythonCmd) {
     Write-Host "ERROR: Python is not found on PATH" -ForegroundColor Red
     exit 1
 }
