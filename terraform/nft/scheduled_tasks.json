@@ -1,1 +1,5 @@
-{}
+{
+  "incomplete-property-reminder": {
+    "schedule_expression": "cron(0 8 * * ? *)"
+  }
+}

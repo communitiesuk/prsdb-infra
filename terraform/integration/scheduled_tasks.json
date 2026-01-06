@@ -1,7 +1,4 @@
 {
-  "example": {
-    "schedule_expression": "rate(15 minutes)"
-  },
   "incomplete-property-reminder": {
     "schedule_expression": "cron(0 8 * * ? *)"
   }
