@@ -43,4 +43,4 @@ terraform.rc
 /node_modules
 
 ### Copilot ###
-.github/personal-copilot-instructions.md
+.github/copilot-instructions.md
