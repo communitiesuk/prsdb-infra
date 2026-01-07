@@ -72,6 +72,16 @@ Then install pre-commit by executing either the powershell or bash script in the
 - `./scripts/install-detect-secrets.ps1` in powershell, or
 - `./scripts/install-detect-secrets.sh` in bash
 
+### Troubleshooting `detect-secrets` installation issues
+
+If you run into issues such as the one shown below, you can try the following:
+
+- check if the python scripts folder is in your PATH variable - if not add it and restart
+- if you installed Python a different way, try installing it directly from [python.org](https://www.python.org/downloads/)
+- try running the `install-detect-secrets` script as an administrator
+
+![detect-secrets-error.png](readMeAssets/detect-secrets-error.png)
+
 ## Setting up terraform
 
 Install the appropriate version of Terraform by following [these instructions](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli). We are currently using 1.9.x, so make sure you select that version. 
