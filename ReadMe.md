@@ -278,3 +278,5 @@ To create a new scheduled task, you need to add an object to the relevant schedu
 Where schedule expression is a cron or rate expression as defined in the [AWS documentation](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-scheduled-rule-pattern.html).
 
 This will trigger a copy of the webapp container in line with the schedule. The container will have the Spring profiles set to `web-server-deactivated`, `scheduled-task`, and `<name-of-task>-scheduled-task` which should be used to select the correct application runner in the webapp for this particular task.
+
+Our SSM maintenance window is 2-5am every Wednesday, so we should avoid scheduling tasks in that timeslot in case of disruption.
