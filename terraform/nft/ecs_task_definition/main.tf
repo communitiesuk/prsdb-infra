@@ -9,16 +9,16 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "prsdb-tfstate-integration"
-    dynamodb_table = "tfstate-lock-integration"
+    bucket         = "prsdb-tfstate-nft"
+    dynamodb_table = "tfstate-lock-nft"
     encrypt        = true
-    key            = "prsdb-infra-integration-task-definition"
+    key            = "prsdb-infra-nft-task-definition"
     region         = "eu-west-2"
   }
 }
 
 locals {
-  environment_name = "integration"
+  environment_name = "nft"
 }
 
 provider "aws" {

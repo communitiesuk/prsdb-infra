@@ -9,7 +9,7 @@ resource "aws_db_instance" "main" {
   delete_automated_backups        = false
   deletion_protection             = true # needs to be set to false and applied if you need to delete the DB
   engine                          = "postgres"
-  engine_version                  = "16.4"
+  engine_version                  = "16.8"
   final_snapshot_identifier       = "${var.environment_name}-database-final-snapshot"
   instance_class                  = var.instance_class
   maintenance_window              = var.maintenance_window

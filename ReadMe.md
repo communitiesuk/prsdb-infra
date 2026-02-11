@@ -64,6 +64,24 @@ Create an access key in the AWS portal on the Security credentials page (just be
 
 You should now be able to start an `aws-vault exec` session using the instructions from the section above.
 
+## Setting up secret detection
+
+This repository uses a pre-commit hook to detect secrets before they are committed. To set this up, first make sure that Python 3 is installed on your machine.
+
+Then install pre-commit by executing either the powershell or bash script in the `scripts` folder:
+- `./scripts/install-detect-secrets.ps1` in powershell, or
+- `./scripts/install-detect-secrets.sh` in bash
+
+### Troubleshooting `detect-secrets` installation issues
+
+If you run into issues such as the one shown below, you can try the following:
+
+- check if the python scripts folder is in your PATH variable - if not add it and restart
+- if you installed Python a different way, try installing it directly from [python.org](https://www.python.org/downloads/)
+- try running the `install-detect-secrets` script as an administrator
+
+![detect-secrets-error.png](readMeAssets/detect-secrets-error.png)
+
 ## Setting up terraform
 
 Install the appropriate version of Terraform by following [these instructions](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli). We are currently using 1.9.x, so make sure you select that version. 
@@ -260,3 +278,5 @@ To create a new scheduled task, you need to add an object to the relevant schedu
 Where schedule expression is a cron or rate expression as defined in the [AWS documentation](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-scheduled-rule-pattern.html).
 
 This will trigger a copy of the webapp container in line with the schedule. The container will have the Spring profiles set to `web-server-deactivated`, `scheduled-task`, and `<name-of-task>-scheduled-task` which should be used to select the correct application runner in the webapp for this particular task.
+
+Our SSM maintenance window is 2-5am every Wednesday, so we should avoid scheduling tasks in that timeslot in case of disruption.
