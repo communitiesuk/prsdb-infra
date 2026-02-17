@@ -13,6 +13,14 @@ resource "aws_security_group" "bastion" {
   }
 
   egress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow bastion access to Amazon Linux package repositories via NAT Gateway"
+  }
+
+  egress {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
