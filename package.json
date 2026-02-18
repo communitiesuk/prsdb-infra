@@ -7,6 +7,10 @@
   },
   "devDependencies": {
     "jest": "^30.0.4",
-    "rewire": "^8.0.0"
+    "rewire": "^9.0.1"
+  },
+  "overrides": {
+    "test-exclude": "^7.0.1",
+    "glob": "^10.5.0"
   }
 }
