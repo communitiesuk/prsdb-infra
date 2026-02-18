@@ -12,6 +12,7 @@ resource "aws_security_group" "bastion" {
     description = "Allow bastion access to vpc endpoints to allow for SSM"
   }
 
+  #tfsec:ignore:aws-ec2-no-public-egress-sgr - required for SSM patch manager to access Amazon Linux package repositories
   egress {
     from_port   = 443
     to_port     = 443
