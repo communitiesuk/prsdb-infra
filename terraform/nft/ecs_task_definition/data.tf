@@ -46,6 +46,18 @@ data "aws_secretsmanager_secret" "redis_password" {
   name = "tf-${local.environment_name}-prsdb-redis-password"
 }
 
+data "aws_ssm_parameter" "internal_access_client_id" {
+  name = "${local.environment_name}-internal-access-client-id"
+}
+
+data "aws_ssm_parameter" "internal_access_issuer_url" {
+  name = "${local.environment_name}-internal-access-issuer-url"
+}
+
+data "aws_secretsmanager_secret" "internal_access_client_secret" {
+  name = "tf-${local.environment_name}-internal-access-client-secret"
+}
+
 data "aws_secretsmanager_secret" "one_login_private_key" {
   name = "tf-${local.environment_name}-one-login-private-key"
 }
