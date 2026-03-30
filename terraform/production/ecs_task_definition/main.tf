@@ -79,6 +79,14 @@ locals {
       value = data.aws_ssm_parameter.one_login_did_url.value
     },
     {
+      name  = "INTERNAL_ACCESS_CLIENT_ID"
+      value = data.aws_ssm_parameter.internal_access_client_id.value
+    },
+    {
+      name  = "INTERNAL_ACCESS_ISSUER_URL"
+      value = data.aws_ssm_parameter.internal_access_issuer_url.value
+    },
+    {
       name  = "ELASTICACHE_URL"
       value = data.aws_ssm_parameter.redis_url.value
     },
@@ -156,6 +164,10 @@ locals {
     {
       name      = "EPC_REGISTER_CLIENT_SECRET"
       valueFrom = data.aws_secretsmanager_secret.epc_client_secret.arn
+    },
+    {
+      name      = "INTERNAL_ACCESS_CLIENT_SECRET"
+      valueFrom = data.aws_secretsmanager_secret.internal_access_client_secret.arn
     },
   ]
 }

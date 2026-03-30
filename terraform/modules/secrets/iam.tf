@@ -49,6 +49,7 @@ resource "aws_iam_role_policy" "secret_access" {
           aws_secretsmanager_secret.notify_api_key.arn,
           aws_secretsmanager_secret.os_api_key.arn,
           aws_secretsmanager_secret.epc_register_client_secret.arn,
+          aws_secretsmanager_secret.internal_access_client_secret.arn,
         ]
       }
     ]

@@ -5,6 +5,8 @@ url_writer is a cloudfront function that inserts a service path segment (i.e. `/
 ## Excluded endpoints
 Endpoints which are common between services such as `/error` and `/signout` are excluded from the rewriting, so do not include the service name.
 Endpoints that Spring generates for us (e.g. those use for authentication) are also excluded.
+The `/system-operator` path is excluded so that system operator routes on the `search-landlord-home-information` domain are not rewritten to `/local-council/system-operator/...`.
+The `/login` path is excluded so that OAuth2 callback URLs (e.g. `/login/oauth2/code/one-login`) are not rewritten.
 
 ## Unit tests
 We now have unit tests for this function.
