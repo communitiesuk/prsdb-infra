@@ -27,10 +27,24 @@ resource "aws_db_instance" "main" {
   # RDS comes with 7 days of performance insights retention for free, which should be enough for our needs
   performance_insights_retention_period = 7
 
+  depends_on = [module.rds_postgresql_log_group, module.rds_upgrade_log_group]
+
   lifecycle {
     # Both this and delete_protection parameter above also needs to be set to false and applied to destroy the DB
     prevent_destroy = true
     # AWS will perform automatic minor version updates, so we want to ignore these - remove this temporarily if wanting to e.g. change the major version
     ignore_changes = [engine_version]
   }
+}
+
+module "rds_postgresql_log_group" {
+  source             = "../encrypted_log_group"
+  log_group_name     = "/aws/rds/instance/${var.environment_name}-database/postgresql"
+  log_retention_days = 365
+}
+
+module "rds_upgrade_log_group" {
+  source             = "../encrypted_log_group"
+  log_group_name     = "/aws/rds/instance/${var.environment_name}-database/upgrade"
+  log_retention_days = 365
 }

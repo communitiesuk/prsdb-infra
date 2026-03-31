@@ -149,6 +149,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket" {
 resource "aws_s3_bucket_lifecycle_configuration" "log_bucket" {
   bucket = aws_s3_bucket.log_bucket.id
 
+  depends_on = [aws_s3_bucket_versioning.log_bucket]
+
   rule {
     id = "expire-old-logs"
 
@@ -156,6 +158,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "log_bucket" {
 
     expiration {
       days = var.access_s3_log_expiration_days
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = var.access_s3_log_expiration_days
     }
 
     status = "Enabled"
