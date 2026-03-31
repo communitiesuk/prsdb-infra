@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 resource "aws_iam_role" "scheduled_tasks" {
   name = "${var.environment_name}-scheduled-tasks"
 
@@ -10,6 +12,11 @@ resource "aws_iam_role" "scheduled_tasks" {
           Service = "scheduler.amazonaws.com"
         }
         Action = "sts:AssumeRole"
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+        }
       }
     ]
   })
