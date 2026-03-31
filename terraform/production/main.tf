@@ -33,9 +33,9 @@ locals {
   database_port    = 5432
   redis_port       = 6379
 
-  app_host                  = "register-home-to-rent.communities.gov.uk"
-  search_landlord_host      = "search-landlord-home-information.communities.gov.uk"
-  load_balancer_domain_name = "lb.register-home-to-rent.communities.gov.uk"
+  app_host                  = "register-rental-property.communities.gov.uk"
+  search_landlord_host      = "check-rental-property-or-landlord.communities.gov.uk"
+  load_balancer_domain_name = "lb.register-rental-property.communities.gov.uk"
 
   cloudwatch_log_expiration_days = 90
   database_allocated_storage     = 50
@@ -116,7 +116,7 @@ module "certificates" {
     local.search_landlord_host,
   ]
   load_balancer_additional_names = [
-    "lb.search-landlord-home-information.communities.gov.uk",
+    "lb.check-rental-property-or-landlord.communities.gov.uk",
   ]
 }
 
