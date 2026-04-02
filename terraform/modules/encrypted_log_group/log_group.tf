@@ -3,6 +3,8 @@ resource "aws_cloudwatch_log_group" "main" {
   retention_in_days = var.log_retention_days
   kms_key_id        = aws_kms_key.main.arn
 
+  depends_on = [aws_kms_key_policy.main]
+
   lifecycle {
     prevent_destroy = true
   }
