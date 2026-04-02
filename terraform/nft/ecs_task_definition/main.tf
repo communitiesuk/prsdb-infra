@@ -114,14 +114,7 @@ locals {
       name  = "PLAUSIBLE_ANALYTICS_DOMAIN_ID"
       value = data.aws_ssm_parameter.plausible_analytics_domain_id.value
     },
-    {
-      name  = "GOOGLE_ANALYTICS_MEASUREMENT_ID"
-      value = data.aws_ssm_parameter.google_analytics_measurement_id.value
-    },
-    {
-      name  = "GOOGLE_ANALYTICS_COOKIE_DOMAIN"
-      value = data.aws_ssm_parameter.google_analytics_cookie_domain.value
-    },
+
     {
       name  = "SPRING_PROFILES_ACTIVE"
       value = "default, ${local.environment_name}"

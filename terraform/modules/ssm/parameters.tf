@@ -122,25 +122,6 @@ resource "aws_ssm_parameter" "plausible_analytics_domain_id" {
   }
 }
 
-resource "aws_ssm_parameter" "google_analytics_measurement_id" {
-  name  = "${var.environment_name}-prsdb-google-analytics-measurement-id"
-  type  = "String"
-  value = "default_to_be_set_manually" # To be set manually on AWS
-
-  lifecycle {
-    ignore_changes = [value]
-  }
-}
-
-resource "aws_ssm_parameter" "google_analytics_cookie_domain" {
-  name  = "${var.environment_name}-prsdb-google-analytics-cookie-domain"
-  type  = "String"
-  value = "default_to_be_set_manually" # To be set manually on AWS
-
-  lifecycle {
-    ignore_changes = [value]
-  }
-}
 
 resource "aws_ssm_parameter" "beta_feedback_team_email_address" {
   name  = "${var.environment_name}-prsdb-beta-feedback-team-email-address"
