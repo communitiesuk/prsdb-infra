@@ -59,3 +59,10 @@ resource "aws_secretsmanager_secret" "epc_register_client_secret" {
   recovery_window_in_days = 0
   kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
 }
+
+resource "aws_secretsmanager_secret" "internal_access_client_secret" {
+  name                    = "tf-${var.environment_name}-internal-access-client-secret"
+  description             = "Client secret for Internal Access OAuth"
+  recovery_window_in_days = 0
+  kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
+}

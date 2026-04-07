@@ -40,6 +40,26 @@ resource "aws_ssm_parameter" "one_login_did_url" {
   }
 }
 
+resource "aws_ssm_parameter" "internal_access_client_id" {
+  name  = "${var.environment_name}-internal-access-client-id"
+  type  = "String"
+  value = "default_to_be_set_manually" # To be set manually on AWS
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "internal_access_issuer_url" {
+  name  = "${var.environment_name}-internal-access-issuer-url"
+  type  = "String"
+  value = "default_to_be_set_manually" # To be set manually on AWS
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
 resource "aws_ssm_parameter" "epc_register_client_id" {
   name  = "${var.environment_name}-prsdb-epc-client-id"
   type  = "String"

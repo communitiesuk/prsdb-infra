@@ -178,7 +178,18 @@ describe('url_rewriter', () => {
 
             // then
             expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/.well-known/security.txt');
-        })
+        });
+
+        it('returns the original url for the /login endpoint', () => {
+            // given
+            const event = createRequestEvent(registerHomeToRentHost, '/login/oauth2/code/one-login');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/login/oauth2/code/one-login');
+        });
     });
 
     describe('for the search-landlord-home-information domain', () => {
@@ -346,6 +357,39 @@ describe('url_rewriter', () => {
 
             // then
             expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/.well-known/security.txt');
+        });
+
+        it('returns the original url for the /system-operator/manage-council-users endpoint', () => {
+            // given
+            const event = createRequestEvent(searchLandlordHomeInformationHost, '/system-operator/manage-council-users/1');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/system-operator/manage-council-users/1');
+        });
+
+        it('returns the original url for the /system-operator base path', () => {
+            // given
+            const event = createRequestEvent(searchLandlordHomeInformationHost, '/system-operator');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/system-operator');
+        });
+
+        it('returns the original url for the /login endpoint', () => {
+            // given
+            const event = createRequestEvent(searchLandlordHomeInformationHost, '/login/oauth2/code/one-login');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/login/oauth2/code/one-login');
         });
     });
 });
