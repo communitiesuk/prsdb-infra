@@ -2,7 +2,7 @@ name: Apply - Production
 on:
   push:
     branches:
-      - DISABLED-production
+      - production
   workflow_dispatch:
 
 jobs:
