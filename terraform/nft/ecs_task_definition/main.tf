@@ -114,7 +114,6 @@ locals {
       name  = "PLAUSIBLE_ANALYTICS_DOMAIN_ID"
       value = data.aws_ssm_parameter.plausible_analytics_domain_id.value
     },
-
     {
       name  = "SPRING_PROFILES_ACTIVE"
       value = "default, ${local.environment_name}"
