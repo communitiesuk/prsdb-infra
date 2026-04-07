@@ -34,10 +34,11 @@ module "state_bucket" {
 # Encryption/recovery not required - lock not sensitive
 # tfsec:ignore:aws-dynamodb-enable-at-rest-encryption tfsec:ignore:aws-dynamodb-enable-recovery tfsec:ignore:aws-dynamodb-table-customer-key
 resource "aws_dynamodb_table" "terraform_state_lock" {
-  name           = "tfstate-lock-${var.environment_name}"
-  read_capacity  = 1
-  write_capacity = 1
-  hash_key       = "LockID"
+  name                        = "tfstate-lock-${var.environment_name}"
+  read_capacity               = 1
+  write_capacity              = 1
+  hash_key                    = "LockID"
+  deletion_protection_enabled = true
 
   attribute {
     name = "LockID"
