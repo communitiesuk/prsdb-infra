@@ -46,6 +46,18 @@ data "aws_secretsmanager_secret" "redis_password" {
   name = "tf-${local.environment_name}-prsdb-redis-password"
 }
 
+data "aws_ssm_parameter" "internal_access_client_id" {
+  name = "${local.environment_name}-internal-access-client-id"
+}
+
+data "aws_ssm_parameter" "internal_access_issuer_url" {
+  name = "${local.environment_name}-internal-access-issuer-url"
+}
+
+data "aws_secretsmanager_secret" "internal_access_client_secret" {
+  name = "tf-${local.environment_name}-internal-access-client-secret"
+}
+
 data "aws_secretsmanager_secret" "one_login_private_key" {
   name = "tf-${local.environment_name}-one-login-private-key"
 }
@@ -54,8 +66,8 @@ data "aws_secretsmanager_secret" "notify_api_key" {
   name = "tf-${local.environment_name}-notify-api-key"
 }
 
-data "aws_secretsmanager_secret" "os_places_api_key" {
-  name = "tf-${local.environment_name}-os-places-api-key"
+data "aws_secretsmanager_secret" "os_api_key" {
+  name = "tf-${local.environment_name}-os-api-key"
 }
 
 data "aws_ssm_parameter" "quarantine_bucket" {
@@ -92,8 +104,8 @@ data "aws_ssm_parameter" "landlord_base_url" {
   name = "${local.environment_name}-prsdb-landlord-base-url"
 }
 
-data "aws_ssm_parameter" "local_authority_base_url" {
-  name = "${local.environment_name}-prsdb-local-authority-base-url"
+data "aws_ssm_parameter" "local_council_base_url" {
+  name = "${local.environment_name}-prsdb-local-council-base-url"
 }
 
 data "aws_ssm_parameter" "plausible_analytics_domain_id" {

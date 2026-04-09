@@ -31,6 +31,7 @@ locals {
     "s3tables",
     "cloudtrail",
     "sns",
+    "sqs",
   ]
 }
 

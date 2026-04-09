@@ -71,3 +71,14 @@ variable "cloudwatch_log_expiration_days" {
   type        = number
   description = "Number of days to retain cloudwatch logs for"
 }
+
+variable "use_aws_shield_advanced" {
+  type        = bool
+  description = "Indicates whether AWS Shield Advanced should be enabled"
+}
+
+variable "maintenance_mode_on" {
+  type        = bool
+  description = "Indicates whether maintenance mode is on"
+  default     = false
+}

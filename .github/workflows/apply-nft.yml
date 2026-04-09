@@ -1,0 +1,17 @@
+name: Apply - NFT
+on:
+  push:
+    branches:
+      - nft
+  workflow_dispatch:
+
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/nft'
+    name: Apply
+    uses: ./.github/workflows/apply.yml
+    with:
+      environment: nft
+      aws-account-id: 448120078528
+      maintenance-mode-on: ${{ vars.MAINTENANCE_MODE_ON_NFT == 'true' }}
+    secrets: inherit

@@ -22,5 +22,6 @@ unsure of the approach to take and would like specific feedback.
 Delete any that are not applicable, and add explanation below for any that are applicable but haven't been done
 
 - [ ] Any special release instructions (e.g. set environment variables) have been added as checklist items to a draft PR (merging `main` into `test`) for the next release.
+- [ ] New scheduled tasks avoid 2-5am on wednesdays (SSM maintenance window).
 
   Make sure to include details such as the name of the variable, where it needs to be set (e.g. AWS Secrets Manager or Parameter Store), and what it should be set to (this might be a location in keeper where a secret value can be found)

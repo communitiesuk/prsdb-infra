@@ -46,9 +46,9 @@ resource "aws_secretsmanager_secret" "notify_api_key" {
   kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
 }
 
-resource "aws_secretsmanager_secret" "os_places_api_key" {
-  name                    = "tf-${var.environment_name}-os-places-api-key"
-  description             = "API key for OS Places"
+resource "aws_secretsmanager_secret" "os_api_key" {
+  name                    = "tf-${var.environment_name}-os-api-key"
+  description             = "API key for OS"
   recovery_window_in_days = 0
   kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
 }
@@ -56,6 +56,13 @@ resource "aws_secretsmanager_secret" "os_places_api_key" {
 resource "aws_secretsmanager_secret" "epc_register_client_secret" {
   name                    = "tf-${var.environment_name}-prsdb-epc-client-secret"
   description             = "Client secret for the EPC register client secret"
+  recovery_window_in_days = 0
+  kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
+}
+
+resource "aws_secretsmanager_secret" "internal_access_client_secret" {
+  name                    = "tf-${var.environment_name}-internal-access-client-secret"
+  description             = "Client secret for Internal Access OAuth"
   recovery_window_in_days = 0
   kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
 }

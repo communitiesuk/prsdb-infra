@@ -1,0 +1,36 @@
+name: Update ECS service
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'The name of the environment to update the ECS service in'
+        type: string
+        required: true
+      aws-account-id:
+        description: 'The id of the AWS account to update the ECS service in'
+        type: string
+        required: true
+
+jobs:
+  validate-target-environment:
+    name: Validate target environment
+    uses: ./.github/workflows/validate-target-environment.yml
+    with:
+      environment: ${{ inputs.environment }}
+
+  update-ecs-service:
+    name: Update ECS service
+    needs: validate-target-environment
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/github-actions-terraform-admin
+          aws-region: eu-west-2
+
+      - name: Update ECS service
+        run: aws ecs update-service --cluster ${{ inputs.environment }}-app --service ${{ inputs.environment }}-app --task-definition prsdb-webapp-${{ inputs.environment }} --force-new-deployment

@@ -14,7 +14,7 @@ env:
 
 jobs:
   validate-target-environment:
-    name: Validate Target Environment
+    name: Validate target environment
     uses: ./.github/workflows/validate-target-environment.yml
     with:
       environment: ${{ inputs.environment }}
@@ -115,17 +115,15 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    env:
-      AWS_REGION: "eu-west-2"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/github-actions-terraform-ci-plan-read-only
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: eu-west-2
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
