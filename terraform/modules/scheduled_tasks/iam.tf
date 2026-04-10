@@ -16,24 +16,6 @@ resource "aws_iam_role" "scheduled_tasks" {
           StringEquals = {
             "aws:SourceAccount" = data.aws_caller_identity.current.account_id
           }
-          ArnLike = {
-            "aws:SourceArn" = "arn:aws:scheduler:*:${data.aws_caller_identity.current.account_id}:schedule/${aws_scheduler_schedule_group.scheduled_tasks.name}/*"
-          }
-        }
-      },
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "events.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-        Condition = {
-          StringEquals = {
-            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
-          }
-          ArnLike = {
-            "aws:SourceArn" = "arn:aws:events:*:${data.aws_caller_identity.current.account_id}:rule/${var.environment_name}-*-scheduled-task"
-          }
         }
       }
     ]
