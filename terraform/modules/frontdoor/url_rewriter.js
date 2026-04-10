@@ -14,12 +14,20 @@ function handler(event) {
     return request
 }
 
+function is_landlord_domain(hostName) {
+    return hostName.includes("register-home-to-rent") || hostName.includes("register-rental-property");
+}
+
+function is_local_council_domain(hostName) {
+    return hostName.includes("search-landlord-home-information") || hostName.includes("check-rental-property-or-landlord");
+}
+
 function insert_service_segment_for_domain(pathSegments, hostName) {
-    if (hostName.includes("register-home-to-rent")) {
+    if (is_landlord_domain(hostName)) {
         pathSegments.splice(1,0,"landlord");
     }
 
-    if (hostName.includes("search-landlord-home-information")) {
+    if (is_local_council_domain(hostName)) {
         pathSegments.splice(1,0,"local-council");
     }
     return pathSegments;
@@ -27,6 +35,6 @@ function insert_service_segment_for_domain(pathSegments, hostName) {
 
 function url_should_be_rewritten(pathSegments, hostName, exceptions) {
     return !(exceptions.includes(pathSegments[1]) ||
-        (hostName.includes("register-home-to-rent") && pathSegments[1] === "landlord") ||
-        (hostName.includes("search-landlord-home-information") && pathSegments[1] === "local-council"));
+        (is_landlord_domain(hostName) && pathSegments[1] === "landlord") ||
+        (is_local_council_domain(hostName) && pathSegments[1] === "local-council"));
 }

@@ -2,6 +2,10 @@
 
 url_writer is a cloudfront function that inserts a service path segment (i.e. `/landlord` or `/local-council`) into the request URL.
 
+## Supported domains
+The landlord service path is inserted for both the old (`register-home-to-rent`) and new (`register-rental-property`) domain names.
+The local council service path is inserted for both the old (`search-landlord-home-information`) and new (`check-rental-property-or-landlord`) domain names.
+
 ## Excluded endpoints
 Endpoints which are common between services such as `/error` and `/signout` are excluded from the rewriting, so do not include the service name.
 Endpoints that Spring generates for us (e.g. those use for authentication) are also excluded.
