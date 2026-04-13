@@ -112,14 +112,6 @@ data "aws_ssm_parameter" "plausible_analytics_domain_id" {
   name = "${local.environment_name}-prsdb-plausible-analytics-domain-id"
 }
 
-data "aws_ssm_parameter" "google_analytics_measurement_id" {
-  name = "${local.environment_name}-prsdb-google-analytics-measurement-id"
-}
-
-data "aws_ssm_parameter" "google_analytics_cookie_domain" {
-  name = "${local.environment_name}-prsdb-google-analytics-cookie-domain"
-}
-
 data "aws_ssm_parameter" "beta_feedback_team_email_address" {
   name = "${local.environment_name}-prsdb-beta-feedback-team-email-address"
 }

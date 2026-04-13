@@ -392,6 +392,384 @@ describe('url_rewriter', () => {
             expect(new_event.headers.host.value + new_event.uri).toBe('https://search-landlord-home-information.communities.gov.uk/login/oauth2/code/one-login');
         });
     });
+
+    describe('for the register-rental-property domain', () => {
+        it('inserts /landlord into the dashboard URL', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/dashboard');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/landlord/dashboard');
+        });
+
+        it('returns the original url if the first path segment after the domain is already /landlord', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/landlord/dashboard');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/landlord/dashboard');
+        });
+
+        it('inserts /landlord into a URL which has a /landlord segment, but not as the first path segment', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/dashboard/landlord');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/landlord/dashboard/landlord');
+        })
+
+        it('inserts /landlord into a URL where the first path segment is /local-council', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/local-council/dashboard');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/landlord/local-council/dashboard');
+        });
+
+        it('returns the original url for the /signout endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/signout');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/signout');
+        });
+
+        it('returns the original url for the /confirm-sign-out endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/confirm-sign-out');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/confirm-sign-out');
+        });
+
+        it('returns the original url for the /error/* endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/error/some-error');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/error/some-error');
+        });
+
+        it('returns the original url for the /assets endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/assets');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/assets');
+        });
+
+        it('returns the original url for the /id-verification endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/id-verification');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/id-verification');
+        });
+
+        it('returns the original url for the /logout endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/logout');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/logout');
+        });
+
+        it('returns the original url for the /oauth2 endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/oauth2');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/oauth2');
+        });
+
+        it('returns the original url for the /healthcheck endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/healthcheck');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/healthcheck');
+        });
+
+        it('returns the original url for the /cookies endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/cookies');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/cookies');
+        });
+
+        it('returns the original url for the /maintenance endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/maintenance');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/maintenance');
+        });
+
+        it('returns the original url for the /.well-known endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/.well-known/security.txt');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/.well-known/security.txt');
+        });
+
+        it('returns the original url for the /login endpoint', () => {
+            // given
+            const event = createRequestEvent(registerRentalPropertyHost, '/login/oauth2/code/one-login');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://register-rental-property.communities.gov.uk/login/oauth2/code/one-login');
+        });
+    });
+
+    describe('for the check-rental-property-or-landlord domain', () => {
+        it('inserts /local-council into the dashboard URL', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/dashboard');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/local-council/dashboard');
+        });
+
+        it('returns the original url if the first path segment after the domain is already /local-council', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/local-council/dashboard');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/local-council/dashboard');
+        });
+
+        it('inserts /local-council into a URL which has a /local-council segment, but not as the first path segment', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/dashboard/local-council');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/local-council/dashboard/local-council');
+        })
+
+        it('inserts /local-council into a URL where the first path segment is /landlord', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/landlord/dashboard');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/local-council/landlord/dashboard');
+        });
+
+        it('returns the original url for the /signout endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/signout');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/signout');
+        });
+
+        it('returns the original url for the /confirm-sign-out endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/confirm-sign-out');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/confirm-sign-out');
+        });
+
+        it('returns the original url for the /error/* endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/error/some-error');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/error/some-error');
+        });
+
+        it('returns the original url for the /assets endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/assets');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/assets');
+        });
+
+        it('returns the original url for the /id-verification endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/id-verification');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/id-verification');
+        });
+
+        it('returns the original url for the /logout endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/logout');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/logout');
+        });
+
+        it('returns the original url for the /oauth2 endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/oauth2');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/oauth2');
+        });
+
+        it('returns the original url for the /healthcheck endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/healthcheck');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/healthcheck');
+        });
+
+        it('returns the original url for the /cookies endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/cookies');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/cookies');
+        });
+
+        it('returns the original url for the /maintenance endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/maintenance');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/maintenance');
+        });
+
+        it('returns the original url for the /.well-known endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/.well-known/security.txt');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/.well-known/security.txt');
+        });
+
+        it('returns the original url for the /system-operator/manage-council-users endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/system-operator/manage-council-users/1');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/system-operator/manage-council-users/1');
+        });
+
+        it('returns the original url for the /system-operator base path', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/system-operator');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/system-operator');
+        });
+
+        it('returns the original url for the /login endpoint', () => {
+            // given
+            const event = createRequestEvent(checkRentalPropertyOrLandlordHost, '/login/oauth2/code/one-login');
+
+            // when
+            const new_event = url_rewriter(event);
+
+            // then
+            expect(new_event.headers.host.value + new_event.uri).toBe('https://check-rental-property-or-landlord.communities.gov.uk/login/oauth2/code/one-login');
+        });
+    });
 });
 
 
@@ -411,3 +789,5 @@ function createRequestEvent(host, endpoint) {
 
 const registerHomeToRentHost = 'https://register-home-to-rent.communities.gov.uk';
 const searchLandlordHomeInformationHost = 'https://search-landlord-home-information.communities.gov.uk';
+const registerRentalPropertyHost = 'https://register-rental-property.communities.gov.uk';
+const checkRentalPropertyOrLandlordHost = 'https://check-rental-property-or-landlord.communities.gov.uk';
