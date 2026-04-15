@@ -14,5 +14,5 @@ jobs:
       environment: production
       aws-account-id: 879161327637
       maintenance-mode-on: ${{ vars.MAINTENANCE_MODE_ON_PRODUCTION == 'true' }}
-      ip-restrictions-on: ${{ vars.IP_RESTRICTIONS == 'true' }}
+      ip-restrictions-on: ${{ vars.IP_RESTRICTIONS_ON == 'true' }}
     secrets: inherit
