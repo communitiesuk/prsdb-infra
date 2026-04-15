@@ -116,7 +116,7 @@ locals {
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = "default, ${local.environment_name}"
+      value = "default, ${local.environment_name}, require-passcode"
     },
     {
       name  = "BETA_FEEDBACK_TEAM_EMAIL_ADDRESS"
