@@ -21,6 +21,30 @@ resource "aws_wafv2_web_acl" "main" {
   }
 
   dynamic "rule" {
+    for_each = length(var.detectify_ips) > 0 ? [{}] : []
+    content {
+      name     = "allow-detectify-scanner"
+      priority = 1
+
+      action {
+        allow {}
+      }
+
+      statement {
+        ip_set_reference_statement {
+          arn = aws_wafv2_ip_set.detectify_ips.arn
+        }
+      }
+
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "waf-allow-detectify-scanner"
+        sampled_requests_enabled   = true
+      }
+    }
+  }
+
+  dynamic "rule" {
     # [{}] causes 1 instance of the block to be created, [] causes 0 instances of the block
     for_each = length(var.ip_allowlist) > 0 ? [{}] : []
     content {
@@ -351,4 +375,13 @@ resource "aws_wafv2_ip_set" "allowed_ips" {
   scope              = "CLOUDFRONT"
   ip_address_version = "IPV4"
   addresses          = var.ip_allowlist
+}
+
+resource "aws_wafv2_ip_set" "detectify_ips" {
+  provider = aws.us-east-1
+
+  name               = "waf-detectify-ip-set-${var.environment_name}"
+  scope              = "CLOUDFRONT"
+  ip_address_version = "IPV4"
+  addresses          = var.detectify_ips
 }
