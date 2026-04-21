@@ -52,6 +52,7 @@ data "aws_iam_policy_document" "download_from_safe" {
     actions = [
       "s3:GetObject",
       "s3:GetObjectVersion",
+      "s3:DeleteObject"
     ]
     resources = [
       "${module.uploaded_files_bucket.bucket_arn}/*",
