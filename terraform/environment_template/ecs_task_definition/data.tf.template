@@ -108,8 +108,8 @@ data "aws_ssm_parameter" "local_council_base_url" {
   name = "${local.environment_name}-prsdb-local-council-base-url"
 }
 
-data "aws_ssm_parameter" "plausible_analytics_domain_id" {
-  name = "${local.environment_name}-prsdb-plausible-analytics-domain-id"
+data "aws_ssm_parameter" "plausible_site_id" {
+  name = "${local.environment_name}-prsdb-plausible-site-id"
 }
 
 data "aws_ssm_parameter" "beta_feedback_team_email_address" {
