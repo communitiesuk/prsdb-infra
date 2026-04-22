@@ -67,6 +67,12 @@ variable "ip_allowlist" {
   default     = []
 }
 
+variable "detectify_ips" {
+  type        = list(string)
+  description = "Detectify scanner IPs to allow through WAF without managed rule evaluation"
+  default     = []
+}
+
 variable "cloudwatch_log_expiration_days" {
   type        = number
   description = "Number of days to retain cloudwatch logs for"

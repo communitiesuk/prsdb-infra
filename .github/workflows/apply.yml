@@ -11,6 +11,10 @@ on:
       maintenance-mode-on:
         required: true
         type: boolean
+      ip-restrictions-on:
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   id-token: write
@@ -20,6 +24,7 @@ env:
   AWS_REGION: "eu-west-2"
   TF_VAR_alarm_email_address: ${{ secrets.ALARMS_EMAIL }}
   TF_VAR_maintenance_mode_on: ${{ inputs.maintenance-mode-on }}
+  TF_VAR_ip_restrictions_on: ${{ inputs.ip-restrictions-on }}
 
 jobs:
   validate-target-environment:
