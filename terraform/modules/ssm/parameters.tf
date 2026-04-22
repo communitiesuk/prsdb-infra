@@ -112,8 +112,8 @@ resource "aws_ssm_parameter" "local_council_base_url" {
   value = var.local_council_base_url
 }
 
-resource "aws_ssm_parameter" "plausible_analytics_domain_id" {
-  name  = "${var.environment_name}-prsdb-plausible-analytics-domain-id"
+resource "aws_ssm_parameter" "plausible_site_id" {
+  name  = "${var.environment_name}-prsdb-plausible-site-id"
   type  = "String"
   value = "default_to_be_set_manually" # To be set manually on AWS
 
