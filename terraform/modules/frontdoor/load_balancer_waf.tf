@@ -13,6 +13,30 @@ resource "aws_wafv2_web_acl" "load_balancer" {
     sampled_requests_enabled   = false
   }
 
+  dynamic "rule" {
+    for_each = length(var.detectify_ips) > 0 ? [{}] : []
+    content {
+      name     = "allow-detectify-scanner"
+      priority = 1
+
+      action {
+        allow {}
+      }
+
+      statement {
+        ip_set_reference_statement {
+          arn = aws_wafv2_ip_set.detectify_ips_regional.arn
+        }
+      }
+
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "waf-allow-detectify-scanner"
+        sampled_requests_enabled   = true
+      }
+    }
+  }
+
   rule {
     name     = "validate-cloudfront-header"
     priority = 3
@@ -289,4 +313,11 @@ resource "aws_wafv2_web_acl" "load_balancer" {
       sampled_requests_enabled   = true
     }
   }
+}
+
+resource "aws_wafv2_ip_set" "detectify_ips_regional" {
+  name               = "waf-detectify-ip-set-regional-${var.environment_name}"
+  scope              = "REGIONAL"
+  ip_address_version = "IPV4"
+  addresses          = var.detectify_ips
 }

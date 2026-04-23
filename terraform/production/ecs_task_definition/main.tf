@@ -111,12 +111,12 @@ locals {
       value = data.aws_ssm_parameter.epc_certificate_base_url.value
     },
     {
-      name  = "PLAUSIBLE_ANALYTICS_DOMAIN_ID"
-      value = data.aws_ssm_parameter.plausible_analytics_domain_id.value
+      name  = "PLAUSIBLE_SITE_ID"
+      value = data.aws_ssm_parameter.plausible_site_id.value
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = "default, ${local.environment_name}"
+      value = "default, ${local.environment_name}, require-passcode"
     },
     {
       name  = "BETA_FEEDBACK_TEAM_EMAIL_ADDRESS"
