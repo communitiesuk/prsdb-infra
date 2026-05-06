@@ -232,6 +232,7 @@ module "monitoring" {
   database_allocated_storage     = local.database_allocated_storage
   database_identifier            = module.database.database_identifier
   waf_acl_name                   = module.frontdoor.waf_acl_name
+  webapp_ecs_task_role_name      = module.ecr.webapp_ecs_task_role_name
 }
 
 module "scheduled_tasks" {
