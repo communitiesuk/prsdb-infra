@@ -6,13 +6,23 @@ on:
   workflow_dispatch:
 
 jobs:
+  resolve-environment-variables:
+    name: Resolve environment variables
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      ip-restrictions-on: ${{ vars.IP_RESTRICTIONS_ON == 'true' }}
+    steps:
+      - run: echo "Resolved environment variables"
+
   apply:
     if: github.ref == 'refs/heads/production'
     name: Apply
+    needs: resolve-environment-variables
     uses: ./.github/workflows/apply.yml
     with:
       environment: production
       aws-account-id: 879161327637
       maintenance-mode-on: ${{ vars.MAINTENANCE_MODE_ON_PRODUCTION == 'true' }}
-      ip-restrictions-on: ${{ vars.IP_RESTRICTIONS_ON == 'true' }}
+      ip-restrictions-on: ${{ needs.resolve-environment-variables.outputs.ip-restrictions-on == 'true' }}
     secrets: inherit
