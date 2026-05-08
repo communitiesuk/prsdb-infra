@@ -122,6 +122,14 @@ locals {
       name  = "BETA_FEEDBACK_TEAM_EMAIL_ADDRESS"
       value = data.aws_ssm_parameter.beta_feedback_team_email_address.value
     },
+    {
+      name  = "METRICS_CLOUDWATCH_NAMESPACE"
+      value = "prsdb-webapp/${local.environment_name}"
+    },
+    {
+      name  = "BPL_JVM_LOADED_CLASS_COUNT"
+      value = "40000"
+    },
   ]
   # We set default Spring profiles for scheduled tasks to allow the application to correctly handle the case where a scheduled task is created without a dedicated profile. These should always be overridden by task-specific profiles.
   scheduled_tasks_only_environment_variables = [
