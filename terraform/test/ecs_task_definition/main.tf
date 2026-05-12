@@ -60,6 +60,10 @@ locals {
       name  = "EMAILNOTIFICATIONS_USE_PRODUCTION_NOTIFY"
       value = contains(["production"], local.environment_name) ? "true" : "false"
     },
+    {
+      name  = "METRICS_CLOUDWATCH_NAMESPACE"
+      value = "prsdb-webapp/${local.environment_name}"
+    },
   ]
   webapp_only_environment_variables = [
     {
@@ -121,10 +125,6 @@ locals {
     {
       name  = "BETA_FEEDBACK_TEAM_EMAIL_ADDRESS"
       value = data.aws_ssm_parameter.beta_feedback_team_email_address.value
-    },
-    {
-      name  = "METRICS_CLOUDWATCH_NAMESPACE"
-      value = "prsdb-webapp/${local.environment_name}"
     },
     {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
