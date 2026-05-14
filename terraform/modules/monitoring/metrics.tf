@@ -193,6 +193,18 @@ resource "aws_cloudwatch_log_metric_filter" "organization_changes" {
   }
 }
 
+resource "aws_cloudwatch_log_metric_filter" "virus_scan_failure" {
+  log_group_name = data.aws_cloudwatch_log_group.webapp.name
+  name           = "virus-scan-failure-${var.environment_name}"
+  pattern        = "Error processing virus scan result"
+
+  metric_transformation {
+    name      = "virus-scan-failure-${var.environment_name}"
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+}
+
 resource "aws_cloudwatch_log_metric_filter" "ecs_task_start_failure" {
   log_group_name = module.ecs_events_log_group.name
   name           = "ecs-task-start-failure-${var.environment_name}"
