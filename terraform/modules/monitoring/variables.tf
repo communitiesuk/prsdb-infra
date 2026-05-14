@@ -61,3 +61,8 @@ variable "waf_acl_name" {
   description = "Name of WAF web ACL to create alarms for"
   type        = string
 }
+
+variable "webapp_ecs_task_role_name" {
+  description = "Name of the webapp ECS task role to grant CloudWatch metric publishing permissions to"
+  type        = string
+}
