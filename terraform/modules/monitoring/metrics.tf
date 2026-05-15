@@ -196,7 +196,7 @@ resource "aws_cloudwatch_log_metric_filter" "organization_changes" {
 resource "aws_cloudwatch_log_metric_filter" "virus_scan_failure" {
   log_group_name = data.aws_cloudwatch_log_group.webapp.name
   name           = "virus-scan-failure-${var.environment_name}"
-  pattern        = "Error processing virus scan result"
+  pattern        = "\"Error processing virus scan result\""
 
   metric_transformation {
     name      = "virus-scan-failure-${var.environment_name}"
