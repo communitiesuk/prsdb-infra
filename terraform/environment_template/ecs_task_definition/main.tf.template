@@ -130,6 +130,15 @@ locals {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
       value = "40000"
     },
+    {
+      # Diagnostics for off-heap / native memory pressure (the kind that gets the task OOM-killed by ECS
+      # without a JVM stack trace). MaxDirectMemorySize caps direct ByteBuffers so a leak triggers a JVM
+      # OutOfMemoryError (logged with stack trace to CloudWatch) instead of a silent ECS kill.
+      # ExitOnOutOfMemoryError plus PrintNMTStatistics prints a native-memory summary to stderr (and
+      # therefore CloudWatch) at JVM shutdown, so we can see which native category was growing.
+      name  = "JAVA_TOOL_OPTIONS"
+      value = "-XX:MaxDirectMemorySize=256m -XX:+ExitOnOutOfMemoryError -XX:NativeMemoryTracking=summary -XX:+UnlockDiagnosticVMOptions -XX:+PrintNMTStatistics"
+    },
   ]
   # We set default Spring profiles for scheduled tasks to allow the application to correctly handle the case where a scheduled task is created without a dedicated profile. These should always be overridden by task-specific profiles.
   scheduled_tasks_only_environment_variables = [
