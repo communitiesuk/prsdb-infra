@@ -1,3 +1,7 @@
+data "aws_cloudwatch_log_group" "webapp" {
+  name = "${var.environment_name}-prsdb-webapp"
+}
+
 resource "aws_cloudwatch_event_rule" "ecs_events" {
   name        = "${var.environment_name}-ecs-events"
   description = "Capture ECS events"
