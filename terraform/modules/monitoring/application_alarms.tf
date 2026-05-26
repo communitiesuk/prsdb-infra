@@ -11,6 +11,6 @@ resource "aws_cloudwatch_metric_alarm" "virus_scan_failure" {
   treat_missing_data  = "notBreaching"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }

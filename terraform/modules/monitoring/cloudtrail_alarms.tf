@@ -11,7 +11,7 @@ resource "aws_cloudwatch_metric_alarm" "assume_role_with_saml" {
   statistic           = "Sum"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -28,7 +28,7 @@ resource "aws_cloudwatch_metric_alarm" "unauthorized_api_calls" {
   statistic           = "Sum"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -45,7 +45,7 @@ resource "aws_cloudwatch_metric_alarm" "iam_policy_changes" {
   statistic           = "Sum"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -62,7 +62,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudtrail_config_changes" {
   statistic           = "Sum"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -79,7 +79,7 @@ resource "aws_cloudwatch_metric_alarm" "s3_bucket_policy_changes" {
   statistic           = "Sum"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -96,7 +96,7 @@ resource "aws_cloudwatch_metric_alarm" "network_gateway_changes" {
   statistic           = "Sum"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -113,7 +113,7 @@ resource "aws_cloudwatch_metric_alarm" "route_tables_changes" {
   statistic           = "Sum"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -130,7 +130,7 @@ resource "aws_cloudwatch_metric_alarm" "vpc_changes" {
   statistic           = "Sum"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -147,6 +147,6 @@ resource "aws_cloudwatch_metric_alarm" "organization_changes" {
   statistic           = "Sum"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
