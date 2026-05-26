@@ -399,7 +399,7 @@ resource "aws_wafv2_web_acl" "main" {
                 }
                 text_transformation {
                   priority = 0
-                  type     = "LOWERCASE"
+                  type     = "NONE"
                 }
               }
             }
