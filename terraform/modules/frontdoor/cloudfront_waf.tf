@@ -393,7 +393,7 @@ resource "aws_wafv2_web_acl" "main" {
           not_statement {
             statement {
               regex_match_statement {
-                regex_string = "^/$|^/(signout|confirm-sign-out|error|assets|id-verification|logout|oauth2|login|healthcheck|cookies|maintenance|\\.well-known|system-operator|landlord|local-council)(/|$)"
+                regex_string = local.unknown_path_allowlist_regex
                 field_to_match {
                   uri_path {}
                 }

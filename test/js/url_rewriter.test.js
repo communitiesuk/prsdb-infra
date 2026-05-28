@@ -1,5 +1,15 @@
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const rewire = require('rewire');
-const url_rewriter = rewire('../../terraform/modules/frontdoor/url_rewriter.js').__get__('handler');
+
+const moduleDir = path.join(__dirname, '..', '..', 'terraform', 'modules', 'frontdoor');
+const exceptions = JSON.parse(fs.readFileSync(path.join(moduleDir, 'url_rewriter_exceptions.json'), 'utf8'));
+const template = fs.readFileSync(path.join(moduleDir, 'url_rewriter.js.tftpl'), 'utf8');
+const rendered = template.replace('${jsonencode(exceptions)}', JSON.stringify(exceptions));
+const renderedPath = path.join(os.tmpdir(), 'url_rewriter.rendered.js');
+fs.writeFileSync(renderedPath, rendered);
+const url_rewriter = rewire(renderedPath).__get__('handler');
 
 describe('url_rewriter', () => {
     it('returns the original url for a URL that does not include one of our domain names', () => {
