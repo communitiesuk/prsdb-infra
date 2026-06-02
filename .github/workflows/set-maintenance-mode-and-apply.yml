@@ -91,7 +91,6 @@ jobs:
     name: Set environment maintenance variable
     needs: resolve-target
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
     if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
     steps:
       - name: Set maintenance variable value
@@ -99,9 +98,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api \
-            --method PUT \
+            --method PATCH \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/environments/${{ inputs.environment }}/variables/${{ needs.resolve-target.outputs.variable-name }} \
+            /repos/${{ github.repository }}/actions/variables/${{ needs.resolve-target.outputs.variable-name }} \
             -f name=${{ needs.resolve-target.outputs.variable-name }} \
             -f value=${{ inputs.maintenance-mode-on }}
 
