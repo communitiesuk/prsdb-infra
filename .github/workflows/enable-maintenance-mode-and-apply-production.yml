@@ -1,0 +1,63 @@
+name: Enable Maintenance Mode and Apply - Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DANGER to confirm"
+        required: true
+        type: string
+      reason:
+        description: "Reason for enabling maintenance mode in production"
+        required: true
+        type: string
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  validate-inputs:
+    name: Validate operator confirmation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    steps:
+      - name: Record change summary
+        run: |
+          {
+            echo "## Maintenance mode change"
+            echo ""
+            echo "- Environment: production"
+            echo "- Maintenance mode: true"
+            echo "- Reason: ${{ inputs.reason }}"
+            echo "- Triggered by: ${{ github.actor }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  set-variable:
+    name: Set production maintenance variable
+    needs: validate-inputs
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    steps:
+      - name: Set production maintenance mode to true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api \
+            --method PATCH \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/actions/variables/MAINTENANCE_MODE_ON_PRODUCTION \
+            -f name=MAINTENANCE_MODE_ON_PRODUCTION \
+            -f value=true
+
+  apply:
+    name: Apply production with maintenance mode on
+    needs:
+      - set-variable
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    uses: ./.github/workflows/apply.yml
+    with:
+      environment: production
+      aws-account-id: "879161327637"
+      maintenance-mode-on: true
+    secrets: inherit
