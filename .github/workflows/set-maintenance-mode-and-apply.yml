@@ -1,0 +1,119 @@
+name: Set Maintenance Mode and Apply
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to target"
+        required: true
+        type: choice
+        options:
+          - select-environment
+          - integration
+          - test
+          - nft
+          - production
+      maintenance-mode-on:
+        description: "Set maintenance mode"
+        required: true
+        type: choice
+        options:
+          - select-value
+          - "true"
+          - "false"
+      confirm:
+        description: "Type DANGER to confirm"
+        required: true
+        type: string
+      reason:
+        description: "Reason for changing maintenance mode"
+        required: true
+        type: string
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  validate-inputs:
+    name: Validate operator inputs
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    steps:
+      - name: Require explicit selections
+        run: |
+          if [ "${{ inputs.environment }}" = "select-environment" ]; then
+            echo "Please choose an environment." >&2
+            exit 1
+          fi
+
+          if [ "${{ inputs.maintenance-mode-on }}" = "select-value" ]; then
+            echo "Please choose a maintenance mode value." >&2
+            exit 1
+          fi
+
+  resolve-target:
+    name: Resolve target settings
+    runs-on: ubuntu-latest
+    needs: validate-inputs
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    outputs:
+      aws-account-id: ${{ steps.resolve.outputs.aws-account-id }}
+      variable-name: ${{ steps.resolve.outputs.variable-name }}
+    steps:
+      - name: Resolve environment-specific values
+        id: resolve
+        run: |
+          case "${{ inputs.environment }}" in
+            integration)
+              echo "aws-account-id=794038239680" >> "$GITHUB_OUTPUT"
+              echo "variable-name=MAINTENANCE_MODE_ON_INTEGRATION" >> "$GITHUB_OUTPUT"
+              ;;
+            test)
+              echo "aws-account-id=869935096717" >> "$GITHUB_OUTPUT"
+              echo "variable-name=MAINTENANCE_MODE_ON_TEST" >> "$GITHUB_OUTPUT"
+              ;;
+            nft)
+              echo "aws-account-id=448120078528" >> "$GITHUB_OUTPUT"
+              echo "variable-name=MAINTENANCE_MODE_ON_NFT" >> "$GITHUB_OUTPUT"
+              ;;
+            production)
+              echo "aws-account-id=879161327637" >> "$GITHUB_OUTPUT"
+              echo "variable-name=MAINTENANCE_MODE_ON_PRODUCTION" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unsupported environment: ${{ inputs.environment }}" >&2
+              exit 1
+              ;;
+          esac
+
+  set-variable:
+    name: Set environment maintenance variable
+    needs: resolve-target
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    steps:
+      - name: Set maintenance variable value
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/environments/${{ inputs.environment }}/variables/${{ needs.resolve-target.outputs.variable-name }} \
+            -f name=${{ needs.resolve-target.outputs.variable-name }} \
+            -f value=${{ inputs.maintenance-mode-on }}
+
+  apply:
+    name: Apply with selected maintenance mode
+    needs:
+      - resolve-target
+      - set-variable
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    uses: ./.github/workflows/apply.yml
+    with:
+      environment: ${{ inputs.environment }}
+      aws-account-id: ${{ needs.resolve-target.outputs.aws-account-id }}
+      maintenance-mode-on: ${{ inputs.maintenance-mode-on == 'true' }}
+    secrets: inherit
