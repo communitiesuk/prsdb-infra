@@ -13,8 +13,8 @@ on:
         type: string
 
 permissions:
-  actions: write
   contents: read
+  id-token: write
 
 jobs:
   validate-inputs:
@@ -33,27 +33,10 @@ jobs:
             echo "- Triggered by: ${{ github.actor }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
-  set-variable:
-    name: Set production maintenance variable
-    needs: validate-inputs
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
-    steps:
-      - name: Set production maintenance mode to true
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api \
-            --method PATCH \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/actions/variables/MAINTENANCE_MODE_ON_PRODUCTION \
-            -f name=MAINTENANCE_MODE_ON_PRODUCTION \
-            -f value=true
-
   apply:
     name: Apply production with maintenance mode on
     needs:
-      - set-variable
+      - validate-inputs
     if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
     uses: ./.github/workflows/apply.yml
     with:
@@ -61,3 +44,23 @@ jobs:
       aws-account-id: "879161327637"
       maintenance-mode-on: true
     secrets: inherit
+
+  notify-manual-variable-update:
+    name: Warn to update variable manually
+    needs:
+      - apply
+    runs-on: ubuntu-latest
+    if: needs.apply.result == 'success' && github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    steps:
+      - name: Send Slack warning
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "environment": "Production",
+              "reason": ${{ toJson(inputs.reason) }},
+              "triggered_by": "${{ github.actor }}",
+              "url": "${{ format('https://github.com/communitiesuk/prsdb-infra/actions/runs/{0}', github.run_id) }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_MAINTENANCE_MODE_WEBHOOK }}
