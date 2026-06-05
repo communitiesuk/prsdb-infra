@@ -8,7 +8,7 @@
   "delete-incomplete-properties": {
     "schedule_expression": "cron(30 1 * * ? *)"
   },
-  "joint-landlord-invitation-expiry-email": {
+  "jl-invitation-expiry-email": {
     "schedule_expression": "cron(0 7 * * ? *)"
   }
 }
