@@ -135,7 +135,7 @@ locals {
   scheduled_tasks_only_environment_variables = [
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = "web-server-deactivated,scheduled-task"
+      value = "web-server-deactivated,scheduled-task,${local.environment_name}"
     },
   ]
   common_secrets = [
