@@ -1,0 +1,66 @@
+name: Enable Maintenance Mode and Apply - Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DANGER to confirm"
+        required: true
+        type: string
+      reason:
+        description: "Reason for enabling maintenance mode in production"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate-inputs:
+    name: Validate operator confirmation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    steps:
+      - name: Record change summary
+        run: |
+          {
+            echo "## Maintenance mode change"
+            echo ""
+            echo "- Environment: production"
+            echo "- Maintenance mode: true"
+            echo "- Reason: ${{ inputs.reason }}"
+            echo "- Triggered by: ${{ github.actor }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  apply:
+    name: Apply production with maintenance mode on
+    needs:
+      - validate-inputs
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    uses: ./.github/workflows/apply.yml
+    with:
+      environment: production
+      aws-account-id: "879161327637"
+      maintenance-mode-on: true
+    secrets: inherit
+
+  notify-manual-variable-update:
+    name: Warn to update variable manually
+    needs:
+      - apply
+    runs-on: ubuntu-latest
+    if: needs.apply.result == 'success' && github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
+    steps:
+      - name: Send Slack warning
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "environment": "Production",
+              "reason": ${{ toJson(inputs.reason) }},
+              "triggered_by": "${{ github.actor }}",
+              "url": "${{ format('https://github.com/communitiesuk/prsdb-infra/actions/runs/{0}', github.run_id) }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_MAINTENANCE_MODE_WEBHOOK }}

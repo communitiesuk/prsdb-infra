@@ -1,6 +1,24 @@
 locals {
   origin_id             = "origin-${var.environment_name}"
   maintenance_origin_id = "maintenance-origin-${var.environment_name}"
+
+  # Single source of truth for the URL rewriter exception path segments. The same list is rendered into url_rewriter.js
+  # at deploy time and used to build the CloudFront WAF's "unknown paths" rate-limit allowlist regex below, so the two
+  # can never drift.
+  url_rewriter_exceptions = jsondecode(file("${path.module}/url_rewriter_exceptions.json"))
+
+  # Service segments that the URL rewriter inserts based on the request hostname. Real traffic always reaches the
+  # application via either an exception path or one of these segments, so we allow them in the WAF allowlist too.
+  # These remain duplicated in url_rewriter.js as their handling is intertwined with host-specific logic.
+  url_rewriter_service_segments = ["landlord", "local-council"]
+
+  allowed_top_level_path_segments = concat(local.url_rewriter_exceptions, local.url_rewriter_service_segments)
+
+  # Regex matching either "/" or any URI whose first path segment is in the allowlist (case-sensitive).
+  unknown_path_allowlist_regex = format(
+    "^/$|^/(%s)(/|$)",
+    join("|", [for s in local.allowed_top_level_path_segments : replace(s, ".", "\\.")])
+  )
 }
 
 resource "aws_cloudfront_origin_access_identity" "maintenance_oai" {
@@ -198,7 +216,9 @@ resource "aws_cloudfront_function" "url_rewriter" {
   runtime = "cloudfront-js-2.0"
   comment = "Rewrites URLs to include the service line as the first path segment"
   publish = true
-  code    = file("${path.module}/url_rewriter.js")
+  code = templatefile("${path.module}/url_rewriter.js.tftpl", {
+    exceptions = local.url_rewriter_exceptions
+  })
 }
 
 resource "aws_shield_subscription" "cloudfront" {

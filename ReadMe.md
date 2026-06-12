@@ -240,7 +240,7 @@ Get the One-Login admin to add these for each of the cloudfront domains used abo
 - If the output of the plan looks correct, run `terraform apply` to create the pre-requisite resources.
 - Terraform will create the webapp secrets and SSM parameters but (apart from those related to the database and Redis) will not populate them. Ask the team lead where you can find the appropriate values, and then populate them via the AWS console.
   - For Notify, this will involve creating a new API Key to use for the new environment.
-  - You will also need to add a new environment secret in Github called `ALARMS_EMAIL` with the email address to use for alarms in the new environment.
+  - You will also need to add two new environment secrets in Github: `CRITICAL_ALARMS_EMAIL` and `NON_CRITICAL_ALARMS_EMAIL`, each with the email address to use for the respective alarm severity in the new environment.
 - To create the task definition, in `terraform/<environment name>/ecs_task_definition`, if you haven't already, remove the `.template` from the end of any file names in the folder, and replace all instances of the string `<environment name>` with your actual environment name.
 - In `terraform/<environment name>/ecs_task_definition/terraform.tfvars`, set the `file_upload_created` variable to `false`.
 - Next, cd into `terraform/<environment name>/ecs_task_definition` and run `terraform init` followed by `terraform plan`. This should show you one resource being created - the task definition. If the output looks correct, run `terraform apply`.
@@ -277,6 +277,6 @@ To create a new scheduled task, you need to add an object to the relevant schedu
 
 Where schedule expression is a cron or rate expression as defined in the [AWS documentation](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-scheduled-rule-pattern.html).
 
-This will trigger a copy of the webapp container in line with the schedule. The container will have the Spring profiles set to `web-server-deactivated`, `scheduled-task`, and `<name-of-task>-scheduled-task` which should be used to select the correct application runner in the webapp for this particular task.
+This will trigger a copy of the webapp container in line with the schedule. The container will have the Spring profiles set to `web-server-deactivated`, `scheduled-task`, `<environment>`, and `<name-of-task>-scheduled-task` which should be used to select the correct application runner in the webapp for this particular task in the correct environment.
 
 Our SSM maintenance window is 2-5am every Wednesday, so we should avoid scheduling tasks in that timeslot in case of disruption.

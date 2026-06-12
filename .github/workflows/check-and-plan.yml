@@ -10,7 +10,8 @@ on:
         type: string
 
 env:
-  TF_VAR_alarm_email_address: ${{ secrets.ALARMS_EMAIL }}
+  TF_VAR_critical_alarm_email_address: ${{ secrets.CRITICAL_ALARMS_EMAIL }}
+  TF_VAR_non_critical_alarm_email_address: ${{ secrets.NON_CRITICAL_ALARMS_EMAIL }}
 
 jobs:
   validate-target-environment:

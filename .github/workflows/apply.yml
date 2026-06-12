@@ -22,7 +22,8 @@ permissions:
 
 env:
   AWS_REGION: "eu-west-2"
-  TF_VAR_alarm_email_address: ${{ secrets.ALARMS_EMAIL }}
+  TF_VAR_critical_alarm_email_address: ${{ secrets.CRITICAL_ALARMS_EMAIL }}
+  TF_VAR_non_critical_alarm_email_address: ${{ secrets.NON_CRITICAL_ALARMS_EMAIL }}
   TF_VAR_maintenance_mode_on: ${{ inputs.maintenance-mode-on }}
   TF_VAR_ip_restrictions_on: ${{ inputs.ip-restrictions-on }}
 
