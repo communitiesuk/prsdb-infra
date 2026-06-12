@@ -7,8 +7,13 @@ variable "environment_name" {
   }
 }
 
-variable "alarm_email_address" {
-  description = "Email address to receive CloudWatch alarm notifications"
+variable "critical_alarm_email_address" {
+  description = "Email address to receive critical CloudWatch alarm notifications"
+  type        = string
+}
+
+variable "non_critical_alarm_email_address" {
+  description = "Email address to receive non-critical CloudWatch alarm notifications"
   type        = string
 }
 
@@ -54,11 +59,6 @@ variable "alb_arn_suffix" {
 
 variable "alb_target_group_arn_suffix" {
   description = "ARN suffix of target group of ALB to create alarms for"
-  type        = string
-}
-
-variable "waf_acl_name" {
-  description = "Name of WAF web ACL to create alarms for"
   type        = string
 }
 

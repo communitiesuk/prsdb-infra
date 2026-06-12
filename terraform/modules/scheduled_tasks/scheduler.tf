@@ -37,7 +37,7 @@ resource "aws_scheduler_schedule" "scheduled_tasks" {
           "environment" : [
             {
               "name" : "SPRING_PROFILES_ACTIVE",
-              "value" : "web-server-deactivated,scheduled-task,${each.key}-scheduled-task"
+              "value" : "web-server-deactivated,scheduled-task,${var.environment_name},${each.key}-scheduled-task"
             }
           ]
         }

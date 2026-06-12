@@ -1,0 +1,15 @@
+[
+  "signout",
+  "confirm-sign-out",
+  "error",
+  "assets",
+  "id-verification",
+  "logout",
+  "oauth2",
+  "login",
+  "healthcheck",
+  "cookies",
+  "maintenance",
+  ".well-known",
+  "system-operator"
+]
