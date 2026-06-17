@@ -119,8 +119,8 @@ locals {
       value = data.aws_ssm_parameter.plausible_site_id.value
     },
     {
-      name  = "PLAUSIBLE_SCRIPT_ID"
-      value = data.aws_ssm_parameter.plausible_script_id.value
+      name  = "PLAUSIBLE_DOMAIN_ID"
+      value = data.aws_ssm_parameter.plausible_domain_id.value
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"
