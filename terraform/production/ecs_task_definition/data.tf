@@ -70,6 +70,10 @@ data "aws_secretsmanager_secret" "os_api_key" {
   name = "tf-${local.environment_name}-os-api-key"
 }
 
+data "aws_secretsmanager_secret" "plausible_api_key" {
+  name = "tf-${local.environment_name}-prsdb-plausible-api-key"
+}
+
 data "aws_ssm_parameter" "quarantine_bucket" {
   count = var.file_upload_buckets_created ? 1 : 0
   name  = "${local.environment_name}-prsdb-quarantine-bucket"
