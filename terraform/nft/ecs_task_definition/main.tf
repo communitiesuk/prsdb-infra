@@ -169,6 +169,10 @@ locals {
       name      = "INTERNAL_ACCESS_CLIENT_SECRET"
       valueFrom = data.aws_secretsmanager_secret.internal_access_client_secret.arn
     },
+    {
+      name      = "PLAUSIBLE_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.plausible_api_key.arn
+    },
   ]
 }
 
