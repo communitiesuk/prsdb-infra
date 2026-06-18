@@ -116,6 +116,10 @@ data "aws_ssm_parameter" "plausible_site_id" {
   name = "${local.environment_name}-prsdb-plausible-site-id"
 }
 
+data "aws_ssm_parameter" "plausible_domain_id" {
+  name = "${local.environment_name}-prsdb-plausible-domain-id"
+}
+
 data "aws_ssm_parameter" "beta_feedback_team_email_address" {
   name = "${local.environment_name}-prsdb-beta-feedback-team-email-address"
 }
