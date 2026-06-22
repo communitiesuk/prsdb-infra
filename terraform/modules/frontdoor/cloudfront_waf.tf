@@ -366,6 +366,54 @@ resource "aws_wafv2_web_acl" "main" {
       sampled_requests_enabled   = true
     }
   }
+
+  rule {
+    name = "rate-limit-unknown-paths"
+    # Allowed top-level path segments mirror those handled by the CloudFront URL rewriter
+    # (terraform/modules/frontdoor/url_rewriter.js): exceptions allowed through unchanged,
+    # plus the "landlord" / "local-council" segments inserted by the rewriter. Any other
+    # top-level segment is treated as a probe and IPs exceeding the limit are blocked.
+    priority = 12
+
+    action {
+      block {
+        custom_response {
+          response_code = 429
+        }
+      }
+    }
+
+    statement {
+      rate_based_statement {
+        aggregate_key_type    = "IP"
+        limit                 = 100
+        evaluation_window_sec = 300
+
+        scope_down_statement {
+          not_statement {
+            statement {
+              regex_match_statement {
+                regex_string = local.unknown_path_allowlist_regex
+                field_to_match {
+                  uri_path {}
+                }
+                text_transformation {
+                  priority = 0
+                  type     = "NONE"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "waf-rate-limit-unknown-paths"
+      sampled_requests_enabled   = true
+    }
+  }
 }
 
 resource "aws_wafv2_ip_set" "allowed_ips" {

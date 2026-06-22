@@ -10,8 +10,14 @@ variable "task_definition_created" {
   default     = true
 }
 
-variable "alarm_email_address" {
-  description = "Email addresses to receive CloudWatch alarm notifications"
+variable "critical_alarm_email_address" {
+  description = "Email address to receive critical CloudWatch alarm notifications"
+  type        = string
+  sensitive   = true
+}
+
+variable "non_critical_alarm_email_address" {
+  description = "Email address to receive non-critical CloudWatch alarm notifications"
   type        = string
   sensitive   = true
 }

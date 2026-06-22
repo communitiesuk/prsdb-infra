@@ -15,7 +15,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_cpu_usage" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -36,7 +36,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_usage" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -53,7 +53,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_start_failure" {
   treat_missing_data  = "notBreaching"
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -73,7 +73,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_usage" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -93,7 +93,7 @@ resource "aws_cloudwatch_metric_alarm" "rds_storage" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -115,7 +115,7 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_cpu_usage" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -137,7 +137,7 @@ resource "aws_cloudwatch_metric_alarm" "elasticache_memory_usage" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -158,19 +158,19 @@ resource "aws_cloudwatch_metric_alarm" "alb_5xx_errors" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_4xx_errors" {
   alarm_name          = "${var.alb_name}-4xx-errors"
-  alarm_description   = "There have been >100 4xx responses at the ALB in a minute"
+  alarm_description   = "There have been >500 4xx responses at the ALB in 5 minutes"
   comparison_operator = "GreaterThanThreshold"
   metric_name         = "HTTPCode_Target_4XX_Count"
   namespace           = "AWS/ApplicationELB"
   evaluation_periods  = 1
-  period              = 60
-  threshold           = 100
+  period              = 300
+  threshold           = 500
   statistic           = "Sum"
   treat_missing_data  = "notBreaching"
 
@@ -179,7 +179,7 @@ resource "aws_cloudwatch_metric_alarm" "alb_4xx_errors" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
   ]
 }
 
@@ -200,29 +200,6 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_hosts" {
   }
 
   alarm_actions = [
-    aws_sns_topic.alarm_sns_topic.arn,
-  ]
-}
-
-resource "aws_cloudwatch_metric_alarm" "waf_blocked_requests" {
-  alarm_name          = "${var.waf_acl_name}-blocked-requests"
-  alarm_description   = "There have been >100 blocked WAF requests in a minute"
-  comparison_operator = "GreaterThanThreshold"
-  metric_name         = "BlockedRequests"
-  namespace           = "AWS/WAFV2"
-  evaluation_periods  = 1
-  period              = 60
-  threshold           = 100
-  statistic           = "Sum"
-  treat_missing_data  = "notBreaching"
-  provider            = aws.us-east-1
-
-  dimensions = {
-    Rule   = "ALL"
-    WebACL = var.waf_acl_name
-  }
-
-  alarm_actions = [
-    aws_sns_topic.us_alarm_sns_topic.arn,
+    aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }

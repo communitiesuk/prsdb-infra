@@ -238,19 +238,19 @@ module "monitoring" {
     aws.us-east-1 = aws.us-east-1
   }
 
-  environment_name               = local.environment_name
-  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
-  alarm_email_address            = var.alarm_email_address
-  alb_name                       = module.frontdoor.load_balancer.name
-  alb_arn_suffix                 = module.frontdoor.load_balancer.arn_suffix
-  alb_target_group_arn_suffix    = module.frontdoor.load_balancer.target_group_arn_suffix
-  ecs_cluster_name               = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
-  ecs_service_name               = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
-  elasticache_cluster_ids        = toset(module.redis.redis_cluster_ids)
-  database_allocated_storage     = local.database_allocated_storage
-  database_identifier            = module.database.database_identifier
-  waf_acl_name                   = module.frontdoor.waf_acl_name
-  webapp_ecs_task_role_name      = module.ecr.webapp_ecs_task_role_name
+  environment_name                 = local.environment_name
+  cloudwatch_log_expiration_days   = local.cloudwatch_log_expiration_days
+  critical_alarm_email_address     = var.critical_alarm_email_address
+  non_critical_alarm_email_address = var.non_critical_alarm_email_address
+  alb_name                         = module.frontdoor.load_balancer.name
+  alb_arn_suffix                   = module.frontdoor.load_balancer.arn_suffix
+  alb_target_group_arn_suffix      = module.frontdoor.load_balancer.target_group_arn_suffix
+  ecs_cluster_name                 = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
+  ecs_service_name                 = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
+  elasticache_cluster_ids          = toset(module.redis.redis_cluster_ids)
+  database_allocated_storage       = local.database_allocated_storage
+  database_identifier              = module.database.database_identifier
+  webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
 }
 
 module "scheduled_tasks" {
@@ -262,5 +262,5 @@ module "scheduled_tasks" {
   schedule_expressions    = local.scheduled_tasks
   task_role_arn           = module.ecr.webapp_ecs_task_role_arn
   task_execution_role_arn = module.ecr.ecs_task_execution_role_arn
-  alarm_email_address     = var.alarm_email_address
+  alarm_email_address     = var.non_critical_alarm_email_address
 }
