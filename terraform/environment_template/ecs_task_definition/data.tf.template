@@ -70,6 +70,10 @@ data "aws_secretsmanager_secret" "os_api_key" {
   name = "tf-${local.environment_name}-os-api-key"
 }
 
+data "aws_secretsmanager_secret" "plausible_api_key" {
+  name = "tf-${local.environment_name}-prsdb-plausible-api-key"
+}
+
 data "aws_ssm_parameter" "quarantine_bucket" {
   count = var.file_upload_buckets_created ? 1 : 0
   name = "${local.environment_name}-prsdb-quarantine-bucket"
@@ -110,6 +114,10 @@ data "aws_ssm_parameter" "local_council_base_url" {
 
 data "aws_ssm_parameter" "plausible_site_id" {
   name = "${local.environment_name}-prsdb-plausible-site-id"
+}
+
+data "aws_ssm_parameter" "plausible_domain_id" {
+  name = "${local.environment_name}-prsdb-plausible-domain-id"
 }
 
 data "aws_ssm_parameter" "beta_feedback_team_email_address" {

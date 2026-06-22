@@ -280,3 +280,13 @@ Where schedule expression is a cron or rate expression as defined in the [AWS do
 This will trigger a copy of the webapp container in line with the schedule. The container will have the Spring profiles set to `web-server-deactivated`, `scheduled-task`, `<environment>`, and `<name-of-task>-scheduled-task` which should be used to select the correct application runner in the webapp for this particular task in the correct environment.
 
 Our SSM maintenance window is 2-5am every Wednesday, so we should avoid scheduling tasks in that timeslot in case of disruption.
+
+### QA for scheduled tasks
+For QAing scheduled tasks (if you don’t want to wait for it to run!), it’s best to change when the event is triggered rather than just running the task (as then you are also testing that the triggering is working).
+
+* Go to AWS → Amazon EventBridge → Schedules (under “Scheduler” in the left hand side panel)
+* Select the schedule you are testing (e.g. `integration-jl-invitation-deletion-scheduled-task`) and click "Edit"
+* Note the value of the Cron expression, then change it to a few minutes away (remembering it’s on GMT not BST) and save the schedule.
+* Once the task has run, change the Cron expression back to the original value.
+
+Each scheduled task has a corresponding log group in CloudWatch which can be used for debugging as required.
