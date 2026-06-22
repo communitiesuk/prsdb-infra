@@ -119,6 +119,10 @@ locals {
       value = data.aws_ssm_parameter.plausible_site_id.value
     },
     {
+      name  = "PLAUSIBLE_DOMAIN_ID"
+      value = data.aws_ssm_parameter.plausible_domain_id.value
+    },
+    {
       name  = "SPRING_PROFILES_ACTIVE"
       value = "default, ${local.environment_name}"
     },
@@ -168,6 +172,10 @@ locals {
     {
       name      = "INTERNAL_ACCESS_CLIENT_SECRET"
       valueFrom = data.aws_secretsmanager_secret.internal_access_client_secret.arn
+    },
+    {
+      name      = "PLAUSIBLE_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.plausible_api_key.arn
     },
   ]
 }
