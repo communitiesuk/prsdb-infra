@@ -36,7 +36,13 @@ jobs:
 
   refresh-task-definitions:
     name: Refresh task definitions
-    needs: validate-target-environment
+    # Wait for the main infra apply so any SSM parameters the ecs_task_definition
+    # state reads (e.g. CloudWatch metric dimension ids) already exist, avoiding a
+    # race where the task-def plan reads a parameter before apply creates it.
+    # The apply job is skipped when the main infra has no changes, so proceed as
+    # long as nothing it depends on failed or was cancelled.
+    needs: [validate-target-environment, apply]
+    if: ${{ !failure() && !cancelled() }}
     uses: ./.github/workflows/refresh-task-definitions.yml
     with:
       environment: ${{ inputs.environment }}
