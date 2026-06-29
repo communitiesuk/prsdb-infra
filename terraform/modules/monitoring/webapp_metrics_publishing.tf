@@ -1,11 +1,13 @@
 # Allows the webapp ECS task role to publish JVM/process metrics to CloudWatch
-# via Micrometer's CloudWatch registry.
-# cloudwatch:PutMetricData does not support resource-level permissions, so a wildcard is required.
+# via Micrometer's CloudWatch registry, and to read infrastructure metrics back via
+# GetMetricStatistics to power the System Operator dashboard.
+# Neither cloudwatch:PutMetricData nor cloudwatch:GetMetricStatistics supports
+# resource-level permissions, so a wildcard is required.
 # See https://docs.aws.amazon.com/service-authorization/latest/reference/list_amazoncloudwatch.html
 # tfsec:ignore:aws-iam-no-policy-wildcards
 data "aws_iam_policy_document" "webapp_publish_cloudwatch_metrics" {
   statement {
-    actions   = ["cloudwatch:PutMetricData"]
+    actions   = ["cloudwatch:PutMetricData", "cloudwatch:GetMetricStatistics"]
     resources = ["*"]
     effect    = "Allow"
   }
