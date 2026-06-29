@@ -42,6 +42,23 @@ data "aws_ssm_parameter" "redis_port" {
   name = "${local.environment_name}-prsdb-redis-port"
 }
 
+# CloudWatch metric dimension identifiers read by the System Operator dashboard.
+data "aws_ssm_parameter" "ecs_cluster_name" {
+  name = "${local.environment_name}-prsdb-ecs-cluster-name"
+}
+
+data "aws_ssm_parameter" "ecs_service_name" {
+  name = "${local.environment_name}-prsdb-ecs-service-name"
+}
+
+data "aws_ssm_parameter" "redis_cluster_id" {
+  name = "${local.environment_name}-prsdb-redis-cluster-id"
+}
+
+data "aws_ssm_parameter" "cloudfront_distribution_id" {
+  name = "${local.environment_name}-prsdb-cloudfront-distribution-id"
+}
+
 data "aws_secretsmanager_secret" "redis_password" {
   name = "tf-${local.environment_name}-prsdb-redis-password"
 }
