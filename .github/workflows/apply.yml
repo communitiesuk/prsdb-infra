@@ -41,7 +41,7 @@ jobs:
     # race where the task-def plan reads a parameter before apply creates it.
     # The apply job is skipped when the main infra has no changes, so proceed as
     # long as nothing it depends on failed or was cancelled.
-    needs: [validate-target-environment, apply]
+    needs: apply
     if: ${{ !failure() && !cancelled() }}
     uses: ./.github/workflows/refresh-task-definitions.yml
     with:
