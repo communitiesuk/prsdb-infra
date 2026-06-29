@@ -64,6 +64,22 @@ locals {
       name  = "METRICS_CLOUDWATCH_NAMESPACE"
       value = "prsdb-webapp/${local.environment_name}"
     },
+    {
+      name  = "CLOUDWATCH_ECS_CLUSTER_NAME"
+      value = data.aws_ssm_parameter.ecs_cluster_name.value
+    },
+    {
+      name  = "CLOUDWATCH_ECS_SERVICE_NAME"
+      value = data.aws_ssm_parameter.ecs_service_name.value
+    },
+    {
+      name  = "CLOUDWATCH_ELASTICACHE_CLUSTER_ID"
+      value = data.aws_ssm_parameter.redis_cluster_id.value
+    },
+    {
+      name  = "CLOUDFRONT_DISTRIBUTION_ID"
+      value = data.aws_ssm_parameter.cloudfront_distribution_id.value
+    },
   ]
   webapp_only_environment_variables = [
     {
