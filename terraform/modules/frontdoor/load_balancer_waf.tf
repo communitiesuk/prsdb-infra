@@ -105,6 +105,27 @@ resource "aws_wafv2_web_acl" "load_balancer" {
             count {}
           }
         }
+        rule_action_override {
+          # These body-inspection rules can give false positives on file uploads because they interpret the file
+          # data as matching patterns. https://repost.aws/knowledge-center/waf-upload-blocked-files
+          # We have a separate rule blocking requests that match to ensure only file-upload endpoints accept suspicious requests.
+          name = "GenericLFI_BODY"
+          action_to_use {
+            count {}
+          }
+        }
+        rule_action_override {
+          name = "GenericRFI_BODY"
+          action_to_use {
+            count {}
+          }
+        }
+        rule_action_override {
+          name = "EC2MetaDataSSRF_BODY"
+          action_to_use {
+            count {}
+          }
+        }
       }
     }
 
@@ -167,6 +188,22 @@ resource "aws_wafv2_web_acl" "load_balancer" {
       managed_rule_group_statement {
         name        = "AWSManagedRulesKnownBadInputsRuleSet"
         vendor_name = "AWS"
+
+        rule_action_override {
+          # These body-inspection rules can give false positives on file uploads because they interpret the file
+          # data as matching patterns. https://repost.aws/knowledge-center/waf-upload-blocked-files
+          # We have a separate rule blocking requests that match to ensure only file-upload endpoints accept suspicious requests.
+          name = "JavaDeserializationRCE_BODY"
+          action_to_use {
+            count {}
+          }
+        }
+        rule_action_override {
+          name = "Log4JRCE_BODY"
+          action_to_use {
+            count {}
+          }
+        }
       }
     }
 
@@ -199,6 +236,15 @@ resource "aws_wafv2_web_acl" "load_balancer" {
             count {}
           }
         }
+        rule_action_override {
+          # This body-inspection rule can give false positives on file uploads because it interprets the file
+          # data as matching patterns. https://repost.aws/knowledge-center/waf-upload-blocked-files
+          # We have a separate rule blocking requests that match to ensure only file-upload endpoints accept suspicious requests.
+          name = "SQLiExtendedPatterns_BODY"
+          action_to_use {
+            count {}
+          }
+        }
       }
     }
 
@@ -210,9 +256,44 @@ resource "aws_wafv2_web_acl" "load_balancer" {
   }
 
   rule {
-    name = "block-counted-rules-on-non-file-upload-requests"
-    # This rule must be applied after the rules containing AWSManagedRulesCommonRuleSet and AWSManagedRulesSQLiRuleSet
+    name = "aws-managed-rules-unix-rule-set"
+    # This group is applied before the block-counted-rules-on-non-file-upload-requests rule (priority 9) so that its
+    # body-inspection label is available to it.
     priority = 8
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesUnixRuleSet"
+        vendor_name = "AWS"
+
+        rule_action_override {
+          # This body-inspection rule can give false positives on file uploads because it interprets the file
+          # data as matching patterns. https://repost.aws/knowledge-center/waf-upload-blocked-files
+          # We have a separate rule blocking requests that match to ensure only file-upload endpoints accept suspicious requests.
+          name = "UNIXShellCommandsVariables_BODY"
+          action_to_use {
+            count {}
+          }
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "waf-block-unix-exploit"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name = "block-counted-rules-on-non-file-upload-requests"
+    # This rule must be applied after the managed rule groups whose body-inspection rules are overridden to count
+    # (AWSManagedRulesCommonRuleSet, AWSManagedRulesKnownBadInputsRuleSet, AWSManagedRulesSQLiRuleSet and AWSManagedRulesUnixRuleSet)
+    priority = 9
 
     action {
       block {}
@@ -237,6 +318,48 @@ resource "aws_wafv2_web_acl" "load_balancer" {
             statement {
               label_match_statement {
                 key   = "awswaf:managed:aws:sql-database:SQLi_Body"
+                scope = "LABEL"
+              }
+            }
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:core-rule-set:GenericLFI_Body"
+                scope = "LABEL"
+              }
+            }
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:core-rule-set:GenericRFI_Body"
+                scope = "LABEL"
+              }
+            }
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:core-rule-set:EC2MetaDataSSRF_Body"
+                scope = "LABEL"
+              }
+            }
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:known-bad-inputs:JavaDeserializationRCE_Body"
+                scope = "LABEL"
+              }
+            }
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:known-bad-inputs:Log4JRCE_Body"
+                scope = "LABEL"
+              }
+            }
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:sql-database:SQLiExtendedPatterns_Body"
+                scope = "LABEL"
+              }
+            }
+            statement {
+              label_match_statement {
+                key   = "awswaf:managed:aws:posix-os:UNIXShellCommandsVariables_Body"
                 scope = "LABEL"
               }
             }
@@ -272,7 +395,7 @@ resource "aws_wafv2_web_acl" "load_balancer" {
 
   rule {
     name     = "aws-managed-rules-linux-rule-set"
-    priority = 9
+    priority = 10
 
     override_action {
       none {}
@@ -288,28 +411,6 @@ resource "aws_wafv2_web_acl" "load_balancer" {
     visibility_config {
       cloudwatch_metrics_enabled = true
       metric_name                = "waf-block-linux-exploit"
-      sampled_requests_enabled   = true
-    }
-  }
-
-  rule {
-    name     = "aws-managed-rules-unix-rule-set"
-    priority = 10
-
-    override_action {
-      none {}
-    }
-
-    statement {
-      managed_rule_group_statement {
-        name        = "AWSManagedRulesUnixRuleSet"
-        vendor_name = "AWS"
-      }
-    }
-
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "waf-block-unix-exploit"
       sampled_requests_enabled   = true
     }
   }
