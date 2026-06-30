@@ -206,12 +206,13 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_hosts" {
 
 resource "aws_cloudwatch_metric_alarm" "alb_unhealthy_hosts" {
   alarm_name          = "${var.alb_name}-unhealthy-hosts"
-  alarm_description   = "One or more ALB targets have been failing their health check for over a minute"
+  alarm_description   = "One or more ALB targets have been failing their health check, indicating a failed deployment"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   metric_name         = "UnHealthyHostCount"
   namespace           = "AWS/ApplicationELB"
-  evaluation_periods  = 1
-  period              = 60
+  evaluation_periods  = 12
+  period              = 300
+  datapoints_to_alarm = 1
   threshold           = 1
   statistic           = "Maximum"
   treat_missing_data  = "notBreaching"
