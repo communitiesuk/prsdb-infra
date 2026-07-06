@@ -139,6 +139,10 @@ locals {
       value = data.aws_ssm_parameter.plausible_domain_id.value
     },
     {
+      name  = "PLAUSIBLE_TRANSACTION_EVENT_START_DATE"
+      value = data.aws_ssm_parameter.plausible_transaction_event_start_date.value
+    },
+    {
       name  = "SPRING_PROFILES_ACTIVE"
       value = "default, ${local.environment_name}, require-passcode"
     },
