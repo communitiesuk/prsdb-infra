@@ -122,6 +122,26 @@ resource "aws_ssm_parameter" "plausible_site_id" {
   }
 }
 
+resource "aws_ssm_parameter" "plausible_domain_id" {
+  name  = "${var.environment_name}-prsdb-plausible-domain-id"
+  type  = "String"
+  value = "default_to_be_set_manually" # To be set manually on AWS
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "plausible_transaction_event_start_date" {
+  name  = "${var.environment_name}-prsdb-plausible-transaction-event-start-date"
+  type  = "String"
+  value = "2099-01-01" # Far-future default keeps the metric on the legacy method; set the real go-live date manually on AWS
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
 resource "aws_ssm_parameter" "beta_feedback_team_email_address" {
   name  = "${var.environment_name}-prsdb-beta-feedback-team-email-address"
   type  = "String"
