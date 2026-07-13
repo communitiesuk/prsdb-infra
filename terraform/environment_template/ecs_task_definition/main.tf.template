@@ -64,6 +64,22 @@ locals {
       name  = "METRICS_CLOUDWATCH_NAMESPACE"
       value = "prsdb-webapp/${local.environment_name}"
     },
+    {
+      name  = "CLOUDWATCH_ECS_CLUSTER_NAME"
+      value = data.aws_ssm_parameter.ecs_cluster_name.value
+    },
+    {
+      name  = "CLOUDWATCH_ECS_SERVICE_NAME"
+      value = data.aws_ssm_parameter.ecs_service_name.value
+    },
+    {
+      name  = "CLOUDWATCH_ELASTICACHE_CLUSTER_ID"
+      value = data.aws_ssm_parameter.redis_cluster_id.value
+    },
+    {
+      name  = "CLOUDFRONT_DISTRIBUTION_ID"
+      value = data.aws_ssm_parameter.cloudfront_distribution_id.value
+    },
   ]
   webapp_only_environment_variables = [
     {
@@ -121,6 +137,10 @@ locals {
     {
       name  = "PLAUSIBLE_DOMAIN_ID"
       value = data.aws_ssm_parameter.plausible_domain_id.value
+    },
+    {
+      name  = "PLAUSIBLE_TRANSACTION_EVENT_START_DATE"
+      value = data.aws_ssm_parameter.plausible_transaction_event_start_date.value
     },
     {
       name  = "SPRING_PROFILES_ACTIVE"

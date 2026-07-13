@@ -203,3 +203,26 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_hosts" {
     aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
+
+resource "aws_cloudwatch_metric_alarm" "alb_unhealthy_hosts" {
+  alarm_name          = "${var.alb_name}-unhealthy-hosts"
+  alarm_description   = "One or more ALB targets have been failing their health check, indicating a failed deployment"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  metric_name         = "UnHealthyHostCount"
+  namespace           = "AWS/ApplicationELB"
+  evaluation_periods  = 12
+  period              = 300
+  datapoints_to_alarm = 1
+  threshold           = 1
+  statistic           = "Maximum"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = var.alb_arn_suffix
+    TargetGroup  = var.alb_target_group_arn_suffix
+  }
+
+  alarm_actions = [
+    aws_sns_topic.critical_alarm_sns_topic.arn,
+  ]
+}

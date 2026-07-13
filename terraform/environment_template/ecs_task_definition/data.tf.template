@@ -42,6 +42,23 @@ data "aws_ssm_parameter" "redis_port" {
   name = "${local.environment_name}-prsdb-redis-port"
 }
 
+# CloudWatch metric dimension identifiers read by the System Operator dashboard.
+data "aws_ssm_parameter" "ecs_cluster_name" {
+  name = "${local.environment_name}-prsdb-ecs-cluster-name"
+}
+
+data "aws_ssm_parameter" "ecs_service_name" {
+  name = "${local.environment_name}-prsdb-ecs-service-name"
+}
+
+data "aws_ssm_parameter" "redis_cluster_id" {
+  name = "${local.environment_name}-prsdb-redis-cluster-id"
+}
+
+data "aws_ssm_parameter" "cloudfront_distribution_id" {
+  name = "${local.environment_name}-prsdb-cloudfront-distribution-id"
+}
+
 data "aws_secretsmanager_secret" "redis_password" {
   name = "tf-${local.environment_name}-prsdb-redis-password"
 }
@@ -118,6 +135,10 @@ data "aws_ssm_parameter" "plausible_site_id" {
 
 data "aws_ssm_parameter" "plausible_domain_id" {
   name = "${local.environment_name}-prsdb-plausible-domain-id"
+}
+
+data "aws_ssm_parameter" "plausible_transaction_event_start_date" {
+  name = "${local.environment_name}-prsdb-plausible-transaction-event-start-date"
 }
 
 data "aws_ssm_parameter" "beta_feedback_team_email_address" {
