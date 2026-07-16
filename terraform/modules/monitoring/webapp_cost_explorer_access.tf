@@ -1,12 +1,11 @@
 # Allows the webapp ECS task role to query historical costs for the
 # System Operator metrics dashboard's cost-per-transaction calculation.
-# ce:GetCostAndUsage does not support resource-level permissions, so a wildcard is required.
-# See https://docs.aws.amazon.com/service-authorization/latest/reference/list_awscostexplorerservice.html
-# tfsec:ignore:aws-iam-no-policy-wildcards
+# Cost Explorer queries default to the account's primary billing view.
+# See https://docs.aws.amazon.com/service-authorization/latest/reference/list_ce.html#list_ce-action-GetCostAndUsage
 data "aws_iam_policy_document" "webapp_cost_explorer_access" {
   statement {
     actions   = ["ce:GetCostAndUsage"]
-    resources = ["*"]
+    resources = ["arn:aws:billing::${data.aws_caller_identity.current.account_id}:billingview/primary"]
     effect    = "Allow"
   }
 }
