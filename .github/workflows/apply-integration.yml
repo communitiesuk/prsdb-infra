@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - chore/PDJB-1036-grant-cost-explorer-permissions
   workflow_dispatch:
 
 jobs:
