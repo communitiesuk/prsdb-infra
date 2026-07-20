@@ -1,0 +1,12 @@
+# Wiz Code scan exclusions for this repository.
+# Docs: https://docs.wiz.io/docs/exception-management-with-wiz-code
+# Note: the "Repository configuration file (.wiz)" setting must be enabled for this
+# repo/connector/tenant in the Wiz portal, otherwise this file has no effect.
+ignore:
+  software_management:
+    # wsscr-1 = built-in "Code library with Restrictive license" rule (false positives)
+    wsscr-1:
+      "/package.json":
+        reason: FALSE_POSITIVE
+      "/package-lock.json":
+        reason: FALSE_POSITIVE
