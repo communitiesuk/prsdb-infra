@@ -15,9 +15,15 @@ resource "aws_ecs_service" "webapp" {
   desired_count                      = var.webapp_task_desired_count
   enable_execute_command             = var.allow_exec
   force_new_deployment               = true
+  health_check_grace_period_seconds  = 180 # The webapp can take ~2 minutes to start; give it time before ALB health checks can stop the task
   launch_type                        = "FARGATE"
   scheduling_strategy                = "REPLICA"
   task_definition                    = "prsdb-webapp-${var.environment_name}" # Task family name - gets the latest ACTIVE revision
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   load_balancer {
     container_name   = "prsdb-webapp"
