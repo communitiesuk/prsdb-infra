@@ -1,11 +1,13 @@
 # Allows the webapp ECS task role to query historical costs for the
 # System Operator metrics dashboard's cost-per-transaction calculation.
-# Cost Explorer queries default to the account's primary billing view.
+# The webapp does not send BillingViewArn, so AWS authorizes the request against
+# the Cost Explorer GetCostAndUsage request resource instead of a Billing View ARN.
+# Resource-level restriction therefore cannot be used for this request.
 # See https://docs.aws.amazon.com/service-authorization/latest/reference/list_ce.html#list_ce-action-GetCostAndUsage
 data "aws_iam_policy_document" "webapp_cost_explorer_access" {
   statement {
     actions   = ["ce:GetCostAndUsage"]
-    resources = ["arn:aws:billing::${data.aws_caller_identity.current.account_id}:billingview/primary"]
+    resources = ["*"]
     effect    = "Allow"
   }
 }
