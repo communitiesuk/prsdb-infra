@@ -92,6 +92,12 @@ then navigate to the environment's directory and run `terraform init` to create 
 
 You are now ready to start running terraform commands on the chosen environment.
 
+## Setting up for terraform plan / terraform apply
+
+For setting up environments to be able to run a terraform plan, you'll need to download the Development tfvars file from Keeper.
+
+Place this in your relevant pre-production terraform folder. We do not apply terraform directly on Prod.
+
 ## Accessing deployed infrastructure
 
 ### Connecting to the database
