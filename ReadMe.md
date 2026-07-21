@@ -167,6 +167,10 @@ We have javascript testing setup, initially this is for testing cloudfront funct
 
 Tests can be run using the "npm test" command from the root of the repository.
 
+### Rollback Strategy
+Deployments that fail to go through successfully are automatically rolled back by AWS using a deployment circuit breaker in ECS if the new deployment fails to start up correctly.
+A manual rollback strategy should be added to the ticket for each release if a manual rollback is necessary.
+
 ## Setting up a new environment from scratch
 
 In order to interact with the environment in an AWS account you will need make sure you have a developer profile set up
