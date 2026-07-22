@@ -23,14 +23,20 @@ jobs:
     if: github.ref == 'refs/heads/main' && inputs.confirm == 'DANGER'
     steps:
       - name: Record change summary
+        env:
+          # Pass untrusted user input through environment variables (rather than interpolating directly
+          # into `run`) to prevent shell injection attacks.
+          # See https://docs.github.com/en/actions/reference/security/secure-use#use-an-intermediate-environment-variable
+          CHANGE_REASON: ${{ inputs.reason }}
+          TRIGGERED_BY: ${{ github.actor }}
         run: |
           {
             echo "## Maintenance mode change"
             echo ""
             echo "- Environment: production"
             echo "- Maintenance mode: true"
-            echo "- Reason: ${{ inputs.reason }}"
-            echo "- Triggered by: ${{ github.actor }}"
+            echo "- Reason: $CHANGE_REASON"
+            echo "- Triggered by: $TRIGGERED_BY"
           } >> "$GITHUB_STEP_SUMMARY"
 
   apply:
