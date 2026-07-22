@@ -219,3 +219,20 @@ resource "aws_cloudwatch_log_metric_filter" "ecs_task_start_failure" {
     value     = "1"
   }
 }
+
+resource "aws_cloudwatch_log_metric_filter" "ecs_task_failed_elb_health_checks" {
+  log_group_name = module.ecs_events_log_group.name
+  name           = "ecs-task-failed-elb-health-checks-${var.environment_name}"
+  pattern        = <<EOT
+    {($.detail-type = "ECS Task State Change") &&
+     ($.detail.group = "service:${var.ecs_service_name}") &&
+     ($.detail.lastStatus = "STOPPED") &&
+     ($.detail.stoppedReason = %Task failed ELB health checks%)}
+  EOT
+
+  metric_transformation {
+    name      = "ecs-task-failed-elb-health-checks-${var.environment_name}"
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+}

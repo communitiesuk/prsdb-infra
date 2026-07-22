@@ -204,23 +204,18 @@ resource "aws_cloudwatch_metric_alarm" "alb_no_healthy_hosts" {
   ]
 }
 
-resource "aws_cloudwatch_metric_alarm" "alb_unhealthy_hosts" {
-  alarm_name          = "${var.alb_name}-unhealthy-hosts"
-  alarm_description   = "One or more ALB targets have been failing their health check, indicating a failed deployment"
+resource "aws_cloudwatch_metric_alarm" "ecs_task_failed_elb_health_checks" {
+  alarm_name          = "${var.ecs_service_name}-ecs-task-failed-elb-health-checks"
+  alarm_description   = "ECS has stopped a task because it failed ELB health checks"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  metric_name         = "UnHealthyHostCount"
-  namespace           = "AWS/ApplicationELB"
-  evaluation_periods  = 12
-  period              = 300
+  metric_name         = aws_cloudwatch_log_metric_filter.ecs_task_failed_elb_health_checks.name
+  namespace           = "LogMetrics"
+  evaluation_periods  = 60
+  period              = 60
   datapoints_to_alarm = 1
   threshold           = 1
-  statistic           = "Maximum"
+  statistic           = "Sum"
   treat_missing_data  = "notBreaching"
-
-  dimensions = {
-    LoadBalancer = var.alb_arn_suffix
-    TargetGroup  = var.alb_target_group_arn_suffix
-  }
 
   alarm_actions = [
     aws_sns_topic.critical_alarm_sns_topic.arn,
