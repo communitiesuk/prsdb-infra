@@ -101,7 +101,16 @@ Instead, we use one bastion EC2 instance per availability zone acting as an
 The instructions here assume that all infrastructure is deployed in the region eu-west-2 (London). 
 If the infrastructure is in a different region, use that instead in each link and command.
 
-Once you have followed the set up above, to connect to the database you will need:
+The easiest way to connect to the database is using the script in the scripts folder:
+
+From the project root you can run:
+- `./scripts/ssm_db_connect.ps1 <environment name>` in powershell, or
+- `./scripts/ssm_db_connect.sh <environment name>` in bash
+
+Where environment name must all be lower case, e.g. `integration`, `test`, or `prod`.
+This will start the port forwarding session, and copy the database password to your clipboard. You can then open the database locally as set out in the section below.
+
+If you wish to connect manually instead, once you have followed the set up above you will need:
 * The id of bastion you intend to use - [london ec2 instances](https://eu-west-2.console.aws.amazon.com/ec2/home#Instances)
 * The endpoint of the database - [london databases](https://eu-west-2.console.aws.amazon.com/rds#databases:)
 * The password for the database is stored in secrets - [london secrets](https://eu-west-2.console.aws.amazon.com/secretsmanager/listsecrets)
@@ -113,6 +122,10 @@ then run this command:
 aws ssm start-session --region eu-west-2 --target <bastion id> --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters host="<database endpoint>",portNumber="5432",localPortNumber="5432"
 ```
 
+Where bastion id can instead be (to avoid the need to look it up manually):
+
+`"$(aws ec2 describe-instances --region eu-west-2 --filters "Name=tag:Name,Values=integration-bastion-1" "Name=instance-state-name,Values=running" --query 'Reservations[0].Instances[0].InstanceId' --output text)"`
+
 You should see something similar to:
 ```shell 
 Starting session with SessionId: 12a3456bcdefghi789
@@ -120,7 +133,9 @@ Port 5432 opened for sessionId 12a3456bcdefghi789.
 Waiting for connections...
 ```
 
-Leave this terminal open and running, and then you should be able to connect to the database from your machine using 
+### Opening the database locally
+
+Leave the above terminal open and running, and then you should be able to connect to the database from your machine using 
 this connection string:
 ```
 postgresql://postgres:<password>@localhost:5432/prsdb
@@ -137,12 +152,6 @@ When you start a connection, you will see a confirmation in the terminal window:
 ```shell
 Connection accepted for session [12a3456bcdefghi789]
 ```
-
-Alternatively, from the project root you can run:
-- `./scripts/ssm_db_connect.ps1 <environment name>` in powershell, or
-- `./scripts/ssm_db_connect.sh <environment name>` in bash
-
-This will start the port forwarding session, and copy the database password to your clipboard. You can then connect to the database as set out above.
 
 ## Updating existing infrastructure
 After modifying the terraform files, you can run `terraform fmt --recursive` from the root of the repository to format all the files.
