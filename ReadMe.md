@@ -168,6 +168,42 @@ The terraform will applied when your PR is merged.
 
 If there are problems, it may be necessary to make updates manually from the terminal using `terrform apply`, but we should aim to apply terraform via the git pipeline where possible.
 
+### Testing a branch in integration
+
+Use this process when a change needs to be tested in the deployed integration environment and cannot be adequately
+tested locally. Integration is a shared environment, so before temporarily applying a branch, check that nobody else
+is using it and tell the team that the environment will be overwritten.
+
+If the branch makes destructive or stateful changes (for example, replacing or modifying the RDS database or other
+resources that hold data), agree how to restore or reset integration before using this process. Applying the branch
+changes the shared infrastructure, and although Terraform is declarative, reapplying `main` does not always cleanly
+reverse destructive changes or restore lost data.
+
+1. Temporarily add your branch to the `push.branches` list in
+   [`.github/workflows/apply-integration.yml`](.github/workflows/apply-integration.yml).
+   Make this change locally, but do not commit or push it yet:
+
+   ```yaml
+   branches:
+     - main
+     - <your-branch-name>
+   ```
+
+2. Open [Apply - Integration](https://github.com/communitiesuk/prsdb-infra/actions/workflows/apply-integration.yml)
+   in GitHub Actions and record the latest successful run from `main`. Commit the temporary workflow change to the
+   branch you want to test and push that branch. Wait for the branch's `Apply - Integration` run to finish, then
+   complete the required testing.
+3. After testing, or if the branch apply fails or testing is abandoned, remove the temporary workflow change from
+   the branch and push the cleanup commit. Confirm that the feature PR no longer includes the workflow trigger change.
+4. Restore integration:
+    - If the branch apply made destructive or stateful changes, follow the agreed recovery or reset plan to restore
+      integration to a state compatible with `main`. A `main` apply alone may not reverse destructive changes or
+      restore lost data.
+    - For a branch without destructive or stateful changes, integration is already restored if a newer successful
+      apply from `main` completed after the branch apply. Any testing after that apply did not exercise the branch.
+    - If neither applies, open the recorded `main` run, select **Re-run jobs**, then **Re-run all jobs**.
+5. Confirm that integration has been restored successfully. If restoration fails, investigate, retry, or seek help.
+
 ### Running tests
 We have javascript testing setup, initially this is for testing cloudfront functions.
 
