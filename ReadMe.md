@@ -92,6 +92,12 @@ then navigate to the environment's directory and run `terraform init` to create 
 
 You are now ready to start running terraform commands on the chosen environment.
 
+## Setting up for terraform plan / terraform apply
+
+For setting up environments to be able to run a terraform plan, you'll need to download the Development tfvars file from Keeper.
+
+Place this in your relevant pre-production terraform folder. We do not apply terraform directly on Prod.
+
 ## Accessing deployed infrastructure
 
 ### Connecting to the database
@@ -166,6 +172,10 @@ If there are problems, it may be necessary to make updates manually from the ter
 We have javascript testing setup, initially this is for testing cloudfront functions.
 
 Tests can be run using the "npm test" command from the root of the repository.
+
+### Rollback Strategy
+Deployments that fail to go through successfully are automatically rolled back by AWS using a deployment circuit breaker in ECS if the new deployment fails to start up correctly.
+A manual rollback strategy should be added to the ticket for each release if a manual rollback is necessary.
 
 ## Setting up a new environment from scratch
 

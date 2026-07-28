@@ -63,6 +63,6 @@ variable "alb_target_group_arn_suffix" {
 }
 
 variable "webapp_ecs_task_role_name" {
-  description = "Name of the webapp ECS task role to grant CloudWatch metric publishing permissions to"
+  description = "Name of the webapp ECS task role to grant monitoring permissions to"
   type        = string
 }
