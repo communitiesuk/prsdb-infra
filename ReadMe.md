@@ -3,6 +3,12 @@
 This repository contains the Terraform configuration for the infrastructure of the Private Rented Sector Database (PRSDB) service. The main respository for the service, which includes Architecture Decision Records for this infrastructure can be found at https://github.com/communitiesuk/prsdb-webapp
 
 ## Connecting to AWS
+
+---
+#### *WARNING*: Logging into the production environment either via the AWS start page or via the AWS CLI will trigger a critical alarm. You should inform the team via the releavnt Teams channel before triggering this alarm.
+
+---
+
 Install the latest AWS vault by following [these instructions](https://github.com/99designs/aws-vault). (N.B. there is no windows AMD64 version, so you need to use 386 in that case).
 You will need to rename the .exe file to "aws-vault.exe" and add it to your PATH.
 
