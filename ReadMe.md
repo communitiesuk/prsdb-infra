@@ -3,6 +3,12 @@
 This repository contains the Terraform configuration for the infrastructure of the Private Rented Sector Database (PRSDB) service. The main respository for the service, which includes Architecture Decision Records for this infrastructure can be found at https://github.com/communitiesuk/prsdb-webapp
 
 ## Connecting to AWS
+
+---
+#### *WARNING*: Logging into the production environment either via the AWS start page or via the AWS CLI will trigger a critical alarm. You should inform the team via the releavnt Teams channel before triggering this alarm.
+
+---
+
 Install the latest AWS vault by following [these instructions](https://github.com/99designs/aws-vault). (N.B. there is no windows AMD64 version, so you need to use 386 in that case).
 You will need to rename the .exe file to "aws-vault.exe" and add it to your PATH.
 
@@ -92,6 +98,12 @@ then navigate to the environment's directory and run `terraform init` to create 
 
 You are now ready to start running terraform commands on the chosen environment.
 
+## Setting up for terraform plan / terraform apply
+
+For setting up environments to be able to run a terraform plan, you'll need to download the Development tfvars file from Keeper.
+
+Place this in your relevant pre-production terraform folder. We do not apply terraform directly on Prod.
+
 ## Accessing deployed infrastructure
 
 ### Connecting to the database
@@ -166,6 +178,10 @@ If there are problems, it may be necessary to make updates manually from the ter
 We have javascript testing setup, initially this is for testing cloudfront functions.
 
 Tests can be run using the "npm test" command from the root of the repository.
+
+### Rollback Strategy
+Deployments that fail to go through successfully are automatically rolled back by AWS using a deployment circuit breaker in ECS if the new deployment fails to start up correctly.
+A manual rollback strategy should be added to the ticket for each release if a manual rollback is necessary.
 
 ## Setting up a new environment from scratch
 
