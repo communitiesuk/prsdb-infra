@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - feat/PDJB-964-alarms-for-failing-scheduled-jobs
   workflow_dispatch:
 
 jobs:
