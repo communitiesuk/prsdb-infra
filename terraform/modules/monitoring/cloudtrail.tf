@@ -8,32 +8,24 @@ resource "aws_cloudtrail" "main" {
   cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_cloudwatch_role.arn
   enable_log_file_validation    = true
 
-  # Ensures all management events are logged except KMS
+  # Logs all management events. KMS management events are excluded by default for cost saving, unless
+  # enable_kms_cloudtrail_events is set to true - NFT is the only environment where this is disabled,
+  # and all events are captured regardless by the org-level trail in every environment.
+  #
+  # Note: for management events on trails, AWS only supports filtering the eventSource field with
+  # NotEquals (to exclude KMS/RDS Data API events) 
+  # See https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_AdvancedFieldSelector.html
   advanced_event_selector {
-    name = "Log all management events (excluding KMS)"
+    name = "Log management events"
     field_selector {
       field  = "eventCategory"
       equals = ["Management"]
     }
-    field_selector {
-      field      = "eventSource"
-      not_equals = ["kms.amazonaws.com"]
-    }
-  }
-
-  # Include all KMS management events if enable_kms_cloudtrail_events is set to true. 
-  # Disable for cost saving if enable_kms_cloudtrail_events is set to false
-  dynamic "advanced_event_selector" {
-    for_each = var.enable_kms_cloudtrail_events ? [1] : []
-    content {
-      name = "Log KMS management events"
-      field_selector {
-        field  = "eventCategory"
-        equals = ["Management"]
-      }
-      field_selector {
-        field  = "eventSource"
-        equals = ["kms.amazonaws.com"]
+    dynamic "field_selector" {
+      for_each = var.enable_kms_cloudtrail_events ? [] : [1]
+      content {
+        field      = "eventSource"
+        not_equals = ["kms.amazonaws.com"]
       }
     }
   }
