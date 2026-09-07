@@ -66,3 +66,9 @@ variable "webapp_ecs_task_role_name" {
   description = "Name of the webapp ECS task role to grant monitoring permissions to"
   type        = string
 }
+
+variable "enable_kms_cloudtrail_events" {
+  type        = bool
+  description = "Whether to log KMS  events to CloudTrail"
+  default     = true
+}

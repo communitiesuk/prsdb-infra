@@ -22,6 +22,12 @@ variable "non_critical_alarm_email_address" {
   sensitive   = true
 }
 
+variable "enable_kms_cloudtrail_events" {
+  type        = bool
+  description = "Whether to log KMS  events to CloudTrail"
+  default     = false
+}
+
 variable "maintenance_mode_on" {
   type        = bool
   description = "Indicates whether maintenance mode is on"
