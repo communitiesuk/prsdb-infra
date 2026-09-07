@@ -208,8 +208,8 @@ module "webapp_ecs_task_definition" {
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
   # TODO: consider what our requirements are for the instance
-  task_cpu              = 512
-  task_memory           = 2048
+  task_cpu              = 2048
+  task_memory           = 4096
   task_name             = "prsdb-webapp"
   environment_variables = concat(local.common_environment_variables, local.webapp_only_environment_variables)
   secrets               = concat(local.common_secrets, local.webapp_secrets)
@@ -228,8 +228,8 @@ module "scheduled_tasks_ecs_task_definitions" {
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
   # TODO: consider what our requirements are for the instance
-  task_cpu              = 512
-  task_memory           = 1024
+  task_cpu              = 2048
+  task_memory           = 4096
   task_name             = "prsdb-${each.key}-scheduled-task"
   environment_variables = concat(local.common_environment_variables, local.scheduled_tasks_only_environment_variables)
   secrets               = local.common_secrets
