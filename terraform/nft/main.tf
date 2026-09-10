@@ -256,6 +256,7 @@ module "monitoring" {
   database_allocated_storage       = local.database_allocated_storage
   database_identifier              = module.database.database_identifier
   webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
+  enable_kms_cloudtrail_events     = var.enable_kms_cloudtrail_events
 }
 
 module "scheduled_tasks" {
