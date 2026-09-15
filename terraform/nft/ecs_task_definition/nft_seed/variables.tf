@@ -59,3 +59,8 @@ variable "database_password_secret_arn" {
   description = "The arn of the secrets manager secret containing the RDS master password"
   type        = string
 }
+
+variable "epc_certificate_base_url" {
+  description = "The base URL used to fetch EPC certificates, required by NftDataSeeder's constructor"
+  type        = string
+}

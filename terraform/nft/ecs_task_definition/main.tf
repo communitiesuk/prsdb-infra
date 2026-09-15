@@ -251,4 +251,5 @@ module "nft_seed" {
   database_url                 = data.aws_ssm_parameter.database_url.value
   database_username            = data.aws_ssm_parameter.database_username.value
   database_password_secret_arn = data.aws_secretsmanager_secret.database_password.arn
+  epc_certificate_base_url     = data.aws_ssm_parameter.epc_certificate_base_url.value
 }

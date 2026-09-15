@@ -27,6 +27,10 @@ resource "aws_ecs_task_definition" "nft_seed" {
             value = "default,web-server-deactivated,nft-data-seeder"
           },
           {
+            name  = "EPC_CERTIFICATE_BASE_URL"
+            value = var.epc_certificate_base_url
+          },
+          {
             name  = "NFT_SEED_SYSTEM_OPERATORS"
             value = "150"
           },
