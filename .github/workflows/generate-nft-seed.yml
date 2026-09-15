@@ -1,0 +1,51 @@
+name: Generate NFT seed dump
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+  AWS_ACCOUNT_ID: "448120078528"
+  ENVIRONMENT: nft
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ENVIRONMENT }}-rds-access
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve NFT task networking
+        id: networking
+        shell: bash
+        run: |
+          set -euo pipefail
+          SERVICE="${ENVIRONMENT}-app"
+          CLUSTER="${ENVIRONMENT}-app"
+          SUBNETS=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.subnets' --output json)
+          SECURITY_GROUPS=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.securityGroups' --output json)
+          echo "network-config={\"awsvpcConfiguration\":{\"subnets\":$SUBNETS,\"securityGroups\":$SECURITY_GROUPS,\"assignPublicIp\":\"DISABLED\"}}" >> "$GITHUB_OUTPUT"
+
+      - name: Run full-scale NFT seeder and dump
+        shell: bash
+        run: |
+          set -euo pipefail
+          TASK_ARN=$(aws ecs run-task \
+            --cluster "${ENVIRONMENT}-app" \
+            --task-definition "prsdb-seed-data-${ENVIRONMENT}" \
+            --launch-type FARGATE \
+            --network-configuration '${{ steps.networking.outputs.network-config }}' \
+            --query 'tasks[0].taskArn' \
+            --output text)
+          echo "Started $TASK_ARN"
+          aws ecs wait tasks-stopped --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN"
+          aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" \
+            --query 'tasks[0].containers[].{name:name,exitCode:exitCode,reason:reason}' --output table
+          test "$(aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" --query 'tasks[0].containers[?name==`nft-database-dump`].exitCode | [0]' --output text)" = "0"

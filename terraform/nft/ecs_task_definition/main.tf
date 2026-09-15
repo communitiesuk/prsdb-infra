@@ -238,3 +238,17 @@ module "scheduled_tasks_ecs_task_definitions" {
     ScheduledTaskName = each.key
   }
 }
+
+module "nft_seed" {
+  source                       = "./nft_seed"
+  environment_name             = local.environment_name
+  image_name                   = var.image_name
+  ecs_task_execution_role_arn  = data.aws_iam_role.ecs_task_execution.arn
+  webapp_ecs_task_role_arn     = data.aws_iam_role.webapp_ecs_task.arn
+  webapp_ecs_task_role_name    = data.aws_iam_role.webapp_ecs_task.name
+  common_environment_variables = local.common_environment_variables
+  common_secrets               = local.common_secrets
+  database_url                 = data.aws_ssm_parameter.database_url.value
+  database_username            = data.aws_ssm_parameter.database_username.value
+  database_password_secret_arn = data.aws_secretsmanager_secret.database_password.arn
+}
