@@ -11,6 +11,14 @@ data "aws_iam_policy_document" "nft_seed_task_s3" {
     actions   = ["s3:ListBucket"]
     resources = [aws_s3_bucket.nft_seed.arn]
   }
+
+  statement {
+    actions = [
+      "kms:Encrypt",
+      "kms:GenerateDataKey",
+    ]
+    resources = [aws_kms_key.nft_seed.arn]
+  }
 }
 
 resource "aws_iam_policy" "nft_seed_task_s3" {
@@ -33,6 +41,11 @@ data "aws_iam_policy_document" "nft_seed_restore" {
   statement {
     actions   = ["s3:ListBucket"]
     resources = [aws_s3_bucket.nft_seed.arn]
+  }
+
+  statement {
+    actions   = ["kms:Decrypt"]
+    resources = [aws_kms_key.nft_seed.arn]
   }
 }
 
@@ -60,10 +73,14 @@ data "aws_iam_policy_document" "nft_seed_run_task" {
   statement {
     actions = [
       "ecs:DescribeTasks",
-      "ecs:DescribeServices",
       "ecs:StopTask",
     ]
-    resources = ["*"]
+    resources = ["arn:aws:ecs:eu-west-2:*:task/${var.environment_name}-app/*"]
+  }
+
+  statement {
+    actions   = ["ecs:DescribeServices"]
+    resources = ["arn:aws:ecs:eu-west-2:*:service/${var.environment_name}-app/${var.environment_name}-app"]
   }
 
   statement {

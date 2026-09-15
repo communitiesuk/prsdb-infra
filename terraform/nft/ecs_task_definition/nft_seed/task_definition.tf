@@ -1,6 +1,6 @@
 resource "aws_cloudwatch_log_group" "nft_seed" {
   name              = "/ecs/${var.environment_name}-seed-data"
-  retention_in_days = 60
+  retention_in_days = 365
 }
 
 resource "aws_ecs_task_definition" "nft_seed" {

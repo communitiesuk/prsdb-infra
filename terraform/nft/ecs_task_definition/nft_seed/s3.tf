@@ -2,12 +2,23 @@ resource "aws_s3_bucket" "nft_seed" {
   bucket = "prsdb-seed-data-${var.environment_name}"
 }
 
+resource "aws_kms_key" "nft_seed" {
+  description         = "Seed-data bucket encryption key"
+  enable_key_rotation = true
+}
+
+resource "aws_kms_alias" "nft_seed" {
+  name          = "alias/seed-data-encryption-${var.environment_name}"
+  target_key_id = aws_kms_key.nft_seed.key_id
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "nft_seed" {
   bucket = aws_s3_bucket.nft_seed.id
 
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+      sse_algorithm     = "aws:kms"
+      kms_master_key_id = aws_kms_key.nft_seed.arn
     }
   }
 }
