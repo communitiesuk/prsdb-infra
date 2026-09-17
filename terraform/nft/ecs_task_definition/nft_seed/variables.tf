@@ -64,3 +64,9 @@ variable "epc_certificate_base_url" {
   description = "The base URL used to fetch EPC certificates, required by NftDataSeeder's constructor"
   type        = string
 }
+
+variable "postgres_major_version" {
+  description = "The major version of the postgres client image used to pg_dump the database. Must match the major version of the NFT RDS postgres engine "
+  type        = string
+  default     = "16"
+}

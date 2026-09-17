@@ -24,7 +24,7 @@ resource "aws_ecs_task_definition" "nft_seed" {
         [
           {
             name  = "SPRING_PROFILES_ACTIVE"
-            value = "default,web-server-deactivated,nft-data-seeder"
+            value = "${var.environment_name},web-server-deactivated,nft-data-seeder"
           },
           {
             name  = "EPC_CERTIFICATE_BASE_URL"
@@ -76,7 +76,7 @@ resource "aws_ecs_task_definition" "nft_seed" {
     },
     {
       name      = "nft-database-dump"
-      image     = "public.ecr.aws/docker/library/postgres:17-alpine"
+      image     = "public.ecr.aws/docker/library/postgres:${var.postgres_major_version}-alpine"
       essential = true
       dependsOn = [
         {
@@ -91,11 +91,11 @@ resource "aws_ecs_task_definition" "nft_seed" {
         },
         {
           name  = "PGPORT"
-          value = "5432"
+          value = split(":", split("/", var.database_url)[0])[1]
         },
         {
           name  = "PGDATABASE"
-          value = "prsdb"
+          value = split("/", var.database_url)[1]
         },
         {
           name  = "PGUSER"
@@ -115,7 +115,7 @@ resource "aws_ecs_task_definition" "nft_seed" {
       command = [
         "sh",
         "-c",
-        "set -o pipefail && apk add --no-cache aws-cli >/dev/null && pg_dump --format=custom --no-owner --no-acl | aws s3 cp - s3://${aws_s3_bucket.nft_seed.bucket}/seed-data.dump",
+        "set -o pipefail && apk add --no-cache aws-cli >/dev/null && pg_dump --format=custom --no-owner --no-acl | aws s3 cp - s3://${module.nft_seed_bucket.bucket}/seed-data.dump",
       ]
       logConfiguration = {
         logDriver = "awslogs"

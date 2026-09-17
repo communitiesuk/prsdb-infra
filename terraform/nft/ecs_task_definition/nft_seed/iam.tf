@@ -4,12 +4,12 @@ data "aws_iam_policy_document" "nft_seed_task_s3" {
       "s3:AbortMultipartUpload",
       "s3:PutObject",
     ]
-    resources = ["${aws_s3_bucket.nft_seed.arn}/*"]
+    resources = ["${module.nft_seed_bucket.bucket_arn}/*"]
   }
 
   statement {
     actions   = ["s3:ListBucket"]
-    resources = [aws_s3_bucket.nft_seed.arn]
+    resources = [module.nft_seed_bucket.bucket_arn]
   }
 
   statement {
@@ -35,12 +35,12 @@ resource "aws_iam_role_policy_attachment" "nft_seed_task_s3" {
 data "aws_iam_policy_document" "nft_seed_restore" {
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.nft_seed.arn}/*"]
+    resources = ["${module.nft_seed_bucket.bucket_arn}/*"]
   }
 
   statement {
     actions   = ["s3:ListBucket"]
-    resources = [aws_s3_bucket.nft_seed.arn]
+    resources = [module.nft_seed_bucket.bucket_arn]
   }
 
   statement {
@@ -97,7 +97,44 @@ resource "aws_iam_policy" "nft_seed_run_task" {
   policy = data.aws_iam_policy_document.nft_seed_run_task.json
 }
 
+# Created in the github_actions_access module (terraform/<environment> root state).
+data "aws_iam_openid_connect_provider" "github_actions" {
+  url = "https://token.actions.githubusercontent.com"
+}
+
+# Dedicated role for the prsdb-infra repo's generate-nft-seed workflow: the existing
+# `${environment_name}-rds-access` role is scoped to GitHub Actions in the prsdb-webapp repo, so it
+# can't be assumed from here.
+data "aws_iam_policy_document" "nft_seed_generate_assume_role" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [data.aws_iam_openid_connect_provider.github_actions.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = "token.actions.githubusercontent.com:aud"
+    }
+
+    condition {
+      test     = "StringLike"
+      values   = ["repo:communitiesuk/prsdb-infra:*"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+
+resource "aws_iam_role" "nft_seed_generate" {
+  name                 = "${var.environment_name}-seed-data-generate"
+  assume_role_policy   = data.aws_iam_policy_document.nft_seed_generate_assume_role.json
+  max_session_duration = 21600 # 6 hours - the seed + dump run can take a while, see generate-nft-seed.yml
+}
+
 resource "aws_iam_role_policy_attachment" "nft_seed_run_task" {
-  role       = data.aws_iam_role.github_actions_rds_access.name
+  role       = aws_iam_role.nft_seed_generate.name
   policy_arn = aws_iam_policy.nft_seed_run_task.arn
 }

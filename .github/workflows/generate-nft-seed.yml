@@ -7,6 +7,10 @@ permissions:
   id-token: write
   contents: read
 
+concurrency:
+  group: generate-nft-seed
+  cancel-in-progress: false
+
 env:
   AWS_REGION: eu-west-2
   AWS_ACCOUNT_ID: "448120078528"
@@ -15,12 +19,19 @@ env:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    # GitHub-hosted runners are hard-capped at 360 minutes regardless of this setting - leave a
+    # buffer under that for the other steps and the final status checks.
+    timeout-minutes: 355
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ENVIRONMENT }}-rds-access
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ENVIRONMENT }}-seed-data-generate
           aws-region: ${{ env.AWS_REGION }}
+          # The seed + dump run can take hours; without this the assumed role's credentials
+          # default to a 1 hour session and expire mid-poll. Must not exceed the role's
+          # max_session_duration (see terraform/nft/ecs_task_definition/nft_seed/iam.tf).
+          role-duration-seconds: 21600
 
       - name: Resolve NFT task networking
         id: networking
@@ -45,7 +56,28 @@ jobs:
             --query 'tasks[0].taskArn' \
             --output text)
           echo "Started $TASK_ARN"
-          aws ecs wait tasks-stopped --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN"
+
+          # `aws ecs wait tasks-stopped` times out after 10 minutes (6s x 100 attempts), which
+          # isn't long enough for a full-scale seed + dump run, so poll manually instead.
+          # GitHub-hosted runners are hard-capped at 360 minutes (see the job's timeout-minutes),
+          # so this can't wait longer than that - if seeding genuinely needs longer, this workflow
+          # will need to move to a self-hosted runner or decouple the wait from the trigger.
+          POLL_INTERVAL_SECONDS=30
+          MAX_ATTEMPTS=680 # ~5h40, leaving a buffer under the job's 355 minute timeout
+          for ((i = 0; i < MAX_ATTEMPTS; i++)); do
+            STATUS=$(aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" --query 'tasks[0].lastStatus' --output text)
+            echo "Task status: $STATUS"
+            if [ "$STATUS" = "STOPPED" ]; then
+              break
+            fi
+            sleep "$POLL_INTERVAL_SECONDS"
+          done
+
+          if [ "$STATUS" != "STOPPED" ]; then
+            echo "Timed out waiting for task to stop after $((MAX_ATTEMPTS * POLL_INTERVAL_SECONDS / 60)) minutes"
+            exit 1
+          fi
+
           aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" \
             --query 'tasks[0].containers[].{name:name,exitCode:exitCode,reason:reason}' --output table
           test "$(aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" --query 'tasks[0].containers[?name==`nft-database-dump`].exitCode | [0]' --output text)" = "0"
