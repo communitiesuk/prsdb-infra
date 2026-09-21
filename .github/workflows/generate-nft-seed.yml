@@ -45,6 +45,7 @@ jobs:
           echo "network-config={\"awsvpcConfiguration\":{\"subnets\":$SUBNETS,\"securityGroups\":$SECURITY_GROUPS,\"assignPublicIp\":\"DISABLED\"}}" >> "$GITHUB_OUTPUT"
 
       - name: Run full-scale NFT seeder and dump
+        id: run-task
         shell: bash
         run: |
           set -euo pipefail
@@ -56,6 +57,9 @@ jobs:
             --query 'tasks[0].taskArn' \
             --output text)
           echo "Started $TASK_ARN"
+          # Recorded as a step output (not just a shell var) so the cleanup step below can still
+          # find and stop the task if this step is cancelled or fails partway through polling.
+          echo "task-arn=$TASK_ARN" >> "$GITHUB_OUTPUT"
 
           # `aws ecs wait tasks-stopped` times out after 10 minutes (6s x 100 attempts), which
           # isn't long enough for a full-scale seed + dump run, so poll manually instead.
@@ -64,8 +68,15 @@ jobs:
           # will need to move to a self-hosted runner or decouple the wait from the trigger.
           POLL_INTERVAL_SECONDS=30
           MAX_ATTEMPTS=680 # ~5h40, leaving a buffer under the job's 355 minute timeout
+          STATUS=""
           for ((i = 0; i < MAX_ATTEMPTS; i++)); do
-            STATUS=$(aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" --query 'tasks[0].lastStatus' --output text)
+            # Don't let a transient AWS API error (throttling, network blip) kill a run that's
+            # hours in - log it and retry on the next poll instead of exiting immediately.
+            if ! STATUS=$(aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" --query 'tasks[0].lastStatus' --output text); then
+              echo "describe-tasks failed, will retry"
+              sleep "$POLL_INTERVAL_SECONDS"
+              continue
+            fi
             echo "Task status: $STATUS"
             if [ "$STATUS" = "STOPPED" ]; then
               break
@@ -81,3 +92,16 @@ jobs:
           aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" \
             --query 'tasks[0].containers[].{name:name,exitCode:exitCode,reason:reason}' --output table
           test "$(aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" --query 'tasks[0].containers[?name==`nft-database-dump`].exitCode | [0]' --output text)" = "0"
+
+      - name: Stop ECS task if workflow was cancelled or failed
+        if: failure() || cancelled()
+        shell: bash
+        run: |
+          set -euo pipefail
+          TASK_ARN="${{ steps.run-task.outputs.task-arn }}"
+          if [ -z "$TASK_ARN" ]; then
+            echo "No task was started, nothing to stop"
+            exit 0
+          fi
+          echo "Stopping $TASK_ARN"
+          aws ecs stop-task --cluster "${ENVIRONMENT}-app" --task "$TASK_ARN" --reason "Workflow run cancelled or failed"
