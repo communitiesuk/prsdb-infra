@@ -64,7 +64,15 @@ variable "ecs_task_execution_role_arn" {
 
 variable "ecs_task_role_arn" {
   type        = string
-  description = "The arn of the app task role"
+  description = "Optional ARN of the IAM role assumed by the running task"
+  default     = null
+  nullable    = true
+}
+
+variable "cloudwatch_log_retention_days" {
+  description = "Number of days to retain task logs"
+  type        = number
+  default     = 365
 }
 
 variable "tags" {
