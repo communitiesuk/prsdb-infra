@@ -33,6 +33,12 @@ variable "container_image" {
   type        = string
 }
 
+variable "container_user" {
+  description = "User used to run the container"
+  type        = string
+  default     = "root"
+}
+
 variable "environment_variables" {
   description = "environment variables to pass to the container"
   type = list(object({
