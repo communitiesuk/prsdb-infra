@@ -82,3 +82,13 @@ output "performance_runner_access_role_arn" {
   value       = module.github_actions_access.performance_runner_access_role_arn
   description = "ARN of the performance runner network access role"
 }
+
+output "one_login_simulator_mirror_role_arn" {
+  value       = module.github_actions_access.one_login_simulator_mirror_role_arn
+  description = "ARN of the NFT One Login simulator image mirror role"
+}
+
+output "one_login_simulator_repository_url" {
+  value       = module.ecr.one_login_simulator_repository_url
+  description = "URL of the NFT One Login simulator ECR repository"
+}

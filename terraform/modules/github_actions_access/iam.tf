@@ -391,3 +391,74 @@ resource "aws_iam_role_policy_attachment" "performance_runner_access" {
   role       = aws_iam_role.performance_runner_access[0].name
   policy_arn = aws_iam_policy.performance_runner_access[0].arn
 }
+
+data "aws_iam_policy_document" "one_login_simulator_mirror_assume_role" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.main.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = "token.actions.githubusercontent.com:aud"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:communitiesuk/prsdb-infra:environment:nft"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "one_login_simulator_mirror_access" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  statement {
+    effect    = "Allow"
+    actions   = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:BatchGetImage",
+      "ecr:CompleteLayerUpload",
+      "ecr:DescribeImages",
+      "ecr:InitiateLayerUpload",
+      "ecr:PutImage",
+      "ecr:UploadLayerPart",
+    ]
+    resources = [var.one_login_simulator_repository_arn]
+  }
+}
+
+resource "aws_iam_role" "one_login_simulator_mirror" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  name               = "${var.environment_name}-one-login-simulator-mirror"
+  assume_role_policy = data.aws_iam_policy_document.one_login_simulator_mirror_assume_role[0].json
+}
+
+resource "aws_iam_policy" "one_login_simulator_mirror" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  name        = "${var.environment_name}-one-login-simulator-mirror"
+  description = "Pushes the approved One Login simulator image into NFT ECR"
+  policy      = data.aws_iam_policy_document.one_login_simulator_mirror_access[0].json
+}
+
+resource "aws_iam_role_policy_attachment" "one_login_simulator_mirror" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  role       = aws_iam_role.one_login_simulator_mirror[0].name
+  policy_arn = aws_iam_policy.one_login_simulator_mirror[0].arn
+}

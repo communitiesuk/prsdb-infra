@@ -134,8 +134,9 @@ module "certificates" {
 module "ecr" {
   source = "../modules/ecr"
 
-  environment_name      = local.environment_name
-  image_retention_count = 3
+  environment_name            = local.environment_name
+  image_retention_count       = 3
+  create_simulator_repository = true
 }
 
 module "github_actions_access" {
@@ -158,6 +159,8 @@ module "github_actions_access" {
   performance_runner_security_group_arn    = var.task_definition_created ? module.frontdoor.load_balancer.simulator_security_group_arn : null
   performance_runner_service_arn           = var.task_definition_created ? module.one_login_simulator[0].service_arn : null
   enable_performance_runner_access         = var.task_definition_created
+  one_login_simulator_repository_arn       = module.ecr.one_login_simulator_repository_arn
+  enable_one_login_simulator_mirror_access = true
 }
 
 module "secrets" {
@@ -244,6 +247,7 @@ module "one_login_simulator" {
   vpc_id                          = module.networking.vpc.id
   https_listener_arn              = module.frontdoor.load_balancer.listener_arn
   simulator_alb_security_group_id = module.frontdoor.load_balancer.simulator_security_group_id
+  vpc_endpoint_security_group_id  = module.networking.vpc_endpoint_security_group_id
   desired_count                   = var.one_login_simulator_desired_count
 }
 

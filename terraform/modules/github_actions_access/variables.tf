@@ -93,3 +93,15 @@ variable "enable_performance_runner_access" {
   type        = bool
   default     = false
 }
+
+variable "one_login_simulator_repository_arn" {
+  description = "ARN of the NFT One Login simulator ECR repository"
+  type        = string
+  default     = null
+}
+
+variable "enable_one_login_simulator_mirror_access" {
+  description = "Whether to create the NFT simulator image mirror role"
+  type        = bool
+  default     = false
+}

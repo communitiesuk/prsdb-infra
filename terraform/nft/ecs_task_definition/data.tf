@@ -144,3 +144,6 @@ data "aws_ssm_parameter" "plausible_transaction_event_start_date" {
 data "aws_ssm_parameter" "beta_feedback_team_email_address" {
   name = "${local.environment_name}-prsdb-beta-feedback-team-email-address"
 }
+data "aws_ecr_repository" "one_login_simulator" {
+  name = "nft-one-login-simulator"
+}

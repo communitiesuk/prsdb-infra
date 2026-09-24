@@ -258,7 +258,7 @@ module "one_login_simulator" {
   source = "./one_login_simulator"
 
   environment_name            = local.environment_name
-  image                       = var.one_login_simulator_image
+  image                       = "${data.aws_ecr_repository.one_login_simulator.repository_url}@${var.one_login_simulator_image_digest}"
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   one_login_client_id         = data.aws_ssm_parameter.one_login_client_id.value
   one_login_public_key        = data.aws_ssm_parameter.one_login_public_key.value

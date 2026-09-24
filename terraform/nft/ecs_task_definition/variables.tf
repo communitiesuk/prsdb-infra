@@ -4,14 +4,14 @@ variable "image_name" {
   default     = "nginx:alpine"
 }
 
-variable "one_login_simulator_image" {
-  description = "Digest-pinned GOV.UK One Login Simulator image"
+variable "one_login_simulator_image_digest" {
+  description = "Digest of the mirrored NFT GOV.UK One Login Simulator image"
   type        = string
-  default     = "ghcr.io/govuk-one-login/simulator@sha256:0d5e62c1db1c400c4881be2270b3f08aeb55c72ca3d9eb9a6e5196becef6f5e5"
+  default     = "sha256:bc31189856c69925954c14587d5241a9c4dd3b2e04ebf9069d0bc4773629c835"
 
   validation {
-    condition     = can(regex("@sha256:[0-9a-f]{64}$", var.one_login_simulator_image))
-    error_message = "The One Login simulator image must use a sha256 digest."
+    condition     = can(regex("^sha256:[0-9a-f]{64}$", var.one_login_simulator_image_digest))
+    error_message = "The One Login simulator image digest must use sha256 followed by 64 hexadecimal characters."
   }
 }
 

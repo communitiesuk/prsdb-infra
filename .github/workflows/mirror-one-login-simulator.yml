@@ -1,0 +1,58 @@
+name: Mirror One Login Simulator image
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-image:
+        description: "Pinned GHCR simulator image digest to promote"
+        required: true
+        default: "ghcr.io/govuk-one-login/simulator@sha256:0d5e62c1db1c400c4881be2270b3f08aeb55c72ca3d9eb9a6e5196becef6f5e5"
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+  packages: read
+
+concurrency:
+  group: nft-one-login-simulator-image-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Mirror simulator image into NFT ECR
+    runs-on: ubuntu-latest
+    environment: nft
+    env:
+      AWS_REGION: eu-west-2
+      ECR_REPOSITORY: nft-one-login-simulator
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::448120078528:role/nft-one-login-simulator-mirror
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Mirror pinned simulator image
+        env:
+          SOURCE_IMAGE: ${{ inputs.source-image }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          ./scripts/mirror-one-login-simulator.sh \
+            "$SOURCE_IMAGE" \
+            "$ECR_REGISTRY" \
+            "$ECR_REPOSITORY"

@@ -62,12 +62,12 @@ resource "aws_vpc_security_group_ingress_rule" "from_simulator_alb" {
 }
 
 resource "aws_vpc_security_group_egress_rule" "https" {
-  description       = "Allow simulator HTTPS access to external dependencies"
-  ip_protocol       = "tcp"
-  from_port         = 443
-  to_port           = 443
-  cidr_ipv4         = "0.0.0.0/0"
-  security_group_id = aws_security_group.simulator.id
+  description                  = "Allow simulator HTTPS access to external dependencies"
+  ip_protocol                  = "tcp"
+  from_port                    = 443
+  to_port                      = 443
+  referenced_security_group_id = var.vpc_endpoint_security_group_id
+  security_group_id            = aws_security_group.simulator.id
 }
 
 resource "aws_vpc_security_group_egress_rule" "simulator_alb_to_task" {

@@ -28,6 +28,11 @@ variable "simulator_alb_security_group_id" {
   type        = string
 }
 
+variable "vpc_endpoint_security_group_id" {
+  description = "Security group ID for the AWS interface VPC endpoints"
+  type        = string
+}
+
 variable "desired_count" {
   description = "Number of simulator tasks to run"
   type        = number
