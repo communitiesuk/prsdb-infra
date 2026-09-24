@@ -5,8 +5,11 @@ resource "aws_lb" "main" {
   enable_deletion_protection = true
   internal                   = false
   load_balancer_type         = "application"
-  security_groups            = [aws_security_group.load_balancer.id]
-  subnets                    = var.public_subnet_ids
+  security_groups = concat(
+    [aws_security_group.load_balancer.id],
+    var.simulator_host != null ? [aws_security_group.simulator_load_balancer[0].id] : [],
+  )
+  subnets = var.public_subnet_ids
 
   lifecycle {
     prevent_destroy = true
@@ -43,6 +46,29 @@ resource "aws_security_group" "load_balancer" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+resource "aws_security_group" "simulator_load_balancer" {
+  count = var.simulator_host != null ? 1 : 0
+
+  name        = "load-balancer-simulator-sg-${var.environment_name}"
+  description = "Simulator load balancer security group"
+  vpc_id      = var.vpc_id
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "simulator_load_balancer_https_ingress" {
+  for_each = var.simulator_host != null ? toset(var.simulator_allowed_ips) : toset([])
+
+  description       = "Allow HTTPS ingress to the simulator from approved NFT networks"
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+  cidr_ipv4         = each.value
+  security_group_id = aws_security_group.simulator_load_balancer[0].id
 }
 
 resource "aws_lb_target_group" "main" {

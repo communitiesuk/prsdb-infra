@@ -32,3 +32,53 @@ output "ecr_repository_url" {
   value       = module.ecr.ecr_repository_url
   description = "The url of the ecr repository for this environment"
 }
+
+output "performance_runner_cloudfront_ip_set_arn" {
+  value       = module.frontdoor.performance_runner_cloudfront_ip_set_arn
+  description = "ARN of the workflow-managed CloudFront performance runner IP set"
+}
+
+output "performance_runner_cloudfront_ip_set_id" {
+  value       = module.frontdoor.performance_runner_cloudfront_ip_set_id
+  description = "ID of the workflow-managed CloudFront performance runner IP set"
+}
+
+output "performance_runner_cloudfront_ip_set_name" {
+  value       = module.frontdoor.performance_runner_cloudfront_ip_set_name
+  description = "Name of the workflow-managed CloudFront performance runner IP set"
+}
+
+output "performance_runner_regional_ip_set_arn" {
+  value       = module.frontdoor.performance_runner_regional_ip_set_arn
+  description = "ARN of the workflow-managed regional performance runner IP set"
+}
+
+output "performance_runner_regional_ip_set_id" {
+  value       = module.frontdoor.performance_runner_regional_ip_set_id
+  description = "ID of the workflow-managed regional performance runner IP set"
+}
+
+output "performance_runner_regional_ip_set_name" {
+  value       = module.frontdoor.performance_runner_regional_ip_set_name
+  description = "Name of the workflow-managed regional performance runner IP set"
+}
+
+output "simulator_alb_security_group_id" {
+  value       = module.frontdoor.load_balancer.simulator_security_group_id
+  description = "ID of the simulator ALB security group"
+}
+
+output "simulator_service_arn" {
+  value       = var.task_definition_created ? module.one_login_simulator[0].service_arn : null
+  description = "ARN of the One Login simulator ECS service"
+}
+
+output "simulator_service_name" {
+  value       = var.task_definition_created ? module.one_login_simulator[0].service_name : null
+  description = "Name of the One Login simulator ECS service"
+}
+
+output "performance_runner_access_role_arn" {
+  value       = module.github_actions_access.performance_runner_access_role_arn
+  description = "ARN of the performance runner network access role"
+}
