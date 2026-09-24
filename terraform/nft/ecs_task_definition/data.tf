@@ -22,6 +22,18 @@ data "aws_ssm_parameter" "one_login_did_url" {
   name = "${local.environment_name}-one-login-did-url"
 }
 
+data "aws_ssm_parameter" "one_login_simulator_client_id" {
+  name = "${local.environment_name}-one-login-simulator-client-id"
+}
+
+data "aws_ssm_parameter" "one_login_simulator_public_key" {
+  name = "${local.environment_name}-one-login-simulator-public-key"
+}
+
+data "aws_secretsmanager_secret" "one_login_simulator_private_key" {
+  name = "tf-${local.environment_name}-one-login-simulator-private-key"
+}
+
 data "aws_ssm_parameter" "database_username" {
   name = "${local.environment_name}-prsdb-database-username"
 }
@@ -143,4 +155,7 @@ data "aws_ssm_parameter" "plausible_transaction_event_start_date" {
 
 data "aws_ssm_parameter" "beta_feedback_team_email_address" {
   name = "${local.environment_name}-prsdb-beta-feedback-team-email-address"
+}
+data "aws_ecr_repository" "one_login_simulator" {
+  name = "nft-one-login-simulator"
 }

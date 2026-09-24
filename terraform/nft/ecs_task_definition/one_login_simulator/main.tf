@@ -7,7 +7,7 @@ module "task" {
 
   environment_name              = var.environment_name
   task_name                     = "prsdb-one-login-simulator"
-  container_image               = "ghcr.io/govuk-one-login/simulator@sha256:0d5e62c1db1c400c4881be2270b3f08aeb55c72ca3d9eb9a6e5196becef6f5e5"
+  container_image               = var.image
   container_port                = 3000
   container_user                = "node"
   task_cpu                      = 4096

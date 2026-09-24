@@ -63,3 +63,45 @@ variable "ecr_describe_images_policy_arn" {
   description = "arn of the iam policy for describing ecr images"
   type        = string
 }
+
+variable "performance_runner_cloudfront_ip_set_arn" {
+  description = "ARN of the CloudFront performance runner IP set"
+  type        = string
+  default     = null
+}
+
+variable "performance_runner_regional_ip_set_arn" {
+  description = "ARN of the regional performance runner IP set"
+  type        = string
+  default     = null
+}
+
+variable "performance_runner_security_group_arn" {
+  description = "ARN of the simulator ALB security group"
+  type        = string
+  default     = null
+}
+
+variable "performance_runner_service_arn" {
+  description = "ARN of the simulator ECS service"
+  type        = string
+  default     = null
+}
+
+variable "enable_performance_runner_access" {
+  description = "Whether to create the NFT performance runner network access role"
+  type        = bool
+  default     = false
+}
+
+variable "one_login_simulator_repository_arn" {
+  description = "ARN of the NFT One Login simulator ECR repository"
+  type        = string
+  default     = null
+}
+
+variable "enable_one_login_simulator_mirror_access" {
+  description = "Whether to create the NFT simulator image mirror role"
+  type        = bool
+  default     = false
+}

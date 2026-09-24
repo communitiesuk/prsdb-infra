@@ -19,6 +19,10 @@ terraform {
 
 locals {
   environment_name = "nft"
+
+  # Matches the host header the simulator's own ALB listener rule matches on (see one_login_simulator/main.tf
+  # in the top-level nft module) and its SIMULATOR_URL environment variable.
+  one_login_simulator_base_url = "https://${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 }
 
 provider "aws" {
@@ -97,6 +101,22 @@ locals {
     {
       name  = "ONE_LOGIN_DID_URL"
       value = data.aws_ssm_parameter.one_login_did_url.value
+    },
+    {
+      name  = "ONE_LOGIN_SIMULATOR_CLIENT_ID"
+      value = data.aws_ssm_parameter.one_login_simulator_client_id.value
+    },
+    {
+      name  = "ONE_LOGIN_SIMULATOR_PUBLIC_KEY"
+      value = data.aws_ssm_parameter.one_login_simulator_public_key.value
+    },
+    {
+      name  = "ONE_LOGIN_SIMULATOR_ISSUER_URL"
+      value = local.one_login_simulator_base_url
+    },
+    {
+      name  = "ONE_LOGIN_SIMULATOR_DID_URL"
+      value = "${local.one_login_simulator_base_url}/.well-known/did.json"
     },
     {
       name  = "INTERNAL_ACCESS_CLIENT_ID"
@@ -186,6 +206,10 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.one_login_private_key.arn
     },
     {
+      name      = "ONE_LOGIN_SIMULATOR_PRIVATE_KEY"
+      valueFrom = data.aws_secretsmanager_secret.one_login_simulator_private_key.arn
+    },
+    {
       name      = "EPC_REGISTER_CLIENT_SECRET"
       valueFrom = data.aws_secretsmanager_secret.epc_client_secret.arn
     },
@@ -258,7 +282,8 @@ module "one_login_simulator" {
   source = "./one_login_simulator"
 
   environment_name            = local.environment_name
+  image                       = "${data.aws_ecr_repository.one_login_simulator.repository_url}@${var.one_login_simulator_image_digest}"
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
-  one_login_client_id         = data.aws_ssm_parameter.one_login_client_id.value
-  one_login_public_key        = data.aws_ssm_parameter.one_login_public_key.value
+  one_login_client_id         = data.aws_ssm_parameter.one_login_simulator_client_id.value
+  one_login_public_key        = data.aws_ssm_parameter.one_login_simulator_public_key.value
 }

@@ -3,6 +3,11 @@ variable "environment_name" {
   type        = string
 }
 
+variable "image" {
+  description = "Digest-pinned GOV.UK One Login Simulator image"
+  type        = string
+}
+
 variable "ecs_task_execution_role_arn" {
   description = "The arn of the ecs task execution role"
   type        = string

@@ -10,6 +10,17 @@ variable "task_definition_created" {
   default     = true
 }
 
+variable "one_login_simulator_desired_count" {
+  description = "Number of One Login simulator tasks to run in NFT"
+  type        = number
+  default     = 0
+
+  validation {
+    condition     = var.one_login_simulator_desired_count >= 0
+    error_message = "The One Login simulator desired count must not be negative."
+  }
+}
+
 variable "critical_alarm_email_address" {
   description = "Email address to receive critical CloudWatch alarm notifications"
   type        = string

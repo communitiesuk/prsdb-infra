@@ -42,6 +42,24 @@ locals {
   database_allocated_storage     = 50
 
   scheduled_tasks = jsondecode(file("${path.module}/scheduled_tasks.json"))
+
+  ip_allowlist = [
+    # Softwire
+    "31.221.86.178/32",
+    "167.98.33.82/32",
+    "87.224.105.250/32",
+    "87.224.116.242/32",
+    "45.150.142.210/32",
+    # Made Tech
+    "79.173.131.202/32",
+    "172.166.224.214/32",
+    # MHCLG
+    "4.158.35.41/32",
+    # Cyberfort
+    "37.200.119.11/32",
+    "185.10.12.32/28",
+    "176.65.68.112/28",
+  ]
 }
 
 module "networking" {
@@ -71,26 +89,12 @@ module "frontdoor" {
     local.search_landlord_host,
     local.check_home_to_rent_host
   ]
-  load_balancer_domain_name     = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
+  load_balancer_domain_name     = local.load_balancer_domain_name
   cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
   load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
-  ip_allowlist = [
-    # Softwire
-    "31.221.86.178/32",
-    "167.98.33.82/32",
-    "87.224.105.250/32",
-    "87.224.116.242/32",
-    "45.150.142.210/32",
-    # Made Tech
-    "79.173.131.202/32",
-    "172.166.224.214/32",
-    # MHCLG
-    "4.158.35.41/32",
-    # Cyberfort
-    "37.200.119.11/32",
-    "185.10.12.32/28",
-    "176.65.68.112/28",
-  ]
+  ip_allowlist                  = local.ip_allowlist
+  simulator_host                = local.load_balancer_domain_name
+  simulator_allowed_ips         = concat(local.ip_allowlist, ["${module.networking.nat_gateway_ip}/32"])
   detectify_ips = [
     "52.17.9.21/32",
     "52.17.98.131/32",
@@ -130,25 +134,33 @@ module "certificates" {
 module "ecr" {
   source = "../modules/ecr"
 
-  environment_name      = local.environment_name
-  image_retention_count = 3
+  environment_name            = local.environment_name
+  image_retention_count       = 3
+  create_simulator_repository = true
 }
 
 module "github_actions_access" {
   source = "../modules/github_actions_access"
 
-  environment_name               = local.environment_name
-  push_ecr_image_policy_arn      = module.ecr.push_ecr_image_policy_arn
-  db_username_ssm_parameter_arn  = module.database.database_username_ssm_parameter_arn
-  db_url_ssm_parameter_arn       = module.database.database_url_ssm_parameter_arn
-  db_password_secret_arn         = module.secrets.database_password_secret_arn
-  secrets_kms_key_arn            = module.secrets.secrets_kms_key_arn
-  bastion_host_arns              = module.bastion.bastion_instance_arns
-  ecs_service_arn                = var.task_definition_created ? module.ecs_service[0].ecs_service_arn : ""
-  ecs_task_execution_role_arn    = module.ecr.ecs_task_execution_role_arn
-  webapp_ecs_task_role_arn       = module.ecr.webapp_ecs_task_role_arn
-  task_definition_created        = var.task_definition_created
-  ecr_describe_images_policy_arn = module.ecr.describe_ecr_images_policy_arn
+  environment_name                         = local.environment_name
+  push_ecr_image_policy_arn                = module.ecr.push_ecr_image_policy_arn
+  db_username_ssm_parameter_arn            = module.database.database_username_ssm_parameter_arn
+  db_url_ssm_parameter_arn                 = module.database.database_url_ssm_parameter_arn
+  db_password_secret_arn                   = module.secrets.database_password_secret_arn
+  secrets_kms_key_arn                      = module.secrets.secrets_kms_key_arn
+  bastion_host_arns                        = module.bastion.bastion_instance_arns
+  ecs_service_arn                          = var.task_definition_created ? module.ecs_service[0].ecs_service_arn : ""
+  ecs_task_execution_role_arn              = module.ecr.ecs_task_execution_role_arn
+  webapp_ecs_task_role_arn                 = module.ecr.webapp_ecs_task_role_arn
+  task_definition_created                  = var.task_definition_created
+  ecr_describe_images_policy_arn           = module.ecr.describe_ecr_images_policy_arn
+  performance_runner_cloudfront_ip_set_arn = module.frontdoor.performance_runner_cloudfront_ip_set_arn
+  performance_runner_regional_ip_set_arn   = module.frontdoor.performance_runner_regional_ip_set_arn
+  performance_runner_security_group_arn    = var.task_definition_created ? module.frontdoor.load_balancer.simulator_security_group_arn : null
+  performance_runner_service_arn           = var.task_definition_created ? module.one_login_simulator[0].service_arn : null
+  enable_performance_runner_access         = var.task_definition_created
+  one_login_simulator_repository_arn       = module.ecr.one_login_simulator_repository_arn
+  enable_one_login_simulator_mirror_access = true
 }
 
 module "secrets" {
@@ -223,6 +235,20 @@ module "ecs_service" {
   redis_security_group_id   = module.redis.redis_security_group_id
   private_subnet_ids        = module.networking.private_subnets[*].id
   vpc_id                    = module.networking.vpc.id
+}
+
+module "one_login_simulator" {
+  count  = var.task_definition_created ? 1 : 0
+  source = "./one_login_simulator"
+
+  environment_name                = local.environment_name
+  ecs_cluster_arn                 = module.ecs_service[0].ecs_cluster_arn
+  private_subnet_ids              = module.networking.private_subnets[*].id
+  vpc_id                          = module.networking.vpc.id
+  https_listener_arn              = module.frontdoor.load_balancer.listener_arn
+  simulator_alb_security_group_id = module.frontdoor.load_balancer.simulator_security_group_id
+  vpc_endpoint_security_group_id  = module.networking.vpc_endpoint_security_group_id
+  desired_count                   = var.one_login_simulator_desired_count
 }
 
 module "file_upload" {

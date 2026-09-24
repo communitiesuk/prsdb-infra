@@ -46,7 +46,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   dynamic "rule" {
     # [{}] causes 1 instance of the block to be created, [] causes 0 instances of the block
-    for_each = length(var.ip_allowlist) > 0 ? [{}] : []
+    for_each = length(var.ip_allowlist) > 0 || var.simulator_host != null ? [{}] : []
     content {
       name     = "ip-allowlist"
       priority = 2
@@ -62,8 +62,22 @@ resource "aws_wafv2_web_acl" "main" {
       statement {
         not_statement {
           statement {
-            ip_set_reference_statement {
-              arn = aws_wafv2_ip_set.allowed_ips.arn
+            or_statement {
+              statement {
+                ip_set_reference_statement {
+                  arn = aws_wafv2_ip_set.allowed_ips.arn
+                }
+              }
+
+              dynamic "statement" {
+                for_each = var.simulator_host != null ? [aws_wafv2_ip_set.performance_runner_cloudfront[0].arn] : []
+                iterator = runner_ip_set
+                content {
+                  ip_set_reference_statement {
+                    arn = runner_ip_set.value
+                  }
+                }
+              }
             }
           }
         }
@@ -533,4 +547,18 @@ resource "aws_wafv2_ip_set" "detectify_ips" {
   scope              = "CLOUDFRONT"
   ip_address_version = "IPV4"
   addresses          = var.detectify_ips
+}
+
+resource "aws_wafv2_ip_set" "performance_runner_cloudfront" {
+  count = var.simulator_host != null ? 1 : 0
+
+  provider           = aws.us-east-1
+  name               = "waf-performance-runner-cloudfront-nft"
+  scope              = "CLOUDFRONT"
+  ip_address_version = "IPV4"
+  addresses          = []
+
+  lifecycle {
+    ignore_changes = [addresses]
+  }
 }
