@@ -151,3 +151,13 @@ resource "aws_ssm_parameter" "beta_feedback_team_email_address" {
     ignore_changes = [value]
   }
 }
+
+resource "aws_ssm_parameter" "annual_payment_amount_in_pence" {
+  name  = "${var.environment_name}-prsdb-annual-payment-amount-in-pence"
+  type  = "String"
+  value = "default_to_be_set_manually" # To be set manually on AWS
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
