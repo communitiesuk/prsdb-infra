@@ -22,6 +22,18 @@ data "aws_ssm_parameter" "one_login_did_url" {
   name = "${local.environment_name}-one-login-did-url"
 }
 
+data "aws_ssm_parameter" "one_login_simulator_client_id" {
+  name = "${local.environment_name}-one-login-simulator-client-id"
+}
+
+data "aws_ssm_parameter" "one_login_simulator_public_key" {
+  name = "${local.environment_name}-one-login-simulator-public-key"
+}
+
+data "aws_secretsmanager_secret" "one_login_simulator_private_key" {
+  name = "tf-${local.environment_name}-one-login-simulator-private-key"
+}
+
 data "aws_ssm_parameter" "database_username" {
   name = "${local.environment_name}-prsdb-database-username"
 }
