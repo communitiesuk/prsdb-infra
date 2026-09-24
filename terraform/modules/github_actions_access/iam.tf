@@ -350,8 +350,13 @@ data "aws_iam_policy_document" "performance_runner_access" {
     actions = [
       "ec2:DescribeSecurityGroups",
       "ec2:DescribeSecurityGroupRules",
-      "wafv2:ListIPSets",
     ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["wafv2:ListIPSets"]
     resources = ["*"]
   }
 
