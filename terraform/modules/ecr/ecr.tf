@@ -26,6 +26,7 @@ resource "aws_ecr_lifecycle_policy" "main" {
   })
 }
 
+#tfsec:ignore:aws-ecr-repository-customer-key:encryption using KMS CMK not required
 resource "aws_ecr_repository" "one_login_simulator" {
   count = var.create_simulator_repository ? 1 : 0
 
