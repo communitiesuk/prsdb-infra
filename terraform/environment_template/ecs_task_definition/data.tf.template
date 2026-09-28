@@ -150,5 +150,5 @@ data "aws_ssm_parameter" "beta_feedback_team_email_address" {
 }
 
 data "aws_ssm_parameter" "annual_payment_amount_in_pence" {
-  name = "${local.environment_name}-prsdb-annual-payment-amount-in-pence"
+  name = "${local.environment_name}-prsdb-gov-uk-pay-annual-payment-amount-in-pence"
 }
