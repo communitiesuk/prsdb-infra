@@ -151,6 +151,10 @@ locals {
       value = data.aws_ssm_parameter.beta_feedback_team_email_address.value
     },
     {
+      name  = "ANNUAL_PAYMENT_AMOUNT_IN_PENCE"
+      value = data.aws_ssm_parameter.annual_payment_amount_in_pence.value
+    },
+    {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
       value = "40000"
     },
@@ -196,6 +200,10 @@ locals {
     {
       name      = "PLAUSIBLE_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.plausible_api_key.arn
+    },
+    {
+      name      = "GOV_UK_PAY_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_api_key.arn
     },
   ]
 }
