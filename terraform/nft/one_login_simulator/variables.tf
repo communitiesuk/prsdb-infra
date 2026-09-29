@@ -23,6 +23,11 @@ variable "https_listener_arn" {
   type        = string
 }
 
+variable "host_header" {
+  description = "Load balancer host header the simulator listener rule matches on"
+  type        = string
+}
+
 variable "simulator_alb_security_group_id" {
   description = "Security group ID attached to the simulator ALB ingress"
   type        = string
@@ -38,7 +43,9 @@ variable "desired_count" {
   type        = number
 
   validation {
-    condition     = var.desired_count >= 0
-    error_message = "The One Login simulator desired count must not be negative."
+    # The simulator caches auth flows in memory, so it only supports running as a singleton - if requests within
+    # the same auth flow reach different instances, authentication will fail.
+    condition     = var.desired_count >= 0 && var.desired_count <= 1
+    error_message = "The One Login simulator desired count must be 0 or 1; the simulator does not support running more than one instance."
   }
 }

@@ -111,8 +111,9 @@ locals {
       value = data.aws_ssm_parameter.one_login_simulator_public_key.value
     },
     {
+      # One Login (and the simulator) requires a trailing slash on the issuer URL.
       name  = "ONE_LOGIN_SIMULATOR_ISSUER_URL"
-      value = local.one_login_simulator_base_url
+      value = "${local.one_login_simulator_base_url}/"
     },
     {
       name  = "ONE_LOGIN_SIMULATOR_DID_URL"

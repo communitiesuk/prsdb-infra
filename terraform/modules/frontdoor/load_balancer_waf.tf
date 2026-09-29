@@ -41,15 +41,15 @@ resource "aws_wafv2_web_acl" "load_balancer" {
           }
 
           statement {
-            byte_match_statement {
+            regex_match_statement {
               field_to_match {
                 uri_path {}
               }
-              positional_constraint = "EXACTLY"
-              search_string         = "/config"
+              # Matches "/config" case-insensitively, with or without a trailing slash (e.g. "/CONFIG", "/config/").
+              regex_string = "^/config/?$"
               text_transformation {
                 priority = 0
-                type     = "NONE"
+                type     = "LOWERCASE"
               }
             }
           }
@@ -98,28 +98,49 @@ resource "aws_wafv2_web_acl" "load_balancer" {
 
     statement {
       not_statement {
-        statement {
-          or_statement {
-            statement {
-              byte_match_statement {
-                field_to_match {
-                  single_header {
-                    name = lower(local.cloudfront_header_name)
-                  }
-                }
-                positional_constraint = "EXACTLY"
-                search_string         = random_password.cloudfront_header.result
-                text_transformation {
-                  priority = 0
-                  type     = "NONE"
+        # An or_statement requires at least 2 nested statements, so we only use it when there are simulator-host
+        # branches to combine with the CloudFront header check; otherwise we match the header directly.
+        dynamic "statement" {
+          for_each = var.simulator_host == null ? [{}] : []
+          content {
+            byte_match_statement {
+              field_to_match {
+                single_header {
+                  name = lower(local.cloudfront_header_name)
                 }
               }
+              positional_constraint = "EXACTLY"
+              search_string         = random_password.cloudfront_header.result
+              text_transformation {
+                priority = 0
+                type     = "NONE"
+              }
             }
+          }
+        }
 
-            dynamic "statement" {
-              for_each = var.simulator_host != null ? [var.simulator_host] : []
-              iterator = simulator_host
-              content {
+        dynamic "statement" {
+          for_each = var.simulator_host != null ? [var.simulator_host] : []
+          iterator = simulator_host
+          content {
+            or_statement {
+              statement {
+                byte_match_statement {
+                  field_to_match {
+                    single_header {
+                      name = lower(local.cloudfront_header_name)
+                    }
+                  }
+                  positional_constraint = "EXACTLY"
+                  search_string         = random_password.cloudfront_header.result
+                  text_transformation {
+                    priority = 0
+                    type     = "NONE"
+                  }
+                }
+              }
+
+              statement {
                 and_statement {
                   statement {
                     regex_match_statement {
@@ -143,12 +164,8 @@ resource "aws_wafv2_web_acl" "load_balancer" {
                   }
                 }
               }
-            }
 
-            dynamic "statement" {
-              for_each = var.simulator_host != null ? [var.simulator_host] : []
-              iterator = simulator_host
-              content {
+              statement {
                 and_statement {
                   statement {
                     regex_match_statement {

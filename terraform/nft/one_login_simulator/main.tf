@@ -37,7 +37,7 @@ resource "aws_lb_listener_rule" "simulator" {
 
   condition {
     host_header {
-      values = ["nft.lb.register-home-to-rent.test.communities.gov.uk"]
+      values = [var.host_header]
     }
   }
 }
@@ -90,6 +90,13 @@ resource "aws_ecs_service" "simulator" {
   task_definition                    = "prsdb-one-login-simulator-${var.environment_name}"
   health_check_grace_period_seconds  = 60
   force_new_deployment               = true
+
+  # The performance-runner workflow scales this service in/out directly via the AWS API without going through
+  # Terraform. Ignoring desired_count prevents routine Terraform applies (e.g. task-definition refreshes) from
+  # resetting the service back to var.desired_count while a performance test is running.
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
 
   deployment_circuit_breaker {
     enable   = true

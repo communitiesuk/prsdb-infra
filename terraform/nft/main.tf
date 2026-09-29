@@ -246,6 +246,7 @@ module "one_login_simulator" {
   private_subnet_ids              = module.networking.private_subnets[*].id
   vpc_id                          = module.networking.vpc.id
   https_listener_arn              = module.frontdoor.load_balancer.listener_arn
+  host_header                     = local.load_balancer_domain_name
   simulator_alb_security_group_id = module.frontdoor.load_balancer.simulator_security_group_id
   vpc_endpoint_security_group_id  = module.networking.vpc_endpoint_security_group_id
   desired_count                   = var.one_login_simulator_desired_count

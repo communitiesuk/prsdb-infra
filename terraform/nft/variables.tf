@@ -16,8 +16,10 @@ variable "one_login_simulator_desired_count" {
   default     = 0
 
   validation {
-    condition     = var.one_login_simulator_desired_count >= 0
-    error_message = "The One Login simulator desired count must not be negative."
+    # The simulator caches auth flows in memory, so it only supports running as a singleton - if requests within
+    # the same auth flow reach different instances, authentication will fail.
+    condition     = var.one_login_simulator_desired_count >= 0 && var.one_login_simulator_desired_count <= 1
+    error_message = "The One Login simulator desired count must be 0 or 1; the simulator does not support running more than one instance."
   }
 }
 
