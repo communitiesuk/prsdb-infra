@@ -35,3 +35,19 @@ fi
 echo "source-image=${source_image}"
 echo "destination-image=${destination_image}"
 echo "destination-digest=${destination_digest}"
+
+if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+  {
+    echo "### One Login simulator image mirrored"
+    echo
+    echo "| | |"
+    echo "| --- | --- |"
+    echo "| Source image | \`${source_image}\` |"
+    echo "| Destination image | \`${destination_image}\` |"
+    echo "| Destination digest | \`${destination_digest}\` |"
+    echo
+    echo "This workflow does not update Terraform. To deploy this image, raise a PR updating the"
+    echo "\`one_login_simulator_image_digest\` default in \`terraform/nft/ecs_task_definition/variables.tf\` to"
+    echo "\`${destination_digest}\`."
+  } >>"$GITHUB_STEP_SUMMARY"
+fi
