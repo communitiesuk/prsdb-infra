@@ -45,3 +45,28 @@ jobs:
       environment: ${{ inputs.environment }}
       aws-account-id: ${{ inputs.aws-account-id }}
       image-uri: ${{ needs.retrieve-image.outputs.image-uri }}
+
+  refresh-one-login-simulator:
+    name: Refresh One Login simulator service
+    if: ${{ inputs.environment == 'nft' }}
+    needs: update-task-definition
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: "eu-west-2"
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/github-actions-terraform-admin
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Refresh One Login simulator service
+        run: |
+          aws ecs update-service \
+            --cluster nft-app \
+            --service nft-one-login-simulator \
+            --task-definition prsdb-one-login-simulator-nft \
+            --force-new-deployment
+          aws ecs wait services-stable \
+            --cluster nft-app \
+            --services nft-one-login-simulator

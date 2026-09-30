@@ -55,6 +55,18 @@ variable "load_balancer_domain_name" {
   description = "MHCLG delegated domain name for alb"
 }
 
+variable "simulator_host" {
+  type        = string
+  description = "Direct ALB hostname used by the NFT One Login simulator"
+  default     = null
+}
+
+variable "simulator_allowed_ips" {
+  type        = list(string)
+  description = "Static IPv4 CIDRs permitted to call the simulator directly"
+  default     = []
+}
+
 variable "geolocation_allow_list" {
   type        = list(string)
   description = "List of allowed locations - geo restrictions disabled when set to null"
