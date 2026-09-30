@@ -41,7 +41,7 @@ resource "aws_cloudwatch_event_target" "process_scan_complete_event_target" {
       "environment": [
         {
           "name": "SPRING_PROFILES_ACTIVE",
-          "value": "web-server-deactivated,scan-processor"
+          "value": "web-server-deactivated,scan-processor,${var.environment_name}"
         },
         {
           "name": "SCAN_RESULT_STATUS",

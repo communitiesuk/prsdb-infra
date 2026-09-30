@@ -151,6 +151,10 @@ locals {
       value = data.aws_ssm_parameter.beta_feedback_team_email_address.value
     },
     {
+      name  = "ANNUAL_PAYMENT_AMOUNT_IN_PENCE"
+      value = data.aws_ssm_parameter.annual_payment_amount_in_pence.value
+    },
+    {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
       value = "40000"
     },
@@ -197,6 +201,10 @@ locals {
       name      = "PLAUSIBLE_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.plausible_api_key.arn
     },
+    {
+      name      = "GOV_UK_PAY_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_api_key.arn
+    },
   ]
 }
 
@@ -208,8 +216,8 @@ module "webapp_ecs_task_definition" {
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
   # TODO: consider what our requirements are for the instance
-  task_cpu              = 512
-  task_memory           = 2048
+  task_cpu              = 2048
+  task_memory           = 4096
   task_name             = "prsdb-webapp"
   environment_variables = concat(local.common_environment_variables, local.webapp_only_environment_variables)
   secrets               = concat(local.common_secrets, local.webapp_secrets)
@@ -228,8 +236,8 @@ module "scheduled_tasks_ecs_task_definitions" {
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
   # TODO: consider what our requirements are for the instance
-  task_cpu              = 512
-  task_memory           = 1024
+  task_cpu              = 2048
+  task_memory           = 4096
   task_name             = "prsdb-${each.key}-scheduled-task"
   environment_variables = concat(local.common_environment_variables, local.scheduled_tasks_only_environment_variables)
   secrets               = local.common_secrets
@@ -237,4 +245,28 @@ module "scheduled_tasks_ecs_task_definitions" {
     Type              = "scheduled-task"
     ScheduledTaskName = each.key
   }
+}
+
+module "nft_seed" {
+  source                       = "./nft_seed"
+  environment_name             = local.environment_name
+  image_name                   = var.image_name
+  ecs_task_execution_role_arn  = data.aws_iam_role.ecs_task_execution.arn
+  webapp_ecs_task_role_arn     = data.aws_iam_role.webapp_ecs_task.arn
+  webapp_ecs_task_role_name    = data.aws_iam_role.webapp_ecs_task.name
+  common_environment_variables = local.common_environment_variables
+  common_secrets               = local.common_secrets
+  database_url                 = data.aws_ssm_parameter.database_url.value
+  database_username            = data.aws_ssm_parameter.database_username.value
+  database_password_secret_arn = data.aws_secretsmanager_secret.database_password.arn
+  epc_certificate_base_url     = data.aws_ssm_parameter.epc_certificate_base_url.value
+}
+
+module "one_login_simulator" {
+  source = "./one_login_simulator"
+
+  environment_name            = local.environment_name
+  ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
+  one_login_client_id         = data.aws_ssm_parameter.one_login_client_id.value
+  one_login_public_key        = data.aws_ssm_parameter.one_login_public_key.value
 }

@@ -33,6 +33,12 @@ variable "container_image" {
   type        = string
 }
 
+variable "container_user" {
+  description = "User used to run the container"
+  type        = string
+  default     = "root"
+}
+
 variable "environment_variables" {
   description = "environment variables to pass to the container"
   type = list(object({
@@ -58,7 +64,15 @@ variable "ecs_task_execution_role_arn" {
 
 variable "ecs_task_role_arn" {
   type        = string
-  description = "The arn of the app task role"
+  description = "Optional ARN of the IAM role assumed by the running task"
+  default     = null
+  nullable    = true
+}
+
+variable "cloudwatch_log_retention_days" {
+  description = "Number of days to retain task logs"
+  type        = number
+  default     = 365
 }
 
 variable "tags" {

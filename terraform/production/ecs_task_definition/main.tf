@@ -151,6 +151,10 @@ locals {
       value = data.aws_ssm_parameter.beta_feedback_team_email_address.value
     },
     {
+      name  = "ANNUAL_PAYMENT_AMOUNT_IN_PENCE"
+      value = data.aws_ssm_parameter.annual_payment_amount_in_pence.value
+    },
+    {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
       value = "40000"
     },
@@ -197,6 +201,10 @@ locals {
       name      = "PLAUSIBLE_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.plausible_api_key.arn
     },
+    {
+      name      = "GOV_UK_PAY_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_api_key.arn
+    },
   ]
 }
 
@@ -207,11 +215,12 @@ module "webapp_ecs_task_definition" {
   container_port              = 8080
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
   ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
-  task_cpu                    = 2048
-  task_memory                 = 4096
-  task_name                   = "prsdb-webapp"
-  environment_variables       = concat(local.common_environment_variables, local.webapp_only_environment_variables)
-  secrets                     = concat(local.common_secrets, local.webapp_secrets)
+  # NOTE: If these values are ever updated, you will need to re-tune the argon2 constants used by password hashing in the application. See application.yml in webapp repo.
+  task_cpu              = 2048
+  task_memory           = 4096
+  task_name             = "prsdb-webapp"
+  environment_variables = concat(local.common_environment_variables, local.webapp_only_environment_variables)
+  secrets               = concat(local.common_secrets, local.webapp_secrets)
 }
 
 locals {
