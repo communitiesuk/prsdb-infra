@@ -19,7 +19,7 @@ DB_ENDPOINT=${DB_URL%%:*}
 
 # Fetch the database password and copy it to the clipboard
 DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id "tf-${ENVIRONMENT_NAME}-prsdb-database-password" --query SecretString --output text)
-echo $DB_PASSWORD | clip.exe
+echo $DB_PASSWORD | pbcopy
 echo "Database password copied to clipboard"
 
 # Start the port forwarding session
