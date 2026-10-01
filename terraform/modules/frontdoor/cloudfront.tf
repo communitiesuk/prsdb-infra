@@ -25,7 +25,7 @@ resource "aws_cloudfront_origin_access_identity" "maintenance_oai" {
   comment = "OAI for maintenance page S3 bucket"
 }
 
-#tfsec:ignore:aws-cloudfront-enable-logging: TODO we will be implementing logging later
+#tfsec:ignore:aws-cloudfront-enable-logging: Standard logging v2 is configured via CloudWatch delivery in logging.tf
 resource "aws_cloudfront_distribution" "main" {
   aliases         = var.ssl_certs_created ? var.cloudfront_domain_names : []
   enabled         = true
