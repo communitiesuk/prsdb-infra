@@ -27,7 +27,7 @@ copy_to_clipboard() {
     elif command -v xclip >/dev/null 2>&1; then
         printf '%s' "$value" | xclip -selection clipboard
     else
-        echo "Error: no clipboard utility found. Copy the password manually." >&2
+        echo "No clipboard utility found. Install pbcopy/xclip or use a Windows clipboard tool." >&2
         return 1
     fi
 }
