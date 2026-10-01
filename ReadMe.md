@@ -297,12 +297,6 @@ This is separate from the existing WAF log group, which records blocked requests
 Access logs include the standard request fields, including query strings and referrers, but exclude cookies.
 URLs, referrers, and IP addresses can contain sensitive information; access remains governed by the existing AWS IAM permissions.
 
-After an approved infrastructure deployment:
-
-1. Check the distribution's **Logging** tab in CloudFront and confirm standard logging v2 is enabled for the CloudWatch destination.
-2. Send a non-sensitive request through the distribution and record the `x-amz-cf-id` response header.
-3. Open the environment's log group in CloudWatch in `us-east-1` and find the corresponding `x-edge-request-id` in a JSON event. Confirm that the cookie field is absent and that encryption and retention match the settings above.
-
 Standard logging is best-effort and asynchronous, not a complete real-time audit trail.
 Reliable delivery usually starts around four hours after enabling logging; individual records can be delayed by up to 24 hours.
 An empty log group can also mean there has been no traffic, and requests with oversized URLs or headers may not be logged.
