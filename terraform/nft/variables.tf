@@ -10,6 +10,19 @@ variable "task_definition_created" {
   default     = true
 }
 
+variable "one_login_simulator_desired_count" {
+  description = "Number of One Login simulator tasks to run in NFT"
+  type        = number
+  default     = 0
+
+  validation {
+    # The simulator caches auth flows in memory, so it only supports running as a singleton - if requests within
+    # the same auth flow reach different instances, authentication will fail.
+    condition     = var.one_login_simulator_desired_count >= 0 && var.one_login_simulator_desired_count <= 1
+    error_message = "The One Login simulator desired count must be 0 or 1; the simulator does not support running more than one instance."
+  }
+}
+
 variable "critical_alarm_email_address" {
   description = "Email address to receive critical CloudWatch alarm notifications"
   type        = string

@@ -295,3 +295,170 @@ resource "aws_iam_role_policy_attachment" "ecr_describe_images" {
   role       = aws_iam_role.ecr_describe_images.name
   policy_arn = var.ecr_describe_images_policy_arn
 }
+
+data "aws_iam_policy_document" "performance_runner_assume_role" {
+  count = var.enable_performance_runner_access ? 1 : 0
+
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.main.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = "token.actions.githubusercontent.com:aud"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:communitiesuk/prsdb-webapp:environment:nft"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "performance_runner_access" {
+  count = var.enable_performance_runner_access ? 1 : 0
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "wafv2:GetIPSet",
+      "wafv2:UpdateIPSet",
+    ]
+    resources = [
+      var.performance_runner_cloudfront_ip_set_arn,
+      var.performance_runner_regional_ip_set_arn,
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:RevokeSecurityGroupIngress",
+    ]
+    resources = [var.performance_runner_security_group_arn]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeSecurityGroupRules",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["wafv2:ListIPSets"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecs:DescribeServices",
+      "ecs:UpdateService",
+    ]
+    resources = [var.performance_runner_service_arn]
+  }
+}
+
+resource "aws_iam_role" "performance_runner_access" {
+  count = var.enable_performance_runner_access ? 1 : 0
+
+  name               = "${var.environment_name}-performance-test-network-access"
+  assume_role_policy = data.aws_iam_policy_document.performance_runner_assume_role[0].json
+}
+
+resource "aws_iam_policy" "performance_runner_access" {
+  count = var.enable_performance_runner_access ? 1 : 0
+
+  name        = "${var.environment_name}-performance-test-network-access"
+  description = "Network access controls for NFT performance test runners"
+  policy      = data.aws_iam_policy_document.performance_runner_access[0].json
+}
+
+resource "aws_iam_role_policy_attachment" "performance_runner_access" {
+  count = var.enable_performance_runner_access ? 1 : 0
+
+  role       = aws_iam_role.performance_runner_access[0].name
+  policy_arn = aws_iam_policy.performance_runner_access[0].arn
+}
+
+data "aws_iam_policy_document" "one_login_simulator_mirror_assume_role" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.main.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["sts.amazonaws.com"]
+      variable = "token.actions.githubusercontent.com:aud"
+    }
+
+    condition {
+      test     = "StringEquals"
+      values   = ["repo:communitiesuk/prsdb-infra:environment:nft"]
+      variable = "token.actions.githubusercontent.com:sub"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "one_login_simulator_mirror_access" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  statement {
+    effect    = "Allow"
+    actions   = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:BatchGetImage",
+      "ecr:CompleteLayerUpload",
+      "ecr:DescribeImages",
+      "ecr:InitiateLayerUpload",
+      "ecr:PutImage",
+      "ecr:UploadLayerPart",
+    ]
+    resources = [var.one_login_simulator_repository_arn]
+  }
+}
+
+resource "aws_iam_role" "one_login_simulator_mirror" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  name               = "${var.environment_name}-one-login-simulator-mirror"
+  assume_role_policy = data.aws_iam_policy_document.one_login_simulator_mirror_assume_role[0].json
+}
+
+resource "aws_iam_policy" "one_login_simulator_mirror" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  name        = "${var.environment_name}-one-login-simulator-mirror"
+  description = "Pushes the approved One Login simulator image into NFT ECR"
+  policy      = data.aws_iam_policy_document.one_login_simulator_mirror_access[0].json
+}
+
+resource "aws_iam_role_policy_attachment" "one_login_simulator_mirror" {
+  count = var.enable_one_login_simulator_mirror_access ? 1 : 0
+
+  role       = aws_iam_role.one_login_simulator_mirror[0].name
+  policy_arn = aws_iam_policy.one_login_simulator_mirror[0].arn
+}

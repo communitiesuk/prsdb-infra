@@ -288,6 +288,20 @@ docker run --pull=always --rm -it -v "$(pwd):/src" aquasec/tfsec /src
 Individual rules can be ignored with a comment on the line above with the form `tfsec:ignore:<rule-name>`
 e.g. `tfsec:ignore:aws-dynamodb-enable-at-rest-encryption`.
 
+## CloudFront access logging
+
+CloudFront standard logging v2 sends JSON access logs to the `cloudfront-access-logs-<environment>` CloudWatch log group in `us-east-1`.
+The log group uses a rotating customer-managed KMS key and retains events for 60 days in integration, test, and NFT, and 90 days in production.
+This is separate from the existing WAF log group, which records blocked requests.
+
+Access logs include the standard request fields, including query strings and referrers, but exclude cookies.
+URLs, referrers, and IP addresses can contain sensitive information; access remains governed by the existing AWS IAM permissions.
+
+Standard logging is best-effort and asynchronous, not a complete real-time audit trail.
+Reliable delivery usually starts around four hours after enabling logging; individual records can be delayed by up to 24 hours.
+An empty log group can also mean there has been no traffic, and requests with oversized URLs or headers may not be logged.
+See the [AWS standard logging reference](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/standard-logs-reference.html) for delivery timing and limitations.
+
 ## Creating a new scheduled task
 
 To create a new scheduled task, you need to add an object to the relevant scheduled_tasks json files located in `terraform/<environment name>/scheduled_tasks.json`. The format of the object is as follows:
