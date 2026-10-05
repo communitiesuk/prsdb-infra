@@ -7,8 +7,9 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 resource "aws_kms_key" "log_group" {
-  description         = local.log_group_name
-  enable_key_rotation = true
+  description             = local.log_group_name
+  enable_key_rotation     = true
+  rotation_period_in_days = 180
 
   tags = {
     "terraform-plan-read" = true
