@@ -17,9 +17,24 @@ DB_URL=$(aws ssm get-parameter --output text --name "${ENVIRONMENT_NAME}-prsdb-d
 # Extract the DB endpoint from the DB URL
 DB_ENDPOINT=${DB_URL%%:*}
 
+copy_to_clipboard() {
+    local value="$1"
+
+    if command -v pbcopy >/dev/null 2>&1; then
+        printf '%s' "$value" | pbcopy
+    elif command -v clip.exe >/dev/null 2>&1; then
+        printf '%s' "$value" | clip.exe
+    elif command -v xclip >/dev/null 2>&1; then
+        printf '%s' "$value" | xclip -selection clipboard
+    else
+        echo "No clipboard utility found. Install pbcopy/xclip or use a Windows clipboard tool." >&2
+        return 1
+    fi
+}
+
 # Fetch the database password and copy it to the clipboard
 DB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id "tf-${ENVIRONMENT_NAME}-prsdb-database-password" --query SecretString --output text)
-echo $DB_PASSWORD | clip.exe
+copy_to_clipboard "$DB_PASSWORD" || exit 1
 echo "Database password copied to clipboard"
 
 # Start the port forwarding session
