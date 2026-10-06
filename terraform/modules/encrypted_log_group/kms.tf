@@ -1,6 +1,7 @@
 resource "aws_kms_key" "main" {
-  description         = var.log_group_name
-  enable_key_rotation = true
+  description             = var.log_group_name
+  enable_key_rotation     = true
+  rotation_period_in_days = 180
 
   tags = {
     "terraform-plan-read" = true
