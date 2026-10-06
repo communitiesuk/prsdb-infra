@@ -1,19 +1,23 @@
-# tfsec:ignore:aws-cloudwatch-log-group-customer-key
-resource "aws_cloudwatch_log_group" "main" {
-  provider = aws.us-east-1
+module "waf_logs" {
+  source = "../encrypted_log_group"
 
-  name              = "aws-waf-logs-${var.environment_name}"
-  retention_in_days = var.cloudwatch_log_expiration_days
-
-  lifecycle {
-    prevent_destroy = true
+  providers = {
+    aws = aws.us-east-1
   }
+
+  log_group_name     = "aws-waf-logs-${var.environment_name}"
+  log_retention_days = var.cloudwatch_log_expiration_days
+}
+
+moved {
+  from = aws_cloudwatch_log_group.main
+  to   = module.waf_logs.aws_cloudwatch_log_group.main
 }
 
 resource "aws_wafv2_web_acl_logging_configuration" "main" {
   provider = aws.us-east-1
 
-  log_destination_configs = [aws_cloudwatch_log_group.main.arn]
+  log_destination_configs = [module.waf_logs.log_group_arn]
   resource_arn            = aws_wafv2_web_acl.main.arn
 
   logging_filter {
