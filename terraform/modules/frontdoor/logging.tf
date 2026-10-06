@@ -35,6 +35,38 @@ resource "aws_wafv2_web_acl_logging_configuration" "main" {
   }
 }
 
+module "load_balancer_waf_logs" {
+  source = "../encrypted_log_group"
+
+  log_group_name     = "aws-waf-logs-alb-${var.environment_name}"
+  log_retention_days = var.cloudwatch_log_expiration_days
+}
+
+resource "aws_wafv2_web_acl_logging_configuration" "load_balancer" {
+  log_destination_configs = [module.load_balancer_waf_logs.log_group_arn]
+  resource_arn            = aws_wafv2_web_acl.load_balancer.arn
+
+  redacted_fields {
+    single_header {
+      name = lower(local.cloudfront_header_name)
+    }
+  }
+
+  logging_filter {
+    default_behavior = "DROP"
+    filter {
+      behavior    = "KEEP"
+      requirement = "MEETS_ALL"
+
+      condition {
+        action_condition {
+          action = "BLOCK"
+        }
+      }
+    }
+  }
+}
+
 module "cloudfront_access_logs" {
   source = "../encrypted_log_group"
 
