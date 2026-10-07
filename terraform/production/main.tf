@@ -37,7 +37,7 @@ locals {
   search_landlord_host      = "check-rental-property-or-landlord.communities.gov.uk"
   load_balancer_domain_name = "lb.register-rental-property.communities.gov.uk"
 
-  cloudwatch_log_expiration_days = 90
+  cloudwatch_log_expiration_days = 365
   database_allocated_storage     = 50
 
   scheduled_tasks = jsondecode(file("${path.module}/scheduled_tasks.json"))
