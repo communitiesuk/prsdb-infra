@@ -292,7 +292,7 @@ e.g. `tfsec:ignore:aws-dynamodb-enable-at-rest-encryption`.
 
 CloudFront standard logging v2 sends JSON access logs to the `cloudfront-access-logs-<environment>` CloudWatch log group in `us-east-1`.
 The log group uses a rotating customer-managed KMS key and retains events for 60 days in integration, test, and NFT, and 90 days in production.
-This is separate from the existing WAF log group, which records blocked requests.
+This is separate from the existing WAF log groups, which record blocked requests.
 
 Access logs include the standard request fields, including query strings and referrers, but exclude cookies.
 URLs, referrers, and IP addresses can contain sensitive information; access remains governed by the existing AWS IAM permissions.
