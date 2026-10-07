@@ -291,7 +291,7 @@ e.g. `tfsec:ignore:aws-dynamodb-enable-at-rest-encryption`.
 ## CloudFront access logging
 
 CloudFront standard logging v2 sends JSON access logs to the `cloudfront-access-logs-<environment>` CloudWatch log group in `us-east-1`.
-The log group uses a rotating customer-managed KMS key and retains events for 60 days in integration, test, and NFT, and 90 days in production.
+The log group uses a rotating customer-managed KMS key and retains events for 60 days in integration, test, and NFT, and 365 days in production.
 This is separate from the existing WAF log groups, which record blocked requests.
 
 Access logs include the standard request fields, including query strings and referrers, but exclude cookies.
@@ -305,7 +305,7 @@ See the [AWS standard logging reference](https://docs.aws.amazon.com/AmazonCloud
 ## Load balancer access logging
 
 CloudWatch Logs vended log delivery sends JSON access logs from the Application Load Balancer to the `alb-access-logs-<environment>` CloudWatch log group in `eu-west-2`.
-The log group uses a rotating customer-managed KMS key and retains events for 60 days in integration, test, and NFT, and 90 days in production.
+The log group uses a rotating customer-managed KMS key and retains events for 60 days in integration, test, and NFT, and 365 days in production.
 The load balancer's legacy S3 access logging attribute is deliberately left disabled, so tools that only check that attribute will still report access logging as off.
 
 Each access log record covers one request, including the request line with its query string, the user agent, TLS details, status codes, timings, and the target that handled it, but not cookies or other headers.
