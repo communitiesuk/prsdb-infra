@@ -9,6 +9,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 env:
   TF_VAR_critical_alarm_email_address: ${{ secrets.CRITICAL_ALARMS_EMAIL }}
   TF_VAR_non_critical_alarm_email_address: ${{ secrets.NON_CRITICAL_ALARMS_EMAIL }}
