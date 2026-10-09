@@ -422,15 +422,15 @@ data "aws_iam_policy_document" "performance_runner_access" {
 resource "aws_iam_role" "performance_runner_access" {
   count = var.enable_performance_runner_access ? 1 : 0
 
-  name               = "${var.environment_name}-performance-test-network-access"
+  name               = "${var.environment_name}-performance-test-orchestrator-access"
   assume_role_policy = data.aws_iam_policy_document.performance_runner_assume_role[0].json
 }
 
 resource "aws_iam_policy" "performance_runner_access" {
   count = var.enable_performance_runner_access ? 1 : 0
 
-  name        = "${var.environment_name}-performance-test-network-access"
-  description = "Network access controls for NFT performance test runners"
+  name        = "${var.environment_name}-performance-test-orchestrator-access"
+  description = "IAM permissions for NFT performance-test orchestration"
   policy      = data.aws_iam_policy_document.performance_runner_access[0].json
 }
 
