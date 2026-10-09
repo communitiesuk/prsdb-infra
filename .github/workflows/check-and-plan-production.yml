@@ -4,6 +4,10 @@ on:
     branches:
       - production
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   check-and-plan:
     name: Check and Plan
