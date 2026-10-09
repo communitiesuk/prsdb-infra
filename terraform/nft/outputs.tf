@@ -80,7 +80,7 @@ output "simulator_service_name" {
 
 output "performance_runner_access_role_arn" {
   value       = module.github_actions_access.performance_runner_access_role_arn
-  description = "ARN of the performance runner network access role"
+  description = "ARN of the performance-test orchestrator IAM role"
 }
 
 output "one_login_simulator_mirror_role_arn" {

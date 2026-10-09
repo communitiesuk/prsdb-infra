@@ -366,22 +366,71 @@ data "aws_iam_policy_document" "performance_runner_access" {
       "ecs:DescribeServices",
       "ecs:UpdateService",
     ]
-    resources = [var.performance_runner_service_arn]
+    resources = [
+      var.performance_runner_service_arn,
+      var.ecs_service_arn,
+    ]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["ecs:RegisterTaskDefinition"]
+    resources = ["arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:task-definition/prsdb-webapp-${var.environment_name}:*"]
+  }
+
+  statement {
+    effect = "Allow"
+    # These two ECS actions do not support resource-level permissions.
+    actions = [
+      "ecs:DescribeTaskDefinition",
+      "ecs:DeregisterTaskDefinition",
+    ]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestedRegion"
+      values   = ["eu-west-2"]
+    }
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = [var.ecs_task_execution_role_arn, var.webapp_ecs_task_role_arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PassedToService"
+      values   = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["ecr:DescribeImages"]
+    resources = [var.one_login_simulator_repository_arn]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter"]
+    resources = ["arn:aws:ssm:eu-west-2:${data.aws_caller_identity.current.account_id}:parameter/${var.environment_name}-one-login-simulator-approved-image-digest"]
   }
 }
 
 resource "aws_iam_role" "performance_runner_access" {
   count = var.enable_performance_runner_access ? 1 : 0
 
-  name               = "${var.environment_name}-performance-test-network-access"
+  name               = "${var.environment_name}-performance-test-orchestrator-access"
   assume_role_policy = data.aws_iam_policy_document.performance_runner_assume_role[0].json
 }
 
 resource "aws_iam_policy" "performance_runner_access" {
   count = var.enable_performance_runner_access ? 1 : 0
 
-  name        = "${var.environment_name}-performance-test-network-access"
-  description = "Network access controls for NFT performance test runners"
+  name        = "${var.environment_name}-performance-test-orchestrator-access"
+  description = "IAM permissions for NFT performance-test orchestration"
   policy      = data.aws_iam_policy_document.performance_runner_access[0].json
 }
 
