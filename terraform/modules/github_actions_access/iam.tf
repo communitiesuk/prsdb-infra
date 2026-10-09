@@ -411,6 +411,12 @@ data "aws_iam_policy_document" "performance_runner_access" {
     actions   = ["ecr:DescribeImages"]
     resources = [var.one_login_simulator_repository_arn]
   }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter"]
+    resources = ["arn:aws:ssm:eu-west-2:${data.aws_caller_identity.current.account_id}:parameter/${var.environment_name}-one-login-simulator-approved-image-digest"]
+  }
 }
 
 resource "aws_iam_role" "performance_runner_access" {
