@@ -7,7 +7,7 @@ variable "image_name" {
 variable "one_login_simulator_image_digest" {
   description = "Digest of the mirrored NFT GOV.UK One Login Simulator image"
   type        = string
-  default     = "sha256:bc31189856c69925954c14587d5241a9c4dd3b2e04ebf9069d0bc4773629c835"
+  default     = "sha256:5257554c6f6a50c471ad231bc8f13da4a866b4a2e320a6d1f2f74e5d0ad52755"
 
   validation {
     condition     = can(regex("^sha256:[0-9a-f]{64}$", var.one_login_simulator_image_digest))

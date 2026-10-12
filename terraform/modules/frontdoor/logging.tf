@@ -1,20 +1,56 @@
-# tfsec:ignore:aws-cloudwatch-log-group-customer-key
-resource "aws_cloudwatch_log_group" "main" {
-  provider = aws.us-east-1
+module "waf_logs" {
+  source = "../encrypted_log_group"
 
-  name              = "aws-waf-logs-${var.environment_name}"
-  retention_in_days = var.cloudwatch_log_expiration_days
-
-  lifecycle {
-    prevent_destroy = true
+  providers = {
+    aws = aws.us-east-1
   }
+
+  log_group_name     = "aws-waf-logs-${var.environment_name}"
+  log_retention_days = var.cloudwatch_log_expiration_days
+}
+
+moved {
+  from = aws_cloudwatch_log_group.main
+  to   = module.waf_logs.aws_cloudwatch_log_group.main
 }
 
 resource "aws_wafv2_web_acl_logging_configuration" "main" {
   provider = aws.us-east-1
 
-  log_destination_configs = [aws_cloudwatch_log_group.main.arn]
+  log_destination_configs = [module.waf_logs.log_group_arn]
   resource_arn            = aws_wafv2_web_acl.main.arn
+
+  logging_filter {
+    default_behavior = "DROP"
+    filter {
+      behavior    = "KEEP"
+      requirement = "MEETS_ALL"
+
+      condition {
+        action_condition {
+          action = "BLOCK"
+        }
+      }
+    }
+  }
+}
+
+module "load_balancer_waf_logs" {
+  source = "../encrypted_log_group"
+
+  log_group_name     = "aws-waf-logs-alb-${var.environment_name}"
+  log_retention_days = var.cloudwatch_log_expiration_days
+}
+
+resource "aws_wafv2_web_acl_logging_configuration" "load_balancer" {
+  log_destination_configs = [module.load_balancer_waf_logs.log_group_arn]
+  resource_arn            = aws_wafv2_web_acl.load_balancer.arn
+
+  redacted_fields {
+    single_header {
+      name = lower(local.cloudfront_header_name)
+    }
+  }
 
   logging_filter {
     default_behavior = "DROP"
@@ -141,4 +177,67 @@ resource "aws_cloudwatch_log_delivery" "cloudfront" {
   ]
 
   depends_on = [aws_cloudwatch_log_resource_policy.cloudfront_log_delivery]
+}
+
+module "load_balancer_access_logs" {
+  source = "../encrypted_log_group"
+
+  log_group_name     = "alb-access-logs-${var.environment_name}"
+  log_retention_days = var.cloudwatch_log_expiration_days
+}
+
+resource "aws_cloudwatch_log_delivery_source" "load_balancer" {
+  name         = module.load_balancer_access_logs.name
+  log_type     = "ALB_ACCESS_LOGS"
+  resource_arn = aws_lb.main.arn
+}
+
+resource "aws_cloudwatch_log_delivery_destination" "load_balancer" {
+  name          = module.load_balancer_access_logs.name
+  output_format = "json"
+
+  delivery_destination_configuration {
+    destination_resource_arn = module.load_balancer_access_logs.log_group_arn
+  }
+}
+
+data "aws_region" "current" {}
+
+data "aws_iam_policy_document" "load_balancer_log_delivery" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["delivery.logs.amazonaws.com"]
+    }
+
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = ["${module.load_balancer_access_logs.log_group_arn}:log-stream:*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = ["arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:*"]
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_resource_policy" "load_balancer_log_delivery" {
+  policy_name     = module.load_balancer_access_logs.name
+  policy_document = data.aws_iam_policy_document.load_balancer_log_delivery.json
+}
+
+resource "aws_cloudwatch_log_delivery" "load_balancer" {
+  delivery_source_name     = aws_cloudwatch_log_delivery_source.load_balancer.name
+  delivery_destination_arn = aws_cloudwatch_log_delivery_destination.load_balancer.arn
+
+  depends_on = [aws_cloudwatch_log_resource_policy.load_balancer_log_delivery]
 }
