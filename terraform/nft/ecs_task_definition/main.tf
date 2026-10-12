@@ -296,3 +296,12 @@ module "one_login_simulator" {
   one_login_client_id         = data.aws_ssm_parameter.one_login_simulator_client_id.value
   one_login_public_key        = data.aws_ssm_parameter.one_login_simulator_public_key.value
 }
+
+# Published so the webapp's NFT readiness workflow can read the approved digest at runtime
+# instead of hardcoding a second copy of this value. This remains this stack's variable as the
+# single source of truth; the parameter is just a runtime-readable projection of it.
+resource "aws_ssm_parameter" "one_login_simulator_approved_image_digest" {
+  name  = "${local.environment_name}-one-login-simulator-approved-image-digest"
+  type  = "String"
+  value = var.one_login_simulator_image_digest
+}

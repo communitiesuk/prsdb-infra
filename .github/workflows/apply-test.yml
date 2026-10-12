@@ -5,6 +5,10 @@ on:
       - test
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   apply:
     if: github.ref == 'refs/heads/test'

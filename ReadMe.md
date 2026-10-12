@@ -291,8 +291,8 @@ e.g. `tfsec:ignore:aws-dynamodb-enable-at-rest-encryption`.
 ## CloudFront access logging
 
 CloudFront standard logging v2 sends JSON access logs to the `cloudfront-access-logs-<environment>` CloudWatch log group in `us-east-1`.
-The log group uses a rotating customer-managed KMS key and retains events for 60 days in integration, test, and NFT, and 90 days in production.
-This is separate from the existing WAF log group, which records blocked requests.
+The log group uses a rotating customer-managed KMS key and retains events for 60 days in integration, test, and NFT, and 365 days in production.
+This is separate from the existing WAF log groups, which record blocked requests.
 
 Access logs include the standard request fields, including query strings and referrers, but exclude cookies.
 URLs, referrers, and IP addresses can contain sensitive information; access remains governed by the existing AWS IAM permissions.
@@ -301,6 +301,19 @@ Standard logging is best-effort and asynchronous, not a complete real-time audit
 Reliable delivery usually starts around four hours after enabling logging; individual records can be delayed by up to 24 hours.
 An empty log group can also mean there has been no traffic, and requests with oversized URLs or headers may not be logged.
 See the [AWS standard logging reference](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/standard-logs-reference.html) for delivery timing and limitations.
+
+## Load balancer access logging
+
+CloudWatch Logs vended log delivery sends JSON access logs from the Application Load Balancer to the `alb-access-logs-<environment>` CloudWatch log group in `eu-west-2`.
+The log group uses a rotating customer-managed KMS key and retains events for 60 days in integration, test, and NFT, and 365 days in production.
+The load balancer's legacy S3 access logging attribute is deliberately left disabled, so tools that only check that attribute will still report access logging as off.
+
+Each access log record covers one request, including the request line with its query string, the user agent, TLS details, status codes, timings, and the target that handled it, but not cookies or other headers.
+Most requests reach the load balancer through CloudFront, so the client IP is normally a CloudFront edge address; the visitor's IP is in the CloudFront access logs.
+URLs and IP addresses can contain sensitive information; access remains governed by the existing AWS IAM permissions.
+
+Load balancer access logging is best-effort, not a complete audit trail of every request, and an empty log group can also mean there has been no traffic.
+See [Access logs for your Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html) and [CloudWatch Logs for your Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-logs.html) for the logged fields and delivery details.
 
 ## Creating a new scheduled task
 
