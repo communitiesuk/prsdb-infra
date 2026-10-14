@@ -46,7 +46,7 @@ resource "aws_wafv2_web_acl" "main" {
 
   dynamic "rule" {
     # [{}] causes 1 instance of the block to be created, [] causes 0 instances of the block
-    for_each = length(var.ip_allowlist) > 0 ? [{}] : []
+    for_each = length(var.ip_allowlist) > 0 || var.simulator_host != null ? [{}] : []
     content {
       name     = "ip-allowlist"
       priority = 2
@@ -61,9 +61,33 @@ resource "aws_wafv2_web_acl" "main" {
 
       statement {
         not_statement {
-          statement {
-            ip_set_reference_statement {
-              arn = aws_wafv2_ip_set.allowed_ips.arn
+          # An or_statement requires at least 2 nested statements, so we only use it when there's a second
+          # (performance-runner) IP set to combine with the allowed_ips set; otherwise we match allowed_ips directly.
+          dynamic "statement" {
+            for_each = var.simulator_host == null ? [{}] : []
+            content {
+              ip_set_reference_statement {
+                arn = aws_wafv2_ip_set.allowed_ips.arn
+              }
+            }
+          }
+
+          dynamic "statement" {
+            for_each = var.simulator_host != null ? [{}] : []
+            content {
+              or_statement {
+                statement {
+                  ip_set_reference_statement {
+                    arn = aws_wafv2_ip_set.allowed_ips.arn
+                  }
+                }
+
+                statement {
+                  ip_set_reference_statement {
+                    arn = aws_wafv2_ip_set.performance_runner_cloudfront[0].arn
+                  }
+                }
+              }
             }
           }
         }
@@ -458,6 +482,21 @@ resource "aws_wafv2_web_acl" "main" {
       rate_based_statement {
         aggregate_key_type = "IP"
         limit              = 2000
+
+        # Exempt the performance-runner IP from the rate limit so load-testing traffic (which is expected to
+        # generate high request volumes from a single IP) isn't blocked.
+        dynamic "scope_down_statement" {
+          for_each = var.simulator_host != null ? [{}] : []
+          content {
+            not_statement {
+              statement {
+                ip_set_reference_statement {
+                  arn = aws_wafv2_ip_set.performance_runner_cloudfront[0].arn
+                }
+              }
+            }
+          }
+        }
       }
     }
 
@@ -490,17 +529,54 @@ resource "aws_wafv2_web_acl" "main" {
         limit                 = 100
         evaluation_window_sec = 300
 
+        # Excludes allowlisted top-level paths from the rate limit (see comment above), and, when the
+        # performance-runner IP set exists, also excludes it so load-testing traffic isn't rate limited.
         scope_down_statement {
-          not_statement {
-            statement {
-              regex_match_statement {
-                regex_string = local.unknown_path_allowlist_regex
-                field_to_match {
-                  uri_path {}
+          dynamic "not_statement" {
+            for_each = var.simulator_host == null ? [{}] : []
+            content {
+              statement {
+                regex_match_statement {
+                  regex_string = local.unknown_path_allowlist_regex
+                  field_to_match {
+                    uri_path {}
+                  }
+                  text_transformation {
+                    priority = 0
+                    type     = "NONE"
+                  }
                 }
-                text_transformation {
-                  priority = 0
-                  type     = "NONE"
+              }
+            }
+          }
+
+          dynamic "and_statement" {
+            for_each = var.simulator_host != null ? [{}] : []
+            content {
+              statement {
+                not_statement {
+                  statement {
+                    regex_match_statement {
+                      regex_string = local.unknown_path_allowlist_regex
+                      field_to_match {
+                        uri_path {}
+                      }
+                      text_transformation {
+                        priority = 0
+                        type     = "NONE"
+                      }
+                    }
+                  }
+                }
+              }
+
+              statement {
+                not_statement {
+                  statement {
+                    ip_set_reference_statement {
+                      arn = aws_wafv2_ip_set.performance_runner_cloudfront[0].arn
+                    }
+                  }
                 }
               }
             }
@@ -533,4 +609,18 @@ resource "aws_wafv2_ip_set" "detectify_ips" {
   scope              = "CLOUDFRONT"
   ip_address_version = "IPV4"
   addresses          = var.detectify_ips
+}
+
+resource "aws_wafv2_ip_set" "performance_runner_cloudfront" {
+  count = var.simulator_host != null ? 1 : 0
+
+  provider           = aws.us-east-1
+  name               = "waf-performance-runner-cloudfront-nft"
+  scope              = "CLOUDFRONT"
+  ip_address_version = "IPV4"
+  addresses          = []
+
+  lifecycle {
+    ignore_changes = [addresses]
+  }
 }

@@ -14,6 +14,57 @@ resource "aws_wafv2_web_acl" "load_balancer" {
   }
 
   dynamic "rule" {
+    for_each = var.simulator_host != null ? [{}] : []
+    content {
+      name     = "block-simulator-config"
+      priority = 0
+
+      action {
+        block {}
+      }
+
+      statement {
+        and_statement {
+          statement {
+            regex_match_statement {
+              field_to_match {
+                single_header {
+                  name = "host"
+                }
+              }
+              regex_string = "^${replace(var.simulator_host, ".", "\\.")}$"
+              text_transformation {
+                priority = 0
+                type     = "LOWERCASE"
+              }
+            }
+          }
+
+          statement {
+            regex_match_statement {
+              field_to_match {
+                uri_path {}
+              }
+              # Matches "/config" case-insensitively, with or without a trailing slash (e.g. "/CONFIG", "/config/").
+              regex_string = "^/config/?$"
+              text_transformation {
+                priority = 0
+                type     = "LOWERCASE"
+              }
+            }
+          }
+        }
+      }
+
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "waf-block-simulator-config"
+        sampled_requests_enabled   = true
+      }
+    }
+  }
+
+  dynamic "rule" {
     for_each = length(var.detectify_ips) > 0 ? [{}] : []
     content {
       name     = "allow-detectify-scanner"
@@ -47,18 +98,97 @@ resource "aws_wafv2_web_acl" "load_balancer" {
 
     statement {
       not_statement {
-        statement {
-          byte_match_statement {
-            field_to_match {
-              single_header {
-                name = lower(local.cloudfront_header_name)
+        # An or_statement requires at least 2 nested statements, so we only use it when there are simulator-host
+        # branches to combine with the CloudFront header check; otherwise we match the header directly.
+        dynamic "statement" {
+          for_each = var.simulator_host == null ? [{}] : []
+          content {
+            byte_match_statement {
+              field_to_match {
+                single_header {
+                  name = lower(local.cloudfront_header_name)
+                }
+              }
+              positional_constraint = "EXACTLY"
+              search_string         = random_password.cloudfront_header.result
+              text_transformation {
+                priority = 0
+                type     = "NONE"
               }
             }
-            positional_constraint = "EXACTLY"
-            search_string         = random_password.cloudfront_header.result
-            text_transformation {
-              priority = 0
-              type     = "NONE"
+          }
+        }
+
+        dynamic "statement" {
+          for_each = var.simulator_host != null ? [var.simulator_host] : []
+          iterator = simulator_host
+          content {
+            or_statement {
+              statement {
+                byte_match_statement {
+                  field_to_match {
+                    single_header {
+                      name = lower(local.cloudfront_header_name)
+                    }
+                  }
+                  positional_constraint = "EXACTLY"
+                  search_string         = random_password.cloudfront_header.result
+                  text_transformation {
+                    priority = 0
+                    type     = "NONE"
+                  }
+                }
+              }
+
+              statement {
+                and_statement {
+                  statement {
+                    regex_match_statement {
+                      field_to_match {
+                        single_header {
+                          name = "host"
+                        }
+                      }
+                      regex_string = "^${replace(simulator_host.value, ".", "\\.")}$"
+                      text_transformation {
+                        priority = 0
+                        type     = "LOWERCASE"
+                      }
+                    }
+                  }
+
+                  statement {
+                    ip_set_reference_statement {
+                      arn = aws_wafv2_ip_set.simulator_allowed_ips[0].arn
+                    }
+                  }
+                }
+              }
+
+              statement {
+                and_statement {
+                  statement {
+                    regex_match_statement {
+                      field_to_match {
+                        single_header {
+                          name = "host"
+                        }
+                      }
+                      regex_string = "^${replace(simulator_host.value, ".", "\\.")}$"
+                      text_transformation {
+                        priority = 0
+                        type     = "LOWERCASE"
+                      }
+                    }
+                  }
+
+                  statement {
+                    ip_set_reference_statement {
+                      arn = aws_wafv2_ip_set.performance_runner_regional[0].arn
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -421,4 +551,26 @@ resource "aws_wafv2_ip_set" "detectify_ips_regional" {
   scope              = "REGIONAL"
   ip_address_version = "IPV4"
   addresses          = var.detectify_ips
+}
+
+resource "aws_wafv2_ip_set" "simulator_allowed_ips" {
+  count = var.simulator_host != null ? 1 : 0
+
+  name               = "waf-simulator-allowed-ip-set-${var.environment_name}"
+  scope              = "REGIONAL"
+  ip_address_version = "IPV4"
+  addresses          = var.simulator_allowed_ips
+}
+
+resource "aws_wafv2_ip_set" "performance_runner_regional" {
+  count = var.simulator_host != null ? 1 : 0
+
+  name               = "waf-performance-runner-regional-nft"
+  scope              = "REGIONAL"
+  ip_address_version = "IPV4"
+  addresses          = []
+
+  lifecycle {
+    ignore_changes = [addresses]
+  }
 }

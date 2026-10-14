@@ -11,3 +11,9 @@ variable "image_retention_count" {
   description = "the number of images to retain"
   type        = number
 }
+
+variable "create_simulator_repository" {
+  description = "Whether to create the One Login simulator ECR repository"
+  type        = bool
+  default     = false
+}

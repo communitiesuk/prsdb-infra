@@ -32,3 +32,13 @@ output "describe_ecr_images_policy_arn" {
   value       = aws_iam_policy.describe_images.arn
   description = "iam policy allowing describing images in the ecr repository"
 }
+
+output "one_login_simulator_repository_arn" {
+  value       = try(aws_ecr_repository.one_login_simulator[0].arn, null)
+  description = "ARN of the optional One Login simulator ECR repository"
+}
+
+output "one_login_simulator_repository_url" {
+  value       = try(aws_ecr_repository.one_login_simulator[0].repository_url, null)
+  description = "URL of the optional One Login simulator ECR repository"
+}

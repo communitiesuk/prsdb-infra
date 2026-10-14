@@ -8,6 +8,11 @@ output "nat_gateway_ip" {
   description = "The IP address of the NAT gateway"
 }
 
+output "vpc_endpoint_security_group_id" {
+  value       = aws_security_group.aws_service_vpc_endpoints.id
+  description = "Security group ID for AWS interface VPC endpoints"
+}
+
 output "public_subnets" {
   value       = aws_subnet.public_subnet
   description = "Public /22 subnets for alb listeners"
@@ -32,4 +37,3 @@ output "redis_subnet_group_name" {
   value       = aws_elasticache_subnet_group.main.name
   description = "Name of the redis subnet group"
 }
-

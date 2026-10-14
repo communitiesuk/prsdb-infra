@@ -6,6 +6,8 @@ on:
         required: true
         type: string
 
+permissions: {}
+
 jobs:
   validate-target-environment:
     name: Validate target environment
