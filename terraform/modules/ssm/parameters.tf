@@ -161,3 +161,13 @@ resource "aws_ssm_parameter" "annual_payment_amount_in_pence" {
     ignore_changes = [value]
   }
 }
+
+resource "aws_ssm_parameter" "gov_uk_pay_manual_intervention_email_address" {
+  name  = "${var.environment_name}-prsdb-gov-uk-pay-manual-intervention-email-address"
+  type  = "String"
+  value = "default_to_be_set_manually" # To be set manually on AWS
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
