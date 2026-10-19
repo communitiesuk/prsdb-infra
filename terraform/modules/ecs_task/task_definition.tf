@@ -12,6 +12,7 @@ resource "aws_ecs_task_definition" "main" {
       name      = var.task_name
       essential = true
       image     = var.container_image
+      memory    = var.task_memory
       user      = var.container_user
 
       portMappings = [
