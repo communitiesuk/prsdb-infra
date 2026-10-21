@@ -87,6 +87,10 @@ locals {
   ]
   webapp_only_environment_variables = [
     {
+      name  = "JAVA_TOOL_OPTIONS"
+      value = "-Dio.netty.allocator.type=pooled"
+    },
+    {
       name  = "ONE_LOGIN_PUBLIC_KEY"
       value = data.aws_ssm_parameter.one_login_public_key.value
     },
