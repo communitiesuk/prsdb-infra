@@ -159,6 +159,10 @@ locals {
       value = data.aws_ssm_parameter.annual_payment_amount_in_pence.value
     },
     {
+      name  = "GOV_UK_PAY_MANUAL_INTERVENTION_EMAIL_ADDRESS"
+      value = data.aws_ssm_parameter.gov_uk_pay_manual_intervention_email_address.value
+    },
+    {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
       value = "40000"
     },
