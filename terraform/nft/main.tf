@@ -107,6 +107,11 @@ module "frontdoor" {
     "13.126.5.12/32",
     "3.7.157.159/32",
     "3.7.173.162/32",
+    # Cyberfort
+    "3.11.156.142/32",
+    "37.200.119.11/32",
+    "185.10.12.32/28",
+    "176.65.68.112/28",
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   use_aws_shield_advanced        = true
