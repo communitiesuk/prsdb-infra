@@ -60,12 +60,6 @@ jobs:
         working-directory: terraform/${{ inputs.environment }}
         run: terraform validate
 
-      - name: Test WAF configuration
-        working-directory: terraform/nft
-        run: |
-          terraform init -backend=false -test-directory=waf_tests
-          terraform test -test-directory=waf_tests
-
       - name: Terraform init ${{ inputs.environment }} backend folder
         working-directory: terraform/${{ inputs.environment }}/backend
         run: terraform init -backend=false

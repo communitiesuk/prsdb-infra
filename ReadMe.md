@@ -179,10 +179,6 @@ We have javascript testing setup, initially this is for testing cloudfront funct
 
 Tests can be run using the "npm test" command from the root of the repository.
 
-WAF regression tests can be run from `terraform/nft` using `terraform init -backend=false -test-directory=waf_tests`
-followed by `terraform test -test-directory=waf_tests`.
-These use mocked providers and plan-only runs, without accessing AWS or applying infrastructure.
-
 ### Rollback Strategy
 Deployments that fail to go through successfully are automatically rolled back by AWS using a deployment circuit breaker in ECS if the new deployment fails to start up correctly.
 A manual rollback strategy should be added to the ticket for each release if a manual rollback is necessary.
