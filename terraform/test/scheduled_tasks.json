@@ -13,5 +13,8 @@
   },
   "jl-invitation-deletion": {
     "schedule_expression": "cron(0 1 * * ? *)"
+  },
+  "org-ll-invitation-deletion": {
+    "schedule_expression": "cron(0 1 * * ? *)"
   }
 }

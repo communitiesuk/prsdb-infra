@@ -87,6 +87,10 @@ locals {
   ]
   webapp_only_environment_variables = [
     {
+      name  = "JAVA_TOOL_OPTIONS"
+      value = "-Dio.netty.allocator.type=pooled"
+    },
+    {
       name  = "ONE_LOGIN_PUBLIC_KEY"
       value = data.aws_ssm_parameter.one_login_public_key.value
     },
@@ -174,6 +178,10 @@ locals {
     {
       name  = "ANNUAL_PAYMENT_AMOUNT_IN_PENCE"
       value = data.aws_ssm_parameter.annual_payment_amount_in_pence.value
+    },
+    {
+      name  = "GOV_UK_PAY_MANUAL_INTERVENTION_EMAIL_ADDRESS"
+      value = data.aws_ssm_parameter.gov_uk_pay_manual_intervention_email_address.value
     },
     {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
