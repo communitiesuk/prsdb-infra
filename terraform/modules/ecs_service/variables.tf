@@ -12,6 +12,11 @@ variable "webapp_task_desired_count" {
   type        = number
 }
 
+variable "email_worker_task_desired_count" {
+  description = "target number of email worker tasks to deploy"
+  type        = number
+}
+
 variable "allow_exec" {
   description = "whether to enable AWS ECS Exec on the instance"
   type        = bool

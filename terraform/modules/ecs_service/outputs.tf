@@ -9,12 +9,12 @@ output "ecs_cluster_name" {
 }
 
 output "ecs_service_arn" {
-  value       = aws_ecs_service.webapp.id
+  value       = module.webapp_service.arn
   description = "The ARN of the ECS service for the web application"
 }
 
 output "ecs_service_name" {
-  value       = aws_ecs_service.webapp.name
+  value       = module.webapp_service.name
   description = "The name of the ECS service for the web application"
 }
 

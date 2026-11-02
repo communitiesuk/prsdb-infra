@@ -208,17 +208,18 @@ module "ecs_service" {
   count  = var.task_definition_created ? 1 : 0
   source = "../modules/ecs_service"
 
-  environment_name          = local.environment_name
-  webapp_task_desired_count = 1
-  application_port          = local.application_port
-  database_port             = local.database_port
-  redis_port                = local.redis_port
-  lb_target_group_arn       = module.frontdoor.load_balancer.target_group_arn
-  lb_security_group_id      = module.frontdoor.load_balancer.security_group_id
-  db_security_group_id      = module.database.rds_security_group_id
-  redis_security_group_id   = module.redis.redis_security_group_id
-  private_subnet_ids        = module.networking.private_subnets[*].id
-  vpc_id                    = module.networking.vpc.id
+  environment_name                = local.environment_name
+  webapp_task_desired_count       = 1
+  email_worker_task_desired_count = 1
+  application_port                = local.application_port
+  database_port                   = local.database_port
+  redis_port                      = local.redis_port
+  lb_target_group_arn             = module.frontdoor.load_balancer.target_group_arn
+  lb_security_group_id            = module.frontdoor.load_balancer.security_group_id
+  db_security_group_id            = module.database.rds_security_group_id
+  redis_security_group_id         = module.redis.redis_security_group_id
+  private_subnet_ids              = module.networking.private_subnets[*].id
+  vpc_id                          = module.networking.vpc.id
 }
 
 # This should be updated to use `count = var.task_definition_created ? 1 : 0` and index via `module.ecs_service[0]`, but we don't want to recreate these items yet
