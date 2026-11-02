@@ -6,6 +6,10 @@ data "aws_iam_role" "webapp_ecs_task" {
   name = "${local.environment_name}-webapp-ecs-task"
 }
 
+data "aws_iam_role" "email_worker_ecs_task" {
+  name = "${local.environment_name}-email-worker-ecs-task"
+}
+
 data "aws_ssm_parameter" "one_login_public_key" {
   name = "${local.environment_name}-one-login-public-key"
 }
@@ -155,4 +159,12 @@ data "aws_ssm_parameter" "annual_payment_amount_in_pence" {
 
 data "aws_ssm_parameter" "gov_uk_pay_manual_intervention_email_address" {
   name = "${local.environment_name}-prsdb-gov-uk-pay-manual-intervention-email-address"
+}
+
+data "aws_ssm_parameter" "email_queue_name" {
+  name = "${local.environment_name}-prsdb-email-queue-name"
+}
+
+data "aws_ssm_parameter" "notify_allowlist_fallback_email_address" {
+  name = "${local.environment_name}-prsdb-notify-allowlist-fallback-email-address"
 }

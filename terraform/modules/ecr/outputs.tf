@@ -18,6 +18,11 @@ output "webapp_ecs_task_role_name" {
   description = "Name of the ECS task role"
 }
 
+output "email_worker_ecs_task_role_name" {
+  value       = aws_iam_role.email_worker_ecs_task.name
+  description = "Name of the email worker ECS task role"
+}
+
 output "ecr_repository_url" {
   value       = aws_ecr_repository.main.repository_url
   description = "URL of the ecr repository"
