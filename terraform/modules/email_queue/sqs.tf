@@ -26,3 +26,56 @@ resource "aws_sqs_queue_redrive_allow_policy" "email_dead_letter_queue" {
     sourceQueueArns   = [aws_sqs_queue.email_queue.arn]
   })
 }
+
+# Apply policies to enforce SSL connections.
+data "aws_iam_policy_document" "email_queue_ssl_requests_only" {
+  statement {
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions = ["sqs:*"]
+
+    effect = "Deny"
+
+    resources = [aws_sqs_queue.email_queue.arn]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_sqs_queue_policy" "email_queue" {
+  queue_url = aws_sqs_queue.email_queue.id
+  policy    = data.aws_iam_policy_document.email_queue_ssl_requests_only.json
+}
+
+data "aws_iam_policy_document" "email_dead_letter_queue_ssl_requests_only" {
+  statement {
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions = ["sqs:*"]
+
+    effect = "Deny"
+
+    resources = [aws_sqs_queue.email_dead_letter_queue.arn]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_sqs_queue_policy" "email_dead_letter_queue" {
+  queue_url = aws_sqs_queue.email_dead_letter_queue.id
+  policy    = data.aws_iam_policy_document.email_dead_letter_queue_ssl_requests_only.json
+}
