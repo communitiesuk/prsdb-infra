@@ -197,6 +197,8 @@ locals {
       name      = "EMAILNOTIFICATIONS_APIKEY"
       valueFrom = data.aws_secretsmanager_secret.notify_api_key.arn
     },
+  ]
+  os_api_secrets = [
     {
       name      = "OS_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.os_api_key.arn
@@ -242,7 +244,7 @@ module "webapp_ecs_task_definition" {
   task_memory           = 2048
   task_name             = "prsdb-webapp"
   environment_variables = concat(local.common_environment_variables, local.webapp_only_environment_variables)
-  secrets               = concat(local.common_secrets, local.webapp_secrets)
+  secrets               = concat(local.common_secrets, local.os_api_secrets, local.webapp_secrets)
 }
 
 module "email_worker_ecs_task_definition" {
@@ -279,7 +281,7 @@ module "scheduled_tasks_ecs_task_definitions" {
   task_memory           = 1024
   task_name             = "prsdb-${each.key}-scheduled-task"
   environment_variables = concat(local.common_environment_variables, local.scheduled_tasks_only_environment_variables)
-  secrets               = local.common_secrets
+  secrets               = concat(local.common_secrets, local.os_api_secrets)
   tags = {
     Type              = "scheduled-task"
     ScheduledTaskName = each.key
