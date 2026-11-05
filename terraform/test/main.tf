@@ -254,6 +254,16 @@ module "monitoring" {
   enable_kms_cloudtrail_events     = var.enable_kms_cloudtrail_events
 }
 
+module "email_queue" {
+  source = "../modules/email_queue"
+
+  environment_name                 = local.environment_name
+  webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
+  email_worker_ecs_task_role_name  = module.ecr.email_worker_ecs_task_role_name
+  non_critical_alarm_sns_topic_arn = module.monitoring.non_critical_alarm_sns_topic_arn
+  critical_alarm_sns_topic_arn     = module.monitoring.critical_alarm_sns_topic_arn
+}
+
 module "scheduled_tasks" {
   count                   = var.task_definition_created && length(local.scheduled_tasks) > 0 ? 1 : 0
   source                  = "../modules/scheduled_tasks"

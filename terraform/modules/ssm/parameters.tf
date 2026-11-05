@@ -171,3 +171,15 @@ resource "aws_ssm_parameter" "gov_uk_pay_manual_intervention_email_address" {
     ignore_changes = [value]
   }
 }
+
+resource "aws_ssm_parameter" "notify_allowlist_fallback_email_address" {
+  count = var.environment_name == "production" ? 0 : 1
+
+  name  = "${var.environment_name}-prsdb-notify-allowlist-fallback-email-address"
+  type  = "String"
+  value = "default_to_be_set_manually" # To be set manually on AWS
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
