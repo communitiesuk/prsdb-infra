@@ -37,6 +37,8 @@ jobs:
       - name: Update ECS service
         run: aws ecs update-service --cluster ${{ inputs.environment }}-app --service ${{ inputs.environment }}-app --task-definition prsdb-webapp-${{ inputs.environment }} --force-new-deployment
 
+      # TODO PDJB-973: Replace with a plain update-service call once every environment, including production, has the
+      # email worker service
       - name: Update email worker ECS service
         run: |
           WORKER_SERVICE_COUNT=$(aws ecs describe-services \
