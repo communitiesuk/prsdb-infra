@@ -17,8 +17,14 @@ variable "email_worker_ecs_task_role_name" {
   type        = string
 }
 
-variable "alarm_sns_topic_arn" {
-  description = "ARN of the SNS topic that email queue alarms notify, or null while the environment's monitoring has not been created"
+variable "non_critical_alarm_sns_topic_arn" {
+  description = "ARN of the SNS topic that non-critical email queue alarms notify, or null while the environment's monitoring has not been created"
+  type        = string
+  default     = null
+}
+
+variable "critical_alarm_sns_topic_arn" {
+  description = "ARN of the SNS topic that critical email queue alarms notify, or null while the environment's monitoring has not been created"
   type        = string
   default     = null
 }

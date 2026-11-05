@@ -257,10 +257,11 @@ module "monitoring" {
 module "email_queue" {
   source = "../modules/email_queue"
 
-  environment_name                = local.environment_name
-  webapp_ecs_task_role_name       = module.ecr.webapp_ecs_task_role_name
-  email_worker_ecs_task_role_name = module.ecr.email_worker_ecs_task_role_name
-  alarm_sns_topic_arn             = one(module.monitoring[*].non_critical_alarm_sns_topic_arn)
+  environment_name                 = local.environment_name
+  webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
+  email_worker_ecs_task_role_name  = module.ecr.email_worker_ecs_task_role_name
+  non_critical_alarm_sns_topic_arn = one(module.monitoring[*].non_critical_alarm_sns_topic_arn)
+  critical_alarm_sns_topic_arn     = one(module.monitoring[*].critical_alarm_sns_topic_arn)
 }
 
 module "scheduled_tasks" {
