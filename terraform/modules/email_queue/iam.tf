@@ -47,7 +47,7 @@ resource "aws_iam_policy" "consume_email_queue" {
   policy = data.aws_iam_policy_document.consume_email_queue.json
 }
 
-resource "aws_iam_role_policy_attachment" "email_worker_consume_email_queue" {
-  role       = var.email_worker_ecs_task_role_name
+resource "aws_iam_role_policy_attachment" "async_worker_consume_email_queue" {
+  role       = var.async_worker_ecs_task_role_name
   policy_arn = aws_iam_policy.consume_email_queue.arn
 }

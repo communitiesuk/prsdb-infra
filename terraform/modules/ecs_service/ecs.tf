@@ -31,13 +31,13 @@ moved {
   to   = module.webapp_service.aws_ecs_service.main
 }
 
-module "email_worker_service" {
+module "async_worker_service" {
   source = "../fargate_service"
 
-  name                   = "${var.environment_name}-email-worker"
+  name                   = "${var.environment_name}-async-worker"
   cluster_arn            = aws_ecs_cluster.main.arn
-  task_definition_family = "prsdb-email-worker-${var.environment_name}"
-  desired_count          = var.email_worker_task_desired_count
+  task_definition_family = "prsdb-async-worker-${var.environment_name}"
+  desired_count          = var.async_worker_task_desired_count
   allow_exec             = var.allow_exec
   private_subnet_ids     = var.private_subnet_ids
   security_group_ids     = [aws_security_group.ecs.id]

@@ -12,8 +12,8 @@ variable "webapp_task_desired_count" {
   type        = number
 }
 
-variable "email_worker_task_desired_count" {
-  description = "target number of email worker tasks to deploy"
+variable "async_worker_task_desired_count" {
+  description = "target number of async worker tasks to deploy"
   type        = number
 }
 

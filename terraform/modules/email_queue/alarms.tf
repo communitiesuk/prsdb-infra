@@ -19,7 +19,7 @@ resource "aws_cloudwatch_metric_alarm" "email_dead_letter_queue_not_empty" {
 
   alarm_description = <<-EOT
     One or more emails could not be sent after repeated retries.
-    Check the email worker logs, fix the cause, then redrive ${aws_sqs_queue.email_dead_letter_queue.name}
+    Check the async worker logs, fix the cause, then redrive ${aws_sqs_queue.email_dead_letter_queue.name}
     back to ${aws_sqs_queue.email_queue.name}.
   EOT
   alarm_actions     = local.non_critical_alarm_actions
@@ -42,7 +42,7 @@ resource "aws_cloudwatch_metric_alarm" "email_dead_letter_queue_many_failures" {
 
   alarm_description = <<-EOT
     10 or more emails could not be sent after repeated retries, so email sending may be failing altogether.
-    Check the email worker logs, fix the cause, then redrive ${aws_sqs_queue.email_dead_letter_queue.name}
+    Check the async worker logs, fix the cause, then redrive ${aws_sqs_queue.email_dead_letter_queue.name}
     back to ${aws_sqs_queue.email_queue.name}.
   EOT
   alarm_actions     = local.critical_alarm_actions
@@ -65,7 +65,7 @@ resource "aws_cloudwatch_metric_alarm" "email_queue_oldest_message_age" {
 
   alarm_description = <<-EOT
     An email has been waiting on ${aws_sqs_queue.email_queue.name} for over 2 hours.
-    The email worker may be stopped or failing; messages are deleted after 4 days without reaching the dead letter queue.
+    The async worker may be stopped or failing; messages are deleted after 4 days without reaching the dead letter queue.
   EOT
   alarm_actions     = local.critical_alarm_actions
   ok_actions        = local.critical_alarm_actions
