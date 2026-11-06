@@ -88,6 +88,10 @@ locals {
       name  = "EMAIL_QUEUE_NAME"
       value = data.aws_ssm_parameter.email_queue_name.value
     },
+    {
+      name  = "GOV_UK_PAY_MANUAL_INTERVENTION_EMAIL_ADDRESS"
+      value = data.aws_ssm_parameter.gov_uk_pay_manual_intervention_email_address.value
+    },
   ]
   webapp_only_environment_variables = [
     {
@@ -184,10 +188,6 @@ locals {
       value = data.aws_ssm_parameter.annual_payment_amount_in_pence.value
     },
     {
-      name  = "GOV_UK_PAY_MANUAL_INTERVENTION_EMAIL_ADDRESS"
-      value = data.aws_ssm_parameter.gov_uk_pay_manual_intervention_email_address.value
-    },
-    {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
       value = "40000"
     },
@@ -217,6 +217,10 @@ locals {
     {
       name      = "EMAILNOTIFICATIONS_APIKEY"
       valueFrom = data.aws_secretsmanager_secret.notify_api_key.arn
+    },
+    {
+      name      = "GOV_UK_PAY_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_api_key.arn
     },
   ]
   os_api_secrets = [
@@ -249,10 +253,6 @@ locals {
     {
       name      = "PLAUSIBLE_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.plausible_api_key.arn
-    },
-    {
-      name      = "GOV_UK_PAY_API_KEY"
-      valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_api_key.arn
     },
   ]
 }
