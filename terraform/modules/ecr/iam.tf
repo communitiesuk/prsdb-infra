@@ -88,13 +88,13 @@ resource "aws_iam_role_policy_attachment" "task_allow_ecs_exec" {
   policy_arn = aws_iam_policy.allow_ecs_exec.arn
 }
 
-resource "aws_iam_role" "email_worker_ecs_task" {
-  name               = "${var.environment_name}-email-worker-ecs-task"
+resource "aws_iam_role" "async_worker_ecs_task" {
+  name               = "${var.environment_name}-async-worker-ecs-task"
   assume_role_policy = data.aws_iam_policy_document.task_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "email_worker_task_allow_ecs_exec" {
-  role       = aws_iam_role.email_worker_ecs_task.name
+resource "aws_iam_role_policy_attachment" "async_worker_task_allow_ecs_exec" {
+  role       = aws_iam_role.async_worker_ecs_task.name
   policy_arn = aws_iam_policy.allow_ecs_exec.arn
 }
 

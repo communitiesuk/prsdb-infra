@@ -199,7 +199,7 @@ locals {
       value = "web-server-deactivated,scheduled-task,${local.environment_name}"
     },
   ]
-  email_worker_only_environment_variables = [
+  async_worker_only_environment_variables = [
     {
       name  = "SPRING_PROFILES_ACTIVE"
       value = "web-server-deactivated,email-worker,${local.environment_name}"
@@ -272,20 +272,20 @@ module "webapp_ecs_task_definition" {
   secrets               = concat(local.common_secrets, local.os_api_secrets, local.webapp_secrets)
 }
 
-module "email_worker_ecs_task_definition" {
+module "async_worker_ecs_task_definition" {
   source                      = "../../modules/ecs_task"
   environment_name            = local.environment_name
   container_image             = var.image_name
   container_port              = 8080
   ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
-  ecs_task_role_arn           = data.aws_iam_role.email_worker_ecs_task.arn
+  ecs_task_role_arn           = data.aws_iam_role.async_worker_ecs_task.arn
   task_cpu                    = 512
   task_memory                 = 1024
-  task_name                   = "prsdb-email-worker"
-  environment_variables       = concat(local.common_environment_variables, local.email_worker_only_environment_variables)
+  task_name                   = "prsdb-async-worker"
+  environment_variables       = concat(local.common_environment_variables, local.async_worker_only_environment_variables)
   secrets                     = local.common_secrets
   tags = {
-    Type = "email-worker"
+    Type = "async-worker"
   }
 }
 

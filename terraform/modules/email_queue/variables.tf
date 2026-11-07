@@ -12,8 +12,8 @@ variable "webapp_ecs_task_role_name" {
   type        = string
 }
 
-variable "email_worker_ecs_task_role_name" {
-  description = "Name of the email worker ECS task role, which consumes the queue"
+variable "async_worker_ecs_task_role_name" {
+  description = "Name of the async worker ECS task role, which consumes the queue"
   type        = string
 }
 

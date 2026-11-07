@@ -6,8 +6,8 @@ data "aws_iam_role" "webapp_ecs_task" {
   name = "${local.environment_name}-webapp-ecs-task"
 }
 
-data "aws_iam_role" "email_worker_ecs_task" {
-  name = "${local.environment_name}-email-worker-ecs-task"
+data "aws_iam_role" "async_worker_ecs_task" {
+  name = "${local.environment_name}-async-worker-ecs-task"
 }
 
 data "aws_ssm_parameter" "one_login_public_key" {
