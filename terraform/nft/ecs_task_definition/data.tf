@@ -172,6 +172,10 @@ data "aws_ssm_parameter" "annual_payment_amount_in_pence" {
   name = "${local.environment_name}-prsdb-gov-uk-pay-annual-payment-amount-in-pence"
 }
 
+data "aws_ssm_parameter" "gratis_period_end_date" {
+  name = "${local.environment_name}-prsdb-gov-uk-pay-gratis-period-end-date"
+}
+
 data "aws_ssm_parameter" "gov_uk_pay_manual_intervention_email_address" {
   name = "${local.environment_name}-prsdb-gov-uk-pay-manual-intervention-email-address"
 }

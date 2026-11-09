@@ -188,6 +188,10 @@ locals {
       value = data.aws_ssm_parameter.annual_payment_amount_in_pence.value
     },
     {
+      name  = "GRATIS_PERIOD_END_DATE"
+      value = data.aws_ssm_parameter.gratis_period_end_date.value
+    },
+    {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
       value = "40000"
     },
