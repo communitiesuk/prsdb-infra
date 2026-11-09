@@ -80,6 +80,14 @@ locals {
       name  = "CLOUDFRONT_DISTRIBUTION_ID"
       value = data.aws_ssm_parameter.cloudfront_distribution_id.value
     },
+    {
+      name  = "EMAIL_QUEUE_NAME"
+      value = data.aws_ssm_parameter.email_queue_name.value
+    },
+    {
+      name  = "GOV_UK_PAY_MANUAL_INTERVENTION_EMAIL_ADDRESS"
+      value = data.aws_ssm_parameter.gov_uk_pay_manual_intervention_email_address.value
+    },
   ]
   webapp_only_environment_variables = [
     {
@@ -159,10 +167,6 @@ locals {
       value = data.aws_ssm_parameter.annual_payment_amount_in_pence.value
     },
     {
-      name  = "GOV_UK_PAY_MANUAL_INTERVENTION_EMAIL_ADDRESS"
-      value = data.aws_ssm_parameter.gov_uk_pay_manual_intervention_email_address.value
-    },
-    {
       name  = "BPL_JVM_LOADED_CLASS_COUNT"
       value = "40000"
     },
@@ -174,6 +178,16 @@ locals {
       value = "web-server-deactivated,scheduled-task,${local.environment_name}"
     },
   ]
+  async_worker_only_environment_variables = [
+    {
+      name  = "SPRING_PROFILES_ACTIVE"
+      value = "web-server-deactivated,email-worker,${local.environment_name}"
+    },
+    {
+      name  = "EMAILNOTIFICATIONS_ALLOWLIST_FALLBACK_ADDRESS"
+      value = data.aws_ssm_parameter.notify_allowlist_fallback_email_address.value
+    },
+  ]
   common_secrets = [
     {
       name      = "RDS_PASSWORD"
@@ -183,6 +197,12 @@ locals {
       name      = "EMAILNOTIFICATIONS_APIKEY"
       valueFrom = data.aws_secretsmanager_secret.notify_api_key.arn
     },
+    {
+      name      = "GOV_UK_PAY_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_api_key.arn
+    },
+  ]
+  os_api_secrets = [
     {
       name      = "OS_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.os_api_key.arn
@@ -209,10 +229,6 @@ locals {
       name      = "PLAUSIBLE_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.plausible_api_key.arn
     },
-    {
-      name      = "GOV_UK_PAY_API_KEY"
-      valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_api_key.arn
-    },
   ]
 }
 
@@ -228,7 +244,24 @@ module "webapp_ecs_task_definition" {
   task_memory           = 2048
   task_name             = "prsdb-webapp"
   environment_variables = concat(local.common_environment_variables, local.webapp_only_environment_variables)
-  secrets               = concat(local.common_secrets, local.webapp_secrets)
+  secrets               = concat(local.common_secrets, local.os_api_secrets, local.webapp_secrets)
+}
+
+module "async_worker_ecs_task_definition" {
+  source                      = "../../modules/ecs_task"
+  environment_name            = local.environment_name
+  container_image             = var.image_name
+  container_port              = 8080
+  ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
+  ecs_task_role_arn           = data.aws_iam_role.async_worker_ecs_task.arn
+  task_cpu                    = 512
+  task_memory                 = 1024
+  task_name                   = "prsdb-async-worker"
+  environment_variables       = concat(local.common_environment_variables, local.async_worker_only_environment_variables)
+  secrets                     = local.common_secrets
+  tags = {
+    Type = "async-worker"
+  }
 }
 
 locals {
@@ -248,7 +281,7 @@ module "scheduled_tasks_ecs_task_definitions" {
   task_memory           = 1024
   task_name             = "prsdb-${each.key}-scheduled-task"
   environment_variables = concat(local.common_environment_variables, local.scheduled_tasks_only_environment_variables)
-  secrets               = local.common_secrets
+  secrets               = concat(local.common_secrets, local.os_api_secrets)
   tags = {
     Type              = "scheduled-task"
     ScheduledTaskName = each.key
