@@ -10,9 +10,16 @@ locals {
   nft_restore_db_name      = split("/", var.database_url)[1]
 }
 
-resource "aws_cloudwatch_log_group" "nft_restore" {
-  name              = "/ecs/${var.environment_name}-seed-data-restore"
-  retention_in_days = 365
+module "nft_restore_log_group" {
+  source = "../../../modules/encrypted_log_group"
+
+  log_group_name     = "/ecs/${var.environment_name}-seed-data-restore"
+  log_retention_days = 365
+}
+
+moved {
+  from = aws_cloudwatch_log_group.nft_restore
+  to   = module.nft_restore_log_group.aws_cloudwatch_log_group.main
 }
 
 data "aws_iam_policy_document" "nft_restore_assume_role" {
@@ -153,7 +160,7 @@ resource "aws_ecs_task_definition" "nft_restore" {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = aws_cloudwatch_log_group.nft_restore.name
+          awslogs-group         = module.nft_restore_log_group.name
           awslogs-region        = "eu-west-2"
           awslogs-stream-prefix = "restore"
         }
@@ -237,12 +244,12 @@ data "aws_iam_policy_document" "performance_test_restore_orchestrator" {
 
   statement {
     actions   = ["logs:DescribeLogStreams"]
-    resources = ["${aws_cloudwatch_log_group.nft_restore.arn}:*"]
+    resources = ["${module.nft_restore_log_group.log_group_arn}:*"]
   }
 
   statement {
     actions   = ["logs:GetLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.nft_restore.arn}:log-stream:restore/*"]
+    resources = ["${module.nft_restore_log_group.log_group_arn}:log-stream:restore/*"]
   }
 
   statement {
