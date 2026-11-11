@@ -7,7 +7,7 @@ const script = fs.readFileSync(path.join(__dirname,
 // Run only the service-response predicate, never the restore script or its AWS/database commands.
 const serviceGuard = script.match(
     /jq -e --arg app[\s\S]*?'\s+"\$workspace\/services\.json" >\/dev\/null \|\| fail/
-)[0].replace('"$workspace/services.json"', '/dev/stdin');
+)[0].replace('"$workspace/services.json"', '-');
 
 function guardStatus(services, failures = []) {
     const result = spawnSync('bash', ['-c', `set -eu\nfail() { exit 1; }\n${serviceGuard}`], {
