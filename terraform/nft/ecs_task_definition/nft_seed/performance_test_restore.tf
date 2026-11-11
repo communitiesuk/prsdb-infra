@@ -177,6 +177,16 @@ data "aws_iam_role" "performance_test_orchestrator" {
 
 data "aws_iam_policy_document" "performance_test_restore_orchestrator" {
   statement {
+    actions = [
+      "ecs:DescribeServices",
+      "ecs:UpdateService",
+    ]
+    resources = [
+      "arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:service/${var.environment_name}-app/${var.environment_name}-async-worker",
+    ]
+  }
+
+  statement {
     actions   = ["ecs:RunTask"]
     resources = [aws_ecs_task_definition.nft_restore.arn]
 
