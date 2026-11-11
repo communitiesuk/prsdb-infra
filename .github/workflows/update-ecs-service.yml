@@ -37,17 +37,5 @@ jobs:
       - name: Update ECS service
         run: aws ecs update-service --cluster ${{ inputs.environment }}-app --service ${{ inputs.environment }}-app --task-definition prsdb-webapp-${{ inputs.environment }} --force-new-deployment
 
-      # TODO PDJB-2101: Replace with a plain update-service call once every environment, including production, has the
-      # async worker service
       - name: Update async worker ECS service
-        run: |
-          WORKER_SERVICE_COUNT=$(aws ecs describe-services \
-            --cluster ${{ inputs.environment }}-app \
-            --services ${{ inputs.environment }}-async-worker \
-            --query "length(services[?status=='ACTIVE'])" \
-            --output text)
-          if [ "$WORKER_SERVICE_COUNT" = "1" ]; then
-            aws ecs update-service --cluster ${{ inputs.environment }}-app --service ${{ inputs.environment }}-async-worker --task-definition prsdb-async-worker-${{ inputs.environment }} --force-new-deployment
-          else
-            echo "No async worker service in ${{ inputs.environment }}; skipping"
-          fi
+        run: aws ecs update-service --cluster ${{ inputs.environment }}-app --service ${{ inputs.environment }}-async-worker --task-definition prsdb-async-worker-${{ inputs.environment }} --force-new-deployment
