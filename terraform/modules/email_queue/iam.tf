@@ -22,6 +22,11 @@ resource "aws_iam_role_policy_attachment" "webapp_send_to_email_queue" {
   policy_arn = aws_iam_policy.send_to_email_queue.arn
 }
 
+resource "aws_iam_role_policy_attachment" "async_worker_send_to_email_queue" {
+  role       = var.async_worker_ecs_task_role_name
+  policy_arn = aws_iam_policy.send_to_email_queue.arn
+}
+
 data "aws_iam_policy_document" "consume_email_queue" {
   statement {
     effect = "Allow"
