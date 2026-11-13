@@ -79,6 +79,12 @@ variable "ip_allowlist" {
   default     = []
 }
 
+variable "ip_restriction_redirect_url" {
+  type        = string
+  description = "URL to redirect non-allowlisted IPs to - plain 403 response used when null"
+  default     = null
+}
+
 variable "detectify_ips" {
   type        = list(string)
   description = "Detectify scanner IPs to allow through WAF without managed rule evaluation"
