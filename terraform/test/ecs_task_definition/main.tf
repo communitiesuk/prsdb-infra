@@ -185,7 +185,11 @@ locals {
   async_worker_only_environment_variables = [
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = "web-server-deactivated,email-worker,${local.environment_name}"
+      value = var.file_upload_buckets_created ? "web-server-deactivated,email-worker,scan-result-worker,${local.environment_name}" : "web-server-deactivated,email-worker,${local.environment_name}"
+    },
+    {
+      name  = "SCAN_RESULT_QUEUE_NAME"
+      value = var.file_upload_buckets_created ? data.aws_ssm_parameter.scan_result_queue_name[0].value : ""
     },
     {
       name  = "EMAILNOTIFICATIONS_ALLOWLIST_FALLBACK_ADDRESS"
