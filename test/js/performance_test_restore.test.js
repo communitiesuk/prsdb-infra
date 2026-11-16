@@ -8,6 +8,40 @@ const script = fs.readFileSync(path.join(__dirname,
 const serviceGuard = script.match(
     /jq -e --arg app[\s\S]*?'\s+"\$workspace\/services\.json" >\/dev\/null \|\| fail/
 )[0].replace('"$workspace/services.json"', '-');
+const versionGuard = script.split('pg_restore --version\n')[1].split('\nstage=identity')[0];
+
+function versionGuardStatus(clientMajorVersion, configuredMajorVersion) {
+    const result = spawnSync('bash', ['-c', `set -eu
+fail() { exit 1; }
+pg_restore() { printf 'pg_restore (PostgreSQL) %s.0\\n' "$CLIENT_POSTGRES_MAJOR_VERSION"; }
+${versionGuard}`], {
+        env: {
+            ...process.env,
+            CLIENT_POSTGRES_MAJOR_VERSION: clientMajorVersion,
+            POSTGRES_MAJOR_VERSION: configuredMajorVersion,
+        },
+        encoding: 'utf8',
+    });
+    if (result.error) throw result.error;
+    expect(result.stderr).toBe('');
+    return result.status;
+}
+
+describe('NFT restore PostgreSQL version guard', () => {
+    it.each(['16', '17'])('accepts a client matching configured major version %s', majorVersion => {
+        expect(versionGuardStatus(majorVersion, majorVersion)).toBe(0);
+    });
+
+    it.each([['16', '17'], ['17', '16']])(
+        'rejects client major version %s when configured for %s', (clientMajorVersion, configuredMajorVersion) => {
+            expect(versionGuardStatus(clientMajorVersion, configuredMajorVersion)).toBe(1);
+        }
+    );
+
+    it.each(['', '0', '16 OR 1=1'])('rejects invalid configured major version %j', configuredMajorVersion => {
+        expect(versionGuardStatus('16', configuredMajorVersion)).toBe(1);
+    });
+});
 
 function guardStatus(services, failures = []) {
     const result = spawnSync('bash', ['-c', `set -eu\nfail() { exit 1; }\n${serviceGuard}`], {

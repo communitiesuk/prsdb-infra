@@ -39,7 +39,11 @@ timeout 180 apk add --no-cache aws-cli jq >/tmp/nft-restore-tool-install.log 2>&
 aws --version 2>/dev/null
 psql --version
 pg_restore --version
-test "$(pg_restore --version | awk '{print $3}' | cut -d. -f1)" = 16 || fail
+case "${POSTGRES_MAJOR_VERSION:-}" in
+  ''|*[!0-9]*) fail ;;
+esac
+test "$POSTGRES_MAJOR_VERSION" -gt 0 || fail
+test "$(pg_restore --version | awk '{print $3}' | cut -d. -f1)" = "$POSTGRES_MAJOR_VERSION" || fail
 
 stage=identity
 test "$AWS_REGION" = eu-west-2 || fail
@@ -103,7 +107,7 @@ result="$(psql --no-psqlrc --set ON_ERROR_STOP=1 --tuples-only --no-align --quie
 BEGIN READ ONLY;
 SELECT
   current_database() = 'prsdb'
-  AND current_setting('server_version_num')::integer / 10000 = 16
+  AND current_setting('server_version_num')::integer / 10000 = $POSTGRES_MAJOR_VERSION
   AND inet_server_addr() << inet '10.1.0.0/16'
   AND current_setting('transaction_read_only') = 'on'
   AND EXISTS (SELECT 1 FROM pg_stat_ssl WHERE pid = pg_backend_pid() AND ssl)
@@ -111,7 +115,7 @@ SELECT
 ROLLBACK;
 " 2>/tmp/nft-restore-postgres-error)" || fail
 test "$result" = t || fail
-log "PostgreSQL16 private TLS connection and explicit read-only transaction verified"
+log "PostgreSQL$POSTGRES_MAJOR_VERSION private TLS connection and explicit read-only transaction verified"
 log "PRECHECK PASSED; no schema or application data changes performed"
 
 stage=writer-guard-services

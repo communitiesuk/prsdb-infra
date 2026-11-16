@@ -116,7 +116,7 @@ resource "aws_ecs_task_definition" "nft_restore" {
   container_definitions = jsonencode([
     {
       name      = "nft-vpc-restore"
-      image     = "docker.io/library/postgres@sha256:cbf42f0edc946c0bc1b8eeed62403734e1f25dc67a3491455d07a92fdb558b28"
+      image     = "public.ecr.aws/docker/library/postgres:${var.postgres_major_version}-alpine"
       essential = true
       entryPoint = [
         "/bin/sh",
@@ -142,6 +142,7 @@ resource "aws_ecs_task_definition" "nft_restore" {
         { name = "NFT_SIMULATOR_SERVICE", value = "${var.environment_name}-one-login-simulator" },
         { name = "NFT_ASYNC_WORKER_SERVICE", value = "${var.environment_name}-async-worker" },
         { name = "NFT_SCHEDULED_CLUSTER", value = "${var.environment_name}-scheduled-tasks" },
+        { name = "POSTGRES_MAJOR_VERSION", value = var.postgres_major_version },
         { name = "PGHOST", value = local.nft_restore_db_host },
         { name = "EXPECTED_PGHOST", value = local.nft_restore_db_host },
         { name = "PGPORT", value = local.nft_restore_db_port },
