@@ -68,7 +68,7 @@ resource "aws_wafv2_web_acl" "load_balancer" {
     for_each = length(var.detectify_ips) > 0 ? [{}] : []
     content {
       name     = "allow-detectify-scanner"
-      priority = 1
+      priority = var.environment_name == "nft" ? 3 : 1
 
       action {
         allow {}
@@ -77,6 +77,15 @@ resource "aws_wafv2_web_acl" "load_balancer" {
       statement {
         ip_set_reference_statement {
           arn = aws_wafv2_ip_set.detectify_ips_regional.arn
+
+          dynamic "ip_set_forwarded_ip_config" {
+            for_each = var.environment_name == "nft" ? [{}] : []
+            content {
+              header_name       = "X-Forwarded-For"
+              position          = "LAST"
+              fallback_behavior = "NO_MATCH"
+            }
+          }
         }
       }
 
@@ -90,7 +99,7 @@ resource "aws_wafv2_web_acl" "load_balancer" {
 
   rule {
     name     = "validate-cloudfront-header"
-    priority = 3
+    priority = var.environment_name == "nft" ? 1 : 3
 
     action {
       block {}
