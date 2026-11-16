@@ -9,5 +9,5 @@ resource "aws_ssm_parameter" "ecs_cluster_name" {
 resource "aws_ssm_parameter" "ecs_service_name" {
   name  = "${var.environment_name}-prsdb-ecs-service-name"
   type  = "String"
-  value = aws_ecs_service.webapp.name
+  value = module.webapp_service.name
 }

@@ -16,5 +16,8 @@
   },
   "org-ll-invitation-deletion": {
     "schedule_expression": "cron(0 1 * * ? *)"
+  },
+  "reconcile-payments": {
+    "schedule_expression": "cron(0/15 0-1,6-23 * * ? *)"
   }
 }

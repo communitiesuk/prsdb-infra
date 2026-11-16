@@ -107,6 +107,11 @@ module "frontdoor" {
     "13.126.5.12/32",
     "3.7.157.159/32",
     "3.7.173.162/32",
+    # Cyberfort
+    "3.11.156.142/32",
+    "37.200.119.11/32",
+    "185.10.12.32/28",
+    "176.65.68.112/28",
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   use_aws_shield_advanced        = true
@@ -225,17 +230,18 @@ module "ecs_service" {
   count  = var.task_definition_created ? 1 : 0
   source = "../modules/ecs_service"
 
-  environment_name          = local.environment_name
-  webapp_task_desired_count = 1
-  application_port          = local.application_port
-  database_port             = local.database_port
-  redis_port                = local.redis_port
-  lb_target_group_arn       = module.frontdoor.load_balancer.target_group_arn
-  lb_security_group_id      = module.frontdoor.load_balancer.security_group_id
-  db_security_group_id      = module.database.rds_security_group_id
-  redis_security_group_id   = module.redis.redis_security_group_id
-  private_subnet_ids        = module.networking.private_subnets[*].id
-  vpc_id                    = module.networking.vpc.id
+  environment_name                = local.environment_name
+  webapp_task_desired_count       = 1
+  async_worker_task_desired_count = 1
+  application_port                = local.application_port
+  database_port                   = local.database_port
+  redis_port                      = local.redis_port
+  lb_target_group_arn             = module.frontdoor.load_balancer.target_group_arn
+  lb_security_group_id            = module.frontdoor.load_balancer.security_group_id
+  db_security_group_id            = module.database.rds_security_group_id
+  redis_security_group_id         = module.redis.redis_security_group_id
+  private_subnet_ids              = module.networking.private_subnets[*].id
+  vpc_id                          = module.networking.vpc.id
 }
 
 module "one_login_simulator" {
@@ -285,6 +291,16 @@ module "monitoring" {
   database_identifier              = module.database.database_identifier
   webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
   enable_kms_cloudtrail_events     = var.enable_kms_cloudtrail_events
+}
+
+module "email_queue" {
+  source = "../modules/email_queue"
+
+  environment_name                 = local.environment_name
+  webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
+  async_worker_ecs_task_role_name  = module.ecr.async_worker_ecs_task_role_name
+  non_critical_alarm_sns_topic_arn = one(module.monitoring[*].non_critical_alarm_sns_topic_arn)
+  critical_alarm_sns_topic_arn     = one(module.monitoring[*].critical_alarm_sns_topic_arn)
 }
 
 module "scheduled_tasks" {
