@@ -99,6 +99,7 @@ module "frontdoor" {
   cloudfront_certificate_arn     = module.certificates.cloudfront_certificate_arn
   load_balancer_certificate_arn  = module.certificates.load_balancer_certificate_arn
   ip_allowlist                   = local.ip_allowlist
+  ip_restriction_redirect_url    = "https://www.gov.uk/guidance/register-your-rental-property-service-guidance-for-landlords"
   detectify_ips                  = local.detectify_ips
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   use_aws_shield_advanced        = true
