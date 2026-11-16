@@ -193,6 +193,24 @@ resource "aws_cloudwatch_log_metric_filter" "organization_changes" {
   }
 }
 
+resource "aws_cloudwatch_log_metric_filter" "rds_backup_replication_at_risk" {
+  log_group_name = module.cloudtrail_cloudwatch_group.name
+  name           = "rds-backup-replication-at-risk-${var.environment_name}"
+  pattern        = <<EOT
+    {($.eventName = StopDBInstanceAutomatedBackupsReplication) ||
+     ($.eventName = DeleteDBInstanceAutomatedBackup) ||
+     ((($.eventName = DisableKey) ||
+       ($.eventName = ScheduleKeyDeletion)) &&
+      ($.resources[0].ARN = "${var.backup_replication_kms_key_arn}"))}
+  EOT
+
+  metric_transformation {
+    name      = "rds-backup-replication-at-risk-${var.environment_name}"
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+}
+
 resource "aws_cloudwatch_log_metric_filter" "virus_scan_failure" {
   log_group_name = data.aws_cloudwatch_log_group.webapp.name
   name           = "virus-scan-failure-${var.environment_name}"
