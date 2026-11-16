@@ -66,7 +66,7 @@ variable "epc_certificate_base_url" {
 }
 
 variable "postgres_major_version" {
-  description = "The major version of the postgres client image used to pg_dump the database. Must match the major version of the NFT RDS postgres engine "
+  description = "The major version of the postgres client images used to dump and restore the database. Must match the major version of the NFT RDS postgres engine"
   type        = string
   default     = "16"
 }
