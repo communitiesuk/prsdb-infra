@@ -53,8 +53,16 @@ resource "aws_wafv2_web_acl" "main" {
       action {
         block {
           custom_response {
-            custom_response_body_key = "ip_error"
-            response_code            = 403
+            custom_response_body_key = var.ip_restriction_redirect_url == null ? "ip_error" : null
+            response_code            = var.ip_restriction_redirect_url == null ? 403 : 302
+
+            dynamic "response_header" {
+              for_each = var.ip_restriction_redirect_url != null ? [{}] : []
+              content {
+                name  = "Location"
+                value = var.ip_restriction_redirect_url
+              }
+            }
           }
         }
       }

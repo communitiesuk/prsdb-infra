@@ -40,11 +40,15 @@ resource "aws_ecs_task_definition" "nft_seed" {
           },
           {
             name  = "NFT_SEED_LANDLORDS"
-            value = "2820000"
+            value = "0"
           },
           {
             name  = "NFT_SEED_PROPERTIES"
-            value = "4700000"
+            value = "2450000"
+          },
+          {
+            name  = "NFT_SEED_INCOMPLETE_PROPERTIES"
+            value = "272223"
           },
           {
             name  = "NFT_SEED_BATCH_SIZE"
