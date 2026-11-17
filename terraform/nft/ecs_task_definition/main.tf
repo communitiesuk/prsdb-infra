@@ -206,7 +206,7 @@ locals {
   async_worker_only_environment_variables = [
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = var.file_upload_buckets_created ? "web-server-deactivated,email-worker,scan-result-worker,${local.environment_name}" : "web-server-deactivated,email-worker,${local.environment_name}"
+      value = "web-server-deactivated,email-worker,${var.file_upload_buckets_created ? "scan-result-worker," : ""}${local.environment_name}"
     },
     {
       name  = "SCAN_RESULT_QUEUE_NAME"
