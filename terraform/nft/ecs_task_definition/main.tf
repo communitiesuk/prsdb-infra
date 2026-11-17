@@ -43,7 +43,6 @@ locals {
       name  = "RDS_USERNAME"
       value = data.aws_ssm_parameter.database_username.value
     },
-    # TODO PRSD-1325: Move bucket environment variables to ad-hoc tasks only when virus scan result processing is moved there
     {
       name  = "AWS_QUARANTINE_BUCKET"
       value = var.file_upload_buckets_created ? data.aws_ssm_parameter.quarantine_bucket[0].value : ""
@@ -206,7 +205,11 @@ locals {
   async_worker_only_environment_variables = [
     {
       name  = "SPRING_PROFILES_ACTIVE"
-      value = "web-server-deactivated,email-worker,${local.environment_name}"
+      value = "web-server-deactivated,email-worker,${var.file_upload_buckets_created ? "scan-result-worker," : ""}${local.environment_name}"
+    },
+    {
+      name  = "SCAN_RESULT_QUEUE_NAME"
+      value = var.file_upload_buckets_created ? data.aws_ssm_parameter.scan_result_queue_name[0].value : ""
     },
     {
       name  = "EMAILNOTIFICATIONS_ALLOWLIST_FALLBACK_ADDRESS"

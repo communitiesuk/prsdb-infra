@@ -222,14 +222,13 @@ module "ecs_service" {
   vpc_id                          = module.networking.vpc.id
 }
 
-# This should be updated to use `count = var.task_definition_created ? 1 : 0` and index via `module.ecs_service[0]`, but we don't want to recreate these items yet
 module "file_upload" {
-  source                          = "../modules/file_upload"
-  environment_name                = local.environment_name
-  webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
-  ecs_cluster_arn                 = module.ecs_service[0].ecs_cluster_arn
-  private_subnet_ids              = module.networking.private_subnets[*].id
-  ecs_security_group_ids          = module.ecs_service[0].ecs_security_group_ids
+  source                           = "../modules/file_upload"
+  environment_name                 = local.environment_name
+  webapp_task_execution_role_name  = module.ecr.webapp_ecs_task_role_name
+  async_worker_ecs_task_role_name  = module.ecr.async_worker_ecs_task_role_name
+  non_critical_alarm_sns_topic_arn = module.monitoring.non_critical_alarm_sns_topic_arn
+  critical_alarm_sns_topic_arn     = module.monitoring.critical_alarm_sns_topic_arn
 }
 
 module "monitoring" {
