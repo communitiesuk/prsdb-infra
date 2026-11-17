@@ -1,8 +1,9 @@
 resource "aws_kms_key" "backup_replication" {
   provider = aws.eu-west-1
 
-  description         = "KMS key used to encrypt RDS automated backups replicated to eu-west-1."
-  enable_key_rotation = true
+  description             = "KMS key used to encrypt RDS automated backups replicated to eu-west-1."
+  enable_key_rotation     = true
+  rotation_period_in_days = 180
 }
 
 resource "aws_kms_alias" "backup_replication" {
