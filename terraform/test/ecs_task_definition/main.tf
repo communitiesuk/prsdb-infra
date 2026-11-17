@@ -39,7 +39,6 @@ locals {
       name  = "RDS_USERNAME"
       value = data.aws_ssm_parameter.database_username.value
     },
-    # TODO PRSD-1325: Move bucket environment variables to ad-hoc tasks only when virus scan result processing is moved there
     {
       name  = "AWS_QUARANTINE_BUCKET"
       value = var.file_upload_buckets_created ? data.aws_ssm_parameter.quarantine_bucket[0].value : ""
