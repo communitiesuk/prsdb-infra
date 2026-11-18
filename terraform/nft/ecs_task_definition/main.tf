@@ -262,12 +262,13 @@ locals {
 }
 
 module "webapp_ecs_task_definition" {
-  source                      = "../../modules/ecs_task"
-  environment_name            = local.environment_name
-  container_image             = var.image_name
-  container_port              = 8080
-  ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
-  ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
+  source                       = "../../modules/ecs_task"
+  environment_name             = local.environment_name
+  container_image              = var.image_name
+  container_port               = 8080
+  ecs_task_execution_role_arn  = data.aws_iam_role.ecs_task_execution.arn
+  ecs_task_execution_role_name = data.aws_iam_role.ecs_task_execution.name
+  ecs_task_role_arn            = data.aws_iam_role.webapp_ecs_task.arn
   # TODO: consider what our requirements are for the instance
   task_cpu              = 2048
   task_memory           = 4096
@@ -277,17 +278,18 @@ module "webapp_ecs_task_definition" {
 }
 
 module "async_worker_ecs_task_definition" {
-  source                      = "../../modules/ecs_task"
-  environment_name            = local.environment_name
-  container_image             = var.image_name
-  container_port              = 8080
-  ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
-  ecs_task_role_arn           = data.aws_iam_role.async_worker_ecs_task.arn
-  task_cpu                    = 512
-  task_memory                 = 1024
-  task_name                   = "prsdb-async-worker"
-  environment_variables       = concat(local.common_environment_variables, local.async_worker_only_environment_variables)
-  secrets                     = local.common_secrets
+  source                       = "../../modules/ecs_task"
+  environment_name             = local.environment_name
+  container_image              = var.image_name
+  container_port               = 8080
+  ecs_task_execution_role_arn  = data.aws_iam_role.ecs_task_execution.arn
+  ecs_task_execution_role_name = data.aws_iam_role.ecs_task_execution.name
+  ecs_task_role_arn            = data.aws_iam_role.async_worker_ecs_task.arn
+  task_cpu                     = 512
+  task_memory                  = 1024
+  task_name                    = "prsdb-async-worker"
+  environment_variables        = concat(local.common_environment_variables, local.async_worker_only_environment_variables)
+  secrets                      = local.common_secrets
   tags = {
     Type = "async-worker"
   }
@@ -298,13 +300,14 @@ locals {
 }
 
 module "scheduled_tasks_ecs_task_definitions" {
-  source                      = "../../modules/ecs_task"
-  for_each                    = local.scheduled_tasks
-  environment_name            = local.environment_name
-  container_image             = var.image_name
-  container_port              = 8080
-  ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
-  ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
+  source                       = "../../modules/ecs_task"
+  for_each                     = local.scheduled_tasks
+  environment_name             = local.environment_name
+  container_image              = var.image_name
+  container_port               = 8080
+  ecs_task_execution_role_arn  = data.aws_iam_role.ecs_task_execution.arn
+  ecs_task_execution_role_name = data.aws_iam_role.ecs_task_execution.name
+  ecs_task_role_arn            = data.aws_iam_role.webapp_ecs_task.arn
   # TODO: consider what our requirements are for the instance
   task_cpu              = 2048
   task_memory           = 4096
@@ -335,11 +338,12 @@ module "nft_seed" {
 module "one_login_simulator" {
   source = "./one_login_simulator"
 
-  environment_name            = local.environment_name
-  image                       = "${data.aws_ecr_repository.one_login_simulator.repository_url}@${var.one_login_simulator_image_digest}"
-  ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
-  one_login_client_id         = data.aws_ssm_parameter.one_login_simulator_client_id.value
-  one_login_public_key        = data.aws_ssm_parameter.one_login_simulator_public_key.value
+  environment_name             = local.environment_name
+  image                        = "${data.aws_ecr_repository.one_login_simulator.repository_url}@${var.one_login_simulator_image_digest}"
+  ecs_task_execution_role_arn  = data.aws_iam_role.ecs_task_execution.arn
+  ecs_task_execution_role_name = data.aws_iam_role.ecs_task_execution.name
+  one_login_client_id          = data.aws_ssm_parameter.one_login_simulator_client_id.value
+  one_login_public_key         = data.aws_ssm_parameter.one_login_simulator_public_key.value
 }
 
 # Published so the webapp's NFT readiness workflow can read the approved digest at runtime
