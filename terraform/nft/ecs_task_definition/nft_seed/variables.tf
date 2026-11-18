@@ -19,6 +19,11 @@ variable "ecs_task_execution_role_arn" {
   type        = string
 }
 
+variable "ecs_task_execution_role_name" {
+  description = "The name of the ecs task execution role"
+  type        = string
+}
+
 variable "webapp_ecs_task_role_arn" {
   description = "The arn of the webapp ecs task role"
   type        = string
