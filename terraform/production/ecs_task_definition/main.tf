@@ -233,12 +233,13 @@ locals {
 }
 
 module "webapp_ecs_task_definition" {
-  source                      = "../../modules/ecs_task"
-  environment_name            = local.environment_name
-  container_image             = var.image_name
-  container_port              = 8080
-  ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
-  ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
+  source                       = "../../modules/ecs_task"
+  environment_name             = local.environment_name
+  container_image              = var.image_name
+  container_port               = 8080
+  ecs_task_execution_role_arn  = data.aws_iam_role.ecs_task_execution.arn
+  ecs_task_execution_role_name = data.aws_iam_role.ecs_task_execution.name
+  ecs_task_role_arn            = data.aws_iam_role.webapp_ecs_task.arn
   # NOTE: If these values are ever updated, you will need to re-tune the argon2 constants used by password hashing in the application. See application.yml in webapp repo.
   task_cpu              = 2048
   task_memory           = 4096
@@ -248,17 +249,18 @@ module "webapp_ecs_task_definition" {
 }
 
 module "async_worker_ecs_task_definition" {
-  source                      = "../../modules/ecs_task"
-  environment_name            = local.environment_name
-  container_image             = var.image_name
-  container_port              = 8080
-  ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
-  ecs_task_role_arn           = data.aws_iam_role.async_worker_ecs_task.arn
-  task_cpu                    = 512
-  task_memory                 = 1024
-  task_name                   = "prsdb-async-worker"
-  environment_variables       = concat(local.common_environment_variables, local.async_worker_only_environment_variables)
-  secrets                     = local.common_secrets
+  source                       = "../../modules/ecs_task"
+  environment_name             = local.environment_name
+  container_image              = var.image_name
+  container_port               = 8080
+  ecs_task_execution_role_arn  = data.aws_iam_role.ecs_task_execution.arn
+  ecs_task_execution_role_name = data.aws_iam_role.ecs_task_execution.name
+  ecs_task_role_arn            = data.aws_iam_role.async_worker_ecs_task.arn
+  task_cpu                     = 512
+  task_memory                  = 1024
+  task_name                    = "prsdb-async-worker"
+  environment_variables        = concat(local.common_environment_variables, local.async_worker_only_environment_variables)
+  secrets                      = local.common_secrets
   tags = {
     Type = "async-worker"
   }
@@ -269,13 +271,14 @@ locals {
 }
 
 module "scheduled_tasks_ecs_task_definitions" {
-  source                      = "../../modules/ecs_task"
-  for_each                    = local.scheduled_tasks
-  environment_name            = local.environment_name
-  container_image             = var.image_name
-  container_port              = 8080
-  ecs_task_execution_role_arn = data.aws_iam_role.ecs_task_execution.arn
-  ecs_task_role_arn           = data.aws_iam_role.webapp_ecs_task.arn
+  source                       = "../../modules/ecs_task"
+  for_each                     = local.scheduled_tasks
+  environment_name             = local.environment_name
+  container_image              = var.image_name
+  container_port               = 8080
+  ecs_task_execution_role_arn  = data.aws_iam_role.ecs_task_execution.arn
+  ecs_task_execution_role_name = data.aws_iam_role.ecs_task_execution.name
+  ecs_task_role_arn            = data.aws_iam_role.webapp_ecs_task.arn
   # TODO: consider what our requirements are for the instance
   task_cpu              = 2048
   task_memory           = 4096

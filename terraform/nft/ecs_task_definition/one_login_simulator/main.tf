@@ -13,6 +13,7 @@ module "task" {
   task_cpu                      = 4096
   task_memory                   = 8192
   ecs_task_execution_role_arn   = var.ecs_task_execution_role_arn
+  ecs_task_execution_role_name  = var.ecs_task_execution_role_name
   cloudwatch_log_retention_days = 60
 
   environment_variables = [

@@ -72,3 +72,29 @@ resource "aws_cloudwatch_log_group" "webapp_log_group" {
 
   depends_on = [aws_kms_key_policy.log_group]
 }
+
+data "aws_iam_policy_document" "task_execution_log_group_kms" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Encrypt",
+      "kms:ReEncrypt*",
+      "kms:Decrypt",
+      "kms:GenerateDataKey*",
+      "kms:Describe*"
+    ]
+    resources = [aws_kms_key.log_group.arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["logs.${data.aws_region.current.name}.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "task_execution_log_group_kms" {
+  name   = "${local.log_group_name}-log-group-kms"
+  role   = var.ecs_task_execution_role_name
+  policy = data.aws_iam_policy_document.task_execution_log_group_kms.json
+}
