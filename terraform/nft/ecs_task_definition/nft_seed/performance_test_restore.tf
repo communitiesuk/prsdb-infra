@@ -22,6 +22,31 @@ moved {
   to   = module.nft_restore_log_group.aws_cloudwatch_log_group.main
 }
 
+data "aws_iam_policy_document" "nft_restore_log_group_kms" {
+  statement {
+    actions = [
+      "kms:Encrypt",
+      "kms:ReEncrypt*",
+      "kms:Decrypt",
+      "kms:GenerateDataKey*",
+      "kms:Describe*",
+    ]
+    resources = [module.nft_restore_log_group.kms_key_arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["logs.eu-west-2.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "nft_restore_log_group_kms" {
+  name   = "${var.environment_name}-seed-data-restore-log-group-kms"
+  role   = var.ecs_task_execution_role_name
+  policy = data.aws_iam_policy_document.nft_restore_log_group_kms.json
+}
+
 data "aws_iam_policy_document" "nft_restore_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]

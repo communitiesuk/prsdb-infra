@@ -13,6 +13,11 @@ variable "ecs_task_execution_role_arn" {
   type        = string
 }
 
+variable "ecs_task_execution_role_name" {
+  description = "The name of the ecs task execution role"
+  type        = string
+}
+
 variable "one_login_client_id" {
   description = "The One Login client ID the simulator presents to the webapp"
   type        = string
