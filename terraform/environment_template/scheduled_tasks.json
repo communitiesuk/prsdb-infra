@@ -9,6 +9,9 @@
   "delete-incomplete-properties": {
     "schedule_expression": "cron(30 1 * * ? *)"
   },
+  "deactivate-properties-with-overdue-tasks": {
+    "schedule_expression": "cron(30 1 * * ? *)"
+  },
   "jl-invitation-expiry-email": {
     "schedule_expression": "cron(0 7 * * ? *)"
   },
