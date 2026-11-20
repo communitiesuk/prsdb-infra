@@ -384,6 +384,18 @@ resource "aws_wafv2_web_acl" "load_balancer" {
             count {}
           }
         }
+
+        # Count query-argument matches here so the NFT-only rule below can narrowly allow its authorized simulator flow.
+        dynamic "rule_action_override" {
+          for_each = var.environment_name == "nft" && var.simulator_host != null ? [1] : []
+
+          content {
+            name = "SQLi_QUERYARGUMENTS"
+            action_to_use {
+              count {}
+            }
+          }
+        }
       }
     }
 
@@ -551,6 +563,94 @@ resource "aws_wafv2_web_acl" "load_balancer" {
       cloudwatch_metrics_enabled = true
       metric_name                = "waf-block-linux-exploit"
       sampled_requests_enabled   = true
+    }
+  }
+
+  dynamic "rule" {
+    for_each = var.environment_name == "nft" && var.simulator_host != null ? [1] : []
+
+    content {
+      name     = "block-sqli-query-outside-owned-nft-simulator-authorize"
+      priority = 11
+
+      action {
+        block {}
+      }
+
+      statement {
+        and_statement {
+          statement {
+            label_match_statement {
+              scope = "LABEL"
+              key   = "awswaf:managed:aws:sql-database:SQLi_QueryArguments"
+            }
+          }
+
+          statement {
+            not_statement {
+              statement {
+                and_statement {
+                  statement {
+                    byte_match_statement {
+                      field_to_match {
+                        method {}
+                      }
+                      positional_constraint = "EXACTLY"
+                      search_string         = "GET"
+                      text_transformation {
+                        priority = 0
+                        type     = "NONE"
+                      }
+                    }
+                  }
+
+                  statement {
+                    byte_match_statement {
+                      field_to_match {
+                        uri_path {}
+                      }
+                      positional_constraint = "EXACTLY"
+                      search_string         = "/local/internal-access/authorize"
+                      text_transformation {
+                        priority = 0
+                        type     = "NONE"
+                      }
+                    }
+                  }
+
+                  statement {
+                    byte_match_statement {
+                      field_to_match {
+                        single_header {
+                          name = "host"
+                        }
+                      }
+                      positional_constraint = "EXACTLY"
+                      search_string         = var.simulator_host
+                      text_transformation {
+                        priority = 0
+                        type     = "LOWERCASE"
+                      }
+                    }
+                  }
+
+                  statement {
+                    ip_set_reference_statement {
+                      arn = aws_wafv2_ip_set.performance_runner_regional[0].arn
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "block-sqli-query-outside-owned-nft-simulator-authorize"
+        sampled_requests_enabled   = true
+      }
     }
   }
 }

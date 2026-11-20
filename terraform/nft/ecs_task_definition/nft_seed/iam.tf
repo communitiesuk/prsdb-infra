@@ -66,6 +66,11 @@ resource "aws_iam_role_policy_attachment" "nft_seed_restore" {
 
 data "aws_iam_policy_document" "nft_seed_run_task" {
   statement {
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::prsdb-uploaded-files-${var.environment_name}/seeding/certificate_template.png"]
+  }
+
+  statement {
     actions   = ["ecs:RunTask"]
     resources = ["arn:aws:ecs:eu-west-2:*:task-definition/prsdb-seed-data-${var.environment_name}:*"]
   }

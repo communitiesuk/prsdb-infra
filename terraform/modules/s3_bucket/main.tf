@@ -111,6 +111,28 @@ resource "aws_s3_bucket_lifecycle_configuration" "main" {
 
     status = "Enabled"
   }
+
+  dynamic "rule" {
+    for_each = var.performance_recovery_lifecycle == null ? [] : [var.performance_recovery_lifecycle]
+
+    content {
+      id = "expire-performance-recovery-checkpoints"
+
+      filter {
+        prefix = rule.value.prefix
+      }
+
+      expiration {
+        days = rule.value.expiration_days
+      }
+
+      noncurrent_version_expiration {
+        noncurrent_days = rule.value.expiration_days
+      }
+
+      status = "Enabled"
+    }
+  }
 }
 
 # Access logs bucket

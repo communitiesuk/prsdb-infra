@@ -6,6 +6,10 @@ module "nft_seed_bucket" {
   kms_key_arn                        = aws_kms_key.nft_seed.arn
   noncurrent_version_expiration_days = 700
   access_s3_log_expiration_days      = 700
+  performance_recovery_lifecycle = {
+    prefix          = "performance-recovery/"
+    expiration_days = 7
+  }
 }
 
 resource "aws_kms_key" "nft_seed" {
