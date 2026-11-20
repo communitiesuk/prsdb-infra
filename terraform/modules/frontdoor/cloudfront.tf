@@ -5,7 +5,7 @@ locals {
   # Single source of truth for the URL rewriter exception path segments. The same list is rendered into url_rewriter.js
   # at deploy time and used to build the CloudFront WAF's "unknown paths" rate-limit allowlist regex below, so the two
   # can never drift.
-  url_rewriter_exceptions = jsondecode(file("${path.module}/url_rewriter_exceptions.json"))
+  url_rewriter_exceptions = distinct(concat(jsondecode(file("${path.module}/url_rewriter_exceptions.json")), var.url_rewriter_extra_exceptions))
 
   # Service segments that the URL rewriter inserts based on the request hostname. Real traffic always reaches the
   # application via either an exception path or one of these segments, so we allow them in the WAF allowlist too.
@@ -55,7 +55,7 @@ resource "aws_cloudfront_distribution" "main" {
   default_cache_behavior {
     allowed_methods            = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods             = ["GET", "HEAD", "OPTIONS"]
-    cache_policy_id            = aws_cloudfront_cache_policy.main.id
+    cache_policy_id            = var.disable_caching ? data.aws_cloudfront_cache_policy.caching_disabled[0].id : aws_cloudfront_cache_policy.main.id
     compress                   = true
     origin_request_policy_id   = aws_cloudfront_origin_request_policy.main.id
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.main.id
@@ -184,6 +184,12 @@ resource "aws_cloudfront_cache_policy" "main" {
     enable_accept_encoding_gzip   = true
     enable_accept_encoding_brotli = true
   }
+}
+
+data "aws_cloudfront_cache_policy" "caching_disabled" {
+  count = var.disable_caching ? 1 : 0
+
+  name = "Managed-CachingDisabled"
 }
 
 data "aws_cloudfront_response_headers_policy" "main" {

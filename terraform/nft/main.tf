@@ -93,6 +93,8 @@ module "frontdoor" {
   load_balancer_domain_name     = local.load_balancer_domain_name
   cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
   load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
+  disable_caching               = true
+  url_rewriter_extra_exceptions = ["local"]
   ip_allowlist                  = local.ip_allowlist
   simulator_host                = local.load_balancer_domain_name
   simulator_allowed_ips         = concat(local.ip_allowlist, ["${module.networking.nat_gateway_ip}/32"])
@@ -203,6 +205,7 @@ module "database" {
   database_password               = module.secrets.database_password.result
   database_port                   = local.database_port
   allocated_storage               = local.database_allocated_storage
+  storage_type                    = "gp3" # At 50 GiB, PostgreSQL gp3 provides 3,000 IOPS and 125 MiB/s by default.
   backup_retention_period         = 7
   db_subnet_group_name            = module.networking.db_subnet_group_name
   instance_class                  = "db.t4g.small"

@@ -26,6 +26,24 @@ variable "noncurrent_version_expiration_days" {
   default     = 180
 }
 
+variable "performance_recovery_lifecycle" {
+  type = object({
+    prefix          = string
+    expiration_days = number
+  })
+  default     = null
+  description = "Optional prefix-only retention rule for private performance recovery checkpoints."
+
+  validation {
+    condition = var.performance_recovery_lifecycle == null ? true : (
+      startswith(var.performance_recovery_lifecycle.prefix, "performance-recovery/") &&
+      var.performance_recovery_lifecycle.expiration_days >= 1 &&
+      floor(var.performance_recovery_lifecycle.expiration_days) == var.performance_recovery_lifecycle.expiration_days
+    )
+    error_message = "Performance recovery lifecycle rules must use the dedicated prefix and whole positive retention days."
+  }
+}
+
 variable "access_s3_log_expiration_days" {
   type        = number
   description = "The number of days to retain s3 access logs"
