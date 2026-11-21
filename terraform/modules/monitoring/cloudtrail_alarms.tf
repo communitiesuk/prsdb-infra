@@ -150,3 +150,20 @@ resource "aws_cloudwatch_metric_alarm" "organization_changes" {
     aws_sns_topic.critical_alarm_sns_topic.arn,
   ]
 }
+
+resource "aws_cloudwatch_metric_alarm" "s3_backup_at_risk" {
+  alarm_name          = "s3-backup-at-risk-${var.environment_name}"
+  alarm_description   = "An AWS Backup vault, plan, selection or recovery point has been deleted, a backup vault KMS key has been disabled or scheduled for deletion, or a backed-up S3 bucket's notification settings (needed for continuous backups) have changed"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  treat_missing_data  = "notBreaching"
+  metric_name         = local.s3_backup_at_risk_metric_name
+  namespace           = "LogMetrics"
+  evaluation_periods  = 1
+  period              = 60
+  threshold           = 1
+  statistic           = "Sum"
+
+  alarm_actions = [
+    aws_sns_topic.non_critical_alarm_sns_topic.arn,
+  ]
+}

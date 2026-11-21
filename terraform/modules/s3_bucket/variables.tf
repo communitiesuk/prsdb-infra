@@ -42,3 +42,9 @@ variable "object_lock_enabled" {
   type        = bool
   default     = false
 }
+
+variable "eventbridge_notifications_enabled" {
+  description = "Whether to send the bucket's object events to Amazon EventBridge, which AWS Backup continuous backups require"
+  type        = bool
+  default     = false
+}

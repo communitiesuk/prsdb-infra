@@ -72,3 +72,18 @@ variable "enable_kms_cloudtrail_events" {
   description = "Whether to log KMS  events to CloudTrail"
   default     = true
 }
+
+variable "backup_vault_kms_key_arns" {
+  description = "ARNs of the KMS keys encrypting the AWS Backup vaults, to alarm when they are disabled or scheduled for deletion"
+  type        = list(string)
+}
+
+variable "backup_role_arn" {
+  description = "ARN of the AWS Backup role, whose own changes to the backed-up buckets' notification settings are expected"
+  type        = string
+}
+
+variable "backed_up_s3_bucket_names" {
+  description = "Names of the S3 buckets backed up by AWS Backup, to alarm when their notification settings change"
+  type        = list(string)
+}

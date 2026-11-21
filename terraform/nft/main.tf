@@ -269,6 +269,17 @@ module "file_upload" {
   critical_alarm_sns_topic_arn     = one(module.monitoring[*].critical_alarm_sns_topic_arn)
 }
 
+module "backup" {
+  count  = var.task_definition_created ? 1 : 0
+  source = "../modules/backup"
+
+  environment_name                 = local.environment_name
+  s3_bucket_arns                   = var.task_definition_created ? [module.file_upload[0].safe_bucket_arn] : []
+  backup_retention_days            = 7
+  point_in_time_recovery_enabled   = true
+  non_critical_alarm_sns_topic_arn = var.task_definition_created ? module.monitoring[0].non_critical_alarm_sns_topic_arn : null
+}
+
 module "monitoring" {
   count  = var.task_definition_created ? 1 : 0
   source = "../modules/monitoring"
@@ -291,6 +302,9 @@ module "monitoring" {
   database_identifier              = module.database.database_identifier
   webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
   enable_kms_cloudtrail_events     = var.enable_kms_cloudtrail_events
+  backup_vault_kms_key_arns        = var.task_definition_created ? module.backup[0].backup_vault_kms_key_arns : []
+  backup_role_arn                  = var.task_definition_created ? module.backup[0].backup_role_arn : ""
+  backed_up_s3_bucket_names        = var.task_definition_created ? [module.file_upload[0].safe_bucket_name] : []
 }
 
 module "email_queue" {

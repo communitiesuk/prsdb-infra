@@ -5,6 +5,7 @@ module "uploaded_files_bucket" {
   noncurrent_version_expiration_days = 700
   access_s3_log_expiration_days      = 700
   kms_key_arn                        = aws_kms_key.uploaded_files_bucket_encryption_key.arn
+  eventbridge_notifications_enabled  = true
 }
 
 resource "aws_kms_key" "uploaded_files_bucket_encryption_key" {
