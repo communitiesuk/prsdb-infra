@@ -8,3 +8,27 @@ resource "aws_backup_vault" "main" {
     prevent_destroy = true
   }
 }
+
+resource "aws_backup_vault_policy" "main" {
+  backup_vault_name = aws_backup_vault.main.name
+  policy            = data.aws_iam_policy_document.backup_vault.json
+}
+
+data "aws_iam_policy_document" "backup_vault" {
+  statement {
+    sid    = "DenyRecoveryPointDeletion"
+    effect = "Deny"
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions = [
+      "backup:DeleteRecoveryPoint",
+      "backup:UpdateRecoveryPointLifecycle",
+    ]
+
+    resources = ["*"]
+  }
+}

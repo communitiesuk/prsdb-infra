@@ -323,6 +323,7 @@ Objects that have been in a backup vault for 60 days move to AWS Backup's lower-
 
 The backups are configured by the `backup` module and can be switched off per environment with `point_in_time_recovery_enabled` in `terraform/<environment>/main.tf`.
 Switching them off stops new backups; existing recovery points are kept until they expire.
+The backup vault's access policy stops anyone deleting recovery points or shortening their retention, so they are only removed when they expire.
 Changing `backup_retention_days` stops the current continuous backup and starts a new full one, which also triggers the `<environment>-backup-failure` alarm once.
 
 Continuous backups need the bucket's Amazon EventBridge notifications to stay on; if they are turned off, backups stop without any job failing.
