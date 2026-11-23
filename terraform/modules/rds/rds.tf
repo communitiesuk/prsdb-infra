@@ -18,7 +18,7 @@ resource "aws_db_instance" "main" {
   port                            = var.database_port
   publicly_accessible             = false
   storage_encrypted               = true
-  storage_type                    = "gp2"
+  storage_type                    = "gp3"
   username                        = "postgres"
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
   vpc_security_group_ids          = [aws_security_group.main.id]
