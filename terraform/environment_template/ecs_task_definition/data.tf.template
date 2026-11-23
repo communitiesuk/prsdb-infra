@@ -109,6 +109,11 @@ data "aws_ssm_parameter" "safe_bucket" {
   name = "${local.environment_name}-prsdb-uploaded-files"
 }
 
+data "aws_ssm_parameter" "scan_result_queue_name" {
+  count = var.file_upload_buckets_created ? 1 : 0
+  name  = "${local.environment_name}-prsdb-scan-result-queue-name"
+}
+
 data "aws_secretsmanager_secret" "epc_client_secret" {
   name = "tf-${local.environment_name}-prsdb-epc-client-secret"
 }

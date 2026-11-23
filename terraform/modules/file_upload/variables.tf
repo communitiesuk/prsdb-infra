@@ -12,17 +12,19 @@ variable "webapp_task_execution_role_name" {
   type        = string
 }
 
-variable "ecs_cluster_arn" {
-  description = "ARN of the ECS cluster where the webapp service will run"
+variable "async_worker_ecs_task_role_name" {
+  description = "Name of the async worker ECS task role, which processes scan results from the scan result queue"
   type        = string
 }
 
-variable "private_subnet_ids" {
-  type        = list(string)
-  description = "List of private subnet IDs where the ECS tasks will run"
+variable "non_critical_alarm_sns_topic_arn" {
+  description = "ARN of the SNS topic that non-critical scan result queue alarms notify, or null while the environment's monitoring has not been created"
+  type        = string
+  default     = null
 }
 
-variable "ecs_security_group_ids" {
-  type        = list(string)
-  description = "List of security group IDs to attach to the ECS tasks"
+variable "critical_alarm_sns_topic_arn" {
+  description = "ARN of the SNS topic that critical scan result queue alarms notify, or null while the environment's monitoring has not been created"
+  type        = string
+  default     = null
 }

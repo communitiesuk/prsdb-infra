@@ -62,6 +62,11 @@ variable "ecs_task_execution_role_arn" {
   description = "The arn of the app task execution role"
 }
 
+variable "ecs_task_execution_role_name" {
+  type        = string
+  description = "The name of the app task execution role"
+}
+
 variable "ecs_task_role_arn" {
   type        = string
   description = "Optional ARN of the IAM role assumed by the running task"
