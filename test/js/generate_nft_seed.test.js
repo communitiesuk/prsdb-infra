@@ -13,6 +13,174 @@ const seedIam = fs.readFileSync(
 const taskArn = 'arn:aws:ecs:eu-west-2:448120078528:task/nft-app/0123456789abcdef0123456789abcdef';
 const startedBy = 'nft-123456789-1';
 
+describe('NFT multipart dump upload', () => {
+    function runDumpCli(scenario) {
+        const scratch = fs.mkdtempSync(path.join(os.tmpdir(), '.nft-dump-cli-'));
+        try {
+            const bin = path.join(scratch, 'bin');
+            fs.mkdirSync(bin);
+            fs.writeFileSync(path.join(bin, 'pg_dump'), '#!/bin/sh\nprintf abcdefgh\n[ "$SCENARIO" != dump-failure ]\n', {mode: 0o755});
+            fs.writeFileSync(path.join(bin, 'aws'), `#!/usr/bin/env node
+const fs = require('fs');
+const args = process.argv.slice(2);
+const operation = args[1];
+const calls = JSON.parse(fs.readFileSync(process.env.TRACE, 'utf8'));
+calls.push(operation);
+fs.writeFileSync(process.env.TRACE, JSON.stringify(calls));
+if (operation === 'put-object' || operation === 'complete-multipart-upload') {
+  const flag = operation === 'put-object' ? '--body' : '--multipart-upload';
+  const file = args[args.indexOf(flag) + 1].replace(/^file:\\/\\//, '');
+  const details = JSON.parse(fs.readFileSync(process.env.DETAILS, 'utf8'));
+  details[operation] = {args, body: JSON.parse(fs.readFileSync(file, 'utf8'))};
+  fs.writeFileSync(process.env.DETAILS, JSON.stringify(details));
+}
+if (operation === 'complete-multipart-upload' && process.env.SCENARIO === 'completion-failure') process.exit(1);
+const result = {
+  'create-multipart-upload': {UploadId: 'upload-id'},
+  'upload-part': {ETag: '"part-etag"'},
+  'complete-multipart-upload': {VersionId: 'dump-version'},
+  'put-object': {VersionId: 'manifest-version'},
+}[operation] || {};
+process.stdout.write(JSON.stringify(result));
+`, {mode: 0o755});
+            const trace = path.join(scratch, 'trace.json');
+            const details = path.join(scratch, 'details.json');
+            fs.writeFileSync(trace, '[]');
+            fs.writeFileSync(details, '{}');
+            const result = spawnSync('python3', [
+                path.join(repoDir, 'terraform/nft/ecs_task_definition/nft_seed/multipart_dump.py'),
+            ], {
+                cwd: repoDir, encoding: 'utf8',
+                env: {...process.env, PATH: `${bin}${path.delimiter}${process.env.PATH}`, TRACE: trace, DETAILS: details,
+                    SCENARIO: scenario, NFT_SEED_RUN_ID: '123-2',
+                    NFT_SEED_CERTIFICATE_OBJECT_KEY: 'seeding/certificate-references/123-2.png',
+                    NFT_SEED_CERTIFICATE_VERSION_ID: 'cert-version'},
+            });
+            if (result.error) throw result.error;
+            return {...result, calls: JSON.parse(fs.readFileSync(trace, 'utf8')),
+                details: JSON.parse(fs.readFileSync(details, 'utf8'))};
+        } finally {
+            fs.rmSync(scratch, {recursive: true, force: true});
+        }
+    }
+
+    function runUpload(scenario) {
+        const script = path.join(repoDir, 'terraform/nft/ecs_task_definition/nft_seed/multipart_dump.py');
+        const result = spawnSync('python3', ['-c', `
+import importlib.util, io, json, sys
+spec = importlib.util.spec_from_file_location('dump', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+scenario = sys.argv[2]
+calls = []
+def aws(operation, **kwargs):
+    calls.append((operation, kwargs))
+    if operation == 'create-multipart-upload':
+        return {'UploadId': 'owned-upload'}
+    if operation == 'upload-part':
+        if scenario == 'part-failure': raise RuntimeError('private error')
+        return {'ETag': '"etag-%s"' % kwargs['part_number']}
+    if operation == 'complete-multipart-upload':
+        if scenario == 'ambiguous-completion': raise RuntimeError('private error')
+        return {'VersionId': 'exact-version' if scenario != 'missing-version' else 'null'}
+    return {}
+payload = b'abcdefgh' if scenario != 'empty' else b''
+try:
+    result = module.upload_dump(io.BytesIO(payload), aws, lambda: scenario != 'dump-failure', part_size=4)
+    print(json.dumps({'result': result, 'calls': calls}))
+except Exception:
+    print(json.dumps({'result': None, 'calls': calls}))
+`, script, scenario], {encoding: 'utf8'});
+        if (result.error) throw result.error;
+        if (result.status !== 0) throw new Error(result.stderr);
+        return JSON.parse(result.stdout);
+    }
+
+    it('binds exact multipart completion version, bytes and SHA to the uploaded parts', () => {
+        const {result, calls} = runUpload('success');
+        expect(result).toEqual({
+            version: 'exact-version',
+            bytes: 8,
+            sha256: '9c56cc51b374c3ba189210d5b6d4bf57790d351c96c47c02190ecf1e430635ab', // pragma: allowlist secret
+        });
+        expect(calls.map(call => call[0])).toEqual([
+            'create-multipart-upload', 'upload-part', 'upload-part', 'complete-multipart-upload',
+        ]);
+        expect(calls[3][1].parts).toEqual([
+            {ETag: '"etag-1"', PartNumber: 1}, {ETag: '"etag-2"', PartNumber: 2},
+        ]);
+    });
+
+    it.each(['part-failure', 'dump-failure', 'ambiguous-completion', 'missing-version', 'empty'])(
+        'never returns a usable identity for %s', scenario => {
+            const {result, calls} = runUpload(scenario);
+            expect(result).toBeNull();
+            if (['part-failure', 'dump-failure', 'empty'].includes(scenario)) {
+                expect(calls.some(call => call[0] === 'complete-multipart-upload')).toBe(false);
+            }
+        }
+    );
+
+    it('publishes the certificate and exact dump identity in a run-owned versioned manifest', () => {
+        const script = path.join(repoDir, 'terraform/nft/ecs_task_definition/nft_seed/multipart_dump.py');
+        const result = spawnSync('python3', ['-c', `
+import importlib.util, json, sys
+spec = importlib.util.spec_from_file_location('dump', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+calls = []
+def aws(operation, **kwargs):
+    calls.append((operation, kwargs))
+    return {'VersionId': 'manifest-version'}
+dump = {'version': 'dump-version', 'bytes': 8, 'sha256': 'a' * 64}
+result = module.publish_manifest(aws, '123-2', 'seeding/certificate-references/123-2.png', 'cert-version', dump)
+print(json.dumps({'result': result, 'calls': calls}))
+`, script], {encoding: 'utf8'});
+        if (result.error) throw result.error;
+        if (result.status !== 0) throw new Error(result.stderr);
+        const parsed = JSON.parse(result.stdout);
+        expect(parsed.result).toEqual({key: 'seed-manifests/123-2.json', version: 'manifest-version'});
+        expect(parsed.calls).toEqual([['put-object', expect.objectContaining({
+            key: 'seed-manifests/123-2.json',
+            manifest: {
+                runId: '123-2',
+                dump: {key: 'seed-data.dump', version: 'dump-version', bytes: 8, sha256: 'a'.repeat(64)},
+                certificate: {key: 'seeding/certificate-references/123-2.png', version: 'cert-version'},
+            },
+        })]]);
+    });
+
+    it('runs pg_dump and publishes a manifest only after exact multipart completion', () => {
+        const result = runDumpCli('success');
+        expect(result.status).toBe(0);
+        expect(result.calls).toEqual([
+            'create-multipart-upload', 'upload-part', 'complete-multipart-upload', 'put-object',
+        ]);
+        expect(result.stdout).toContain('NFT_SEED_MANIFEST_VERSION=manifest-version'); // pragma: allowlist secret
+        expect(result.stdout).not.toContain('cert-version');
+        expect(result.stdout).not.toContain('dump-version');
+        expect(result.details['complete-multipart-upload'].body).toEqual({Parts: [{ETag: '"part-etag"', PartNumber: 1}]});
+        expect(result.details['put-object'].args).toContain('--if-none-match');
+        expect(result.details['put-object'].body).toEqual({
+            runId: '123-2',
+            dump: {
+                key: 'seed-data.dump', version: 'dump-version', bytes: 8,
+                sha256: '9c56cc51b374c3ba189210d5b6d4bf57790d351c96c47c02190ecf1e430635ab', // pragma: allowlist secret
+            },
+            certificate: {key: 'seeding/certificate-references/123-2.png', version: 'cert-version'},
+        });
+    });
+
+    it.each(['dump-failure', 'completion-failure'])(
+        'does not publish a manifest after %s', scenario => {
+            const result = runDumpCli(scenario);
+            expect(result.status).toBe(1);
+            expect(result.calls).not.toContain('put-object');
+            expect(result.stdout).not.toContain('NFT_SEED_MANIFEST_VERSION=');
+        }
+    );
+});
+
 const fakeAws = `#!/usr/bin/env node
 const fs = require('node:fs');
 const args = process.argv.slice(2);
@@ -20,11 +188,20 @@ const queryIndex = args.indexOf('--query');
 const query = queryIndex < 0 ? '' : args[queryIndex + 1];
 const desiredStatusIndex = args.indexOf('--desired-status');
 let key;
-if (args[0] === 's3api' && args[1] === 'head-object') key = 'certificate';
+if (args[0] === 's3api' && args[1] === 'head-object') {
+  key = args.includes('--version-id') ? 'certificateCopiedHead' : 'certificate';
+}
+else if (args[0] === 's3api' && args[1] === 'copy-object') key = 'certificateCopy';
+else if (args[0] === 's3api' && args[1] === 'get-object') key = 'manifestGet';
+else if (args[0] === 'logs' && args[1] === 'get-log-events') key = 'manifestLog';
 else if (args[0] === 'ecs' && args[1] === 'describe-services') {
   key = args[args.indexOf('--query') + 1].includes('subnets') ? 'subnets' : 'securityGroups';
 } else if (args[0] === 'ecs' && args[1] === 'run-task') key = 'runTask';
-else if (args[0] === 'ecs' && args[1] === 'describe-tasks') key = query.includes('lastStatus') ? 'status' : 'dump';
+else if (args[0] === 'ecs' && args[1] === 'describe-tasks') {
+  key = query.includes('lastStatus') ? 'status' :
+    query.includes('nft-data-seeder') ? 'seedExit' :
+      query.includes('stopCode') ? 'stopCode' : 'dump';
+}
 else if (args[0] === 'ecs' && args[1] === 'list-tasks') key = 'listTasks';
 else if (args[0] === 'ecs' && args[1] === 'stop-task') key = 'stop';
 else key = 'unexpected';
@@ -36,6 +213,10 @@ fs.writeFileSync(process.env.FAKE_AWS_STATE, JSON.stringify(state));
 const calls = readJson(process.env.FAKE_AWS_TRACE, []);
 calls.push({key, query: query || null, cluster: args[args.indexOf('--cluster') + 1] || null,
   task: args[args.indexOf('--task') + 1] || null,
+  objectKey: args.includes('--key') ? args[args.indexOf('--key') + 1] : null,
+  versionId: args.includes('--version-id') ? args[args.indexOf('--version-id') + 1] : null,
+  copySource: args.includes('--copy-source') ? args[args.indexOf('--copy-source') + 1] : null,
+  overrides: args.includes('--overrides') ? JSON.parse(args[args.indexOf('--overrides') + 1]) : null,
   startedBy: args[args.indexOf('--started-by') + 1] || null,
   clientToken: args[args.indexOf('--client-token') + 1] || null,
   desiredStatus: desiredStatusIndex < 0 ? null : args[desiredStatusIndex + 1],
@@ -48,6 +229,7 @@ if (key === 'listTasks' && args.includes('--started-by') && args.includes('--des
 const fixtures = JSON.parse(process.env.FAKE_AWS_FIXTURES);
 const entries = fixtures[key] || [];
 const response = entries[Math.min(index, entries.length - 1)] || {stdout: ''};
+if (key === 'manifestGet' && !response.exitCode) fs.writeFileSync(args[args.length - 1], process.env.FAKE_MANIFEST);
 if (response.stdout) process.stdout.write(response.stdout);
 if (response.stderr) process.stderr.write(response.stderr);
 process.exit(response.exitCode || 0);
@@ -81,15 +263,22 @@ function runWorkflowStep(stepId, fixtures, envOverrides = {}) {
                 AWS_REGION: 'eu-west-2',
                 AWS_ACCOUNT_ID: '448120078528',
                 ENVIRONMENT: 'nft',
+                RUNNER_TEMP: scratch,
                 GITHUB_OUTPUT: outputFile,
                 GITHUB_RUN_ID: '123456789',
                 GITHUB_RUN_ATTEMPT: '1',
+                CERTIFICATE_KEY: 'seeding/certificate-references/123456789-1.png',
                 CERTIFICATE_VERSION_ID: 'certificate-canary',
                 TASK_NETWORK: '{"awsvpcConfiguration":{"subnets":["network-canary"],"securityGroups":["security-group-canary"],"assignPublicIp":"DISABLED"}}',
                 TASK_ARN: '',
                 MAX_ATTEMPTS: '680',
                 RECONCILE_MAX_ATTEMPTS: '5',
                 FAKE_AWS_FIXTURES: JSON.stringify(fixtures),
+                FAKE_MANIFEST: JSON.stringify({
+                    runId: '123456789-1',
+                    dump: {key: 'seed-data.dump', version: 'dump-version', bytes: 8, sha256: 'a'.repeat(64)},
+                    certificate: {key: 'seeding/certificate-references/123456789-1.png', version: 'certificate-canary'},
+                }),
                 FAKE_AWS_STATE: stateFile,
                 FAKE_AWS_TRACE: traceFile,
                 FAKE_SLEEP_TRACE: sleepTrace,
@@ -113,6 +302,8 @@ function successfulLaunch(statuses = ['STOPPED'], dumpExitCode = '0') {
         runTask: [{stdout: JSON.stringify({tasks: [{taskArn}], failures: []})}],
         status: statuses.map(stdout => ({stdout})),
         dump: [{stdout: dumpExitCode}],
+        manifestLog: [{stdout: JSON.stringify(['NFT_SEED_MANIFEST_VERSION=manifest-version'])}],
+        manifestGet: [{stdout: JSON.stringify({VersionId: 'manifest-version'})}],
     };
 }
 
@@ -121,6 +312,54 @@ function outputValue(outputs, key) {
 }
 
 describe('NFT seed workflow preflight diagnostics', () => {
+    it('copies a pinned template to a unique run-owned key and verifies its exact version', () => {
+        const result = runWorkflowStep('certificate', {
+            certificate: [{stdout: 'template-version'}],
+            certificateCopy: [{stdout: JSON.stringify({VersionId: 'copied-version'})}],
+            certificateCopiedHead: [{stdout: JSON.stringify({VersionId: 'copied-version', ContentLength: 123})}],
+        });
+        expect(result.status).toBe(0);
+        expect(outputValue(result.outputs, 'key')).toBe('seeding/certificate-references/123456789-1.png');
+        expect(outputValue(result.outputs, 'version-id')).toBe('copied-version');
+        expect(result.awsCalls.map(call => call.key)).toEqual([
+            'certificate', 'certificateCopy', 'certificateCopiedHead',
+        ]);
+        expect(result.awsCalls[1]).toEqual(expect.objectContaining({
+            objectKey: 'seeding/certificate-references/123456789-1.png',
+            copySource: 'prsdb-uploaded-files-nft/seeding/certificate_template.png?versionId=template-version',
+        }));
+        expect(result.awsCalls[2]).toEqual(expect.objectContaining({
+            objectKey: 'seeding/certificate-references/123456789-1.png', versionId: 'copied-version',
+        }));
+    });
+
+    it('rejects a copied certificate whose version cannot be verified', () => {
+        const result = runWorkflowStep('certificate', {
+            certificate: [{stdout: 'template-version'}],
+            certificateCopy: [{stdout: JSON.stringify({VersionId: 'copied-version'})}],
+            certificateCopiedHead: [{stdout: JSON.stringify({VersionId: 'wrong-version', ContentLength: 123})}],
+        });
+        expect(result.status).toBe(1);
+        expect(outputValue(result.outputs, 'version-id')).toBe('');
+    });
+
+    it.each([
+        ['missing copy version', {certificateCopy: [{stdout: '{}'}]}],
+        ['copy access failure', {certificateCopy: [{exitCode: 254, stderr: 'private-payload-canary'}]}],
+        ['head access failure', {certificateCopiedHead: [{exitCode: 254, stderr: 'private-payload-canary'}]}],
+        ['empty copy', {certificateCopiedHead: [{stdout: JSON.stringify({VersionId: 'copied-version', ContentLength: 0})}]}],
+    ])('fails closed on %s', (_description, overrides) => {
+        const result = runWorkflowStep('certificate', {
+            certificate: [{stdout: 'template-version'}],
+            certificateCopy: [{stdout: JSON.stringify({VersionId: 'copied-version'})}],
+            certificateCopiedHead: [{stdout: JSON.stringify({VersionId: 'copied-version', ContentLength: 123})}],
+            ...overrides,
+        });
+        expect(result.status).toBe(1);
+        expect(outputValue(result.outputs, 'version-id')).toBe('');
+        expect(result.stdout + result.stderr).not.toContain('private-payload-canary');
+    });
+
     it('reports certificate AWS errors without exposing certificate data', () => {
         const result = runWorkflowStep('certificate', {
             certificate: [{
@@ -155,6 +394,43 @@ describe('NFT seed workflow preflight diagnostics', () => {
 });
 
 describe('NFT seed workflow task polling', () => {
+    it('requires an exact versioned manifest before reporting successful seed completion', () => {
+        const fixture = successfulLaunch();
+        fixture.manifestLog = [{stdout: '[]'}];
+        const result = runWorkflowStep('run-task', fixture);
+        expect(result.status).toBe(1);
+        expect(result.stdout).not.toContain('Seed dump completed');
+    });
+
+    it('retrieves the exact manifest version produced by this task', () => {
+        const result = runWorkflowStep('run-task', successfulLaunch());
+        expect(result.status).toBe(0);
+        expect(result.awsCalls.find(call => call.key === 'manifestGet')).toEqual(expect.objectContaining({
+            objectKey: 'seed-manifests/123456789-1.json', versionId: 'manifest-version',
+        }));
+        expect(outputValue(result.outputs, 'manifest-version')).toBe('manifest-version');
+    });
+
+    it('rejects a response for a different manifest version', () => {
+        const fixture = successfulLaunch();
+        fixture.manifestGet = [{stdout: JSON.stringify({VersionId: 'another-version'})}];
+        const result = runWorkflowStep('run-task', fixture);
+        expect(result.status).toBe(1);
+        expect(result.stdout).not.toContain('Seed dump completed');
+    });
+
+    it('rejects a manifest that binds a different certificate to the dump', () => {
+        const result = runWorkflowStep('run-task', successfulLaunch(), {
+            FAKE_MANIFEST: JSON.stringify({
+                runId: '123456789-1',
+                dump: {key: 'seed-data.dump', version: 'dump-version', bytes: 8, sha256: 'a'.repeat(64)},
+                certificate: {key: 'seeding/certificate-references/123456789-1.png', version: 'different'},
+            }),
+        });
+        expect(result.status).toBe(1);
+        expect(result.stdout).not.toContain('Seed dump completed');
+    });
+
     it('retries missing status before observing RUNNING and STOPPED', () => {
         const result = runWorkflowStep('run-task', successfulLaunch(['', 'None', 'RUNNING', 'STOPPED']));
 
@@ -242,9 +518,54 @@ describe('NFT seed workflow task polling', () => {
         expect(failed.status).toBe(1);
         expect(failed.stdout).toContain('17');
     });
+
+    it('reports the seed exit code and safe stop category when the dump container did not start', () => {
+        const fixtures = successfulLaunch(['STOPPED'], 'None');
+        fixtures.seedExit = [{stdout: '42'}];
+        fixtures.stopCode = [{stdout: 'EssentialContainerExited'}];
+        const result = runWorkflowStep('run-task', fixtures);
+
+        expect(result.status).toBe(1);
+        expect(result.stdout).toContain('Seed container exit code: 42');
+        expect(result.stdout).toContain('Task stop category: EssentialContainerExited');
+        expect(result.stdout).not.toContain('Seed dump completed');
+    });
+
+    it('does not disclose unexpected seed diagnostics or task stop details', () => {
+        const fixtures = successfulLaunch(['STOPPED'], 'None');
+        fixtures.seedExit = [{stdout: 'private-payload-canary'}];
+        fixtures.stopCode = [{stdout: 'private-payload-canary'}];
+        const result = runWorkflowStep('run-task', fixtures);
+
+        expect(result.status).toBe(1);
+        expect(result.stdout).toContain('Seed container exit code unavailable');
+        expect(result.stdout).toContain('Task stop category unavailable');
+        expect(result.stdout).not.toContain('private-payload-canary');
+    });
 });
 
 describe('NFT seed workflow task identity and cleanup', () => {
+    it('passes the same run-owned certificate identity to both seed and dump containers', () => {
+        const result = runWorkflowStep('run-task', successfulLaunch());
+        const overrides = result.awsCalls.find(call => call.key === 'runTask').overrides.containerOverrides;
+        const seeder = Object.fromEntries(overrides.find(container => container.name === 'nft-data-seeder')
+            .environment.map(({name, value}) => [name, value]));
+        const dump = Object.fromEntries(overrides.find(container => container.name === 'nft-database-dump')
+            .environment.map(({name, value}) => [name, value]));
+        expect(seeder.NFT_SEED_CERTIFICATE_OBJECT_KEY).toBe('seeding/certificate-references/123456789-1.png');
+        expect(dump.NFT_SEED_CERTIFICATE_OBJECT_KEY).toBe(seeder.NFT_SEED_CERTIFICATE_OBJECT_KEY);
+        expect(dump.NFT_SEED_CERTIFICATE_VERSION_ID).toBe(seeder.NFT_SEED_CERTIFICATE_VERSION_ID);
+        expect(dump.NFT_SEED_RUN_ID).toBe('123456789-1');
+    });
+
+    it('does not launch a seed task with another run certificate key', () => {
+        const result = runWorkflowStep('run-task', successfulLaunch(), {
+            CERTIFICATE_KEY: 'seeding/certificate-references/999-1.png',
+        });
+        expect(result.status).toBe(1);
+        expect(result.awsCalls.some(call => call.key === 'runTask')).toBe(false);
+    });
+
     it('reconciles an ambiguous launch after eventual consistency using its unique startedBy', () => {
         const fixtures = successfulLaunch(['STOPPED']);
         fixtures.runTask[0] = {

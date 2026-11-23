@@ -23,12 +23,6 @@ variable "allocated_storage" {
   description = "The allocated DB storage in gibibytes."
 }
 
-variable "storage_type" {
-  type        = string
-  description = "The storage type for the database."
-  default     = "gp2"
-}
-
 variable "backup_retention_period" {
   type        = number
   description = "The number of days to retain db backups for. If 0 then the database will not be backed up"

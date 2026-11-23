@@ -204,7 +204,6 @@ module "database" {
   database_password               = module.secrets.database_password.result
   database_port                   = local.database_port
   allocated_storage               = local.database_allocated_storage
-  storage_type                    = "gp3" # At 50 GiB, PostgreSQL gp3 provides 3,000 IOPS and 125 MiB/s by default.
   backup_retention_period         = 7
   db_subnet_group_name            = module.networking.db_subnet_group_name
   instance_class                  = "db.t4g.small"

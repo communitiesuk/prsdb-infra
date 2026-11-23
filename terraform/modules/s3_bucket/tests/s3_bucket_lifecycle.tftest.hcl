@@ -65,6 +65,41 @@ run "supports_multiple_prefix_rules" {
   }
 }
 
+run "preserves_nft_seed_retention_with_short_lived_checkpoints" {
+  command = plan
+
+  variables {
+    noncurrent_version_expiration_days = 700
+    prefix_expiration_rules = [{
+      id              = "expire-performance-recovery-checkpoints"
+      prefix          = "performance-recovery/"
+      expiration_days = 7
+    }]
+  }
+
+  assert {
+    condition = {
+      for rule in aws_s3_bucket_lifecycle_configuration.main[0].rule :
+      rule.id => rule.noncurrent_version_expiration[0].noncurrent_days
+      } == {
+      "expire-old-versions"                     = 700
+      "expire-performance-recovery-checkpoints" = 7
+    }
+    error_message = "Seed versions must retain 700 days while recovery checkpoints expire after seven days."
+  }
+
+  assert {
+    condition = one([
+      for rule in aws_s3_bucket_lifecycle_configuration.main[0].rule : rule
+      if rule.id == "expire-performance-recovery-checkpoints"
+      ]).filter[0].prefix == "performance-recovery/" && one([
+      for rule in aws_s3_bucket_lifecycle_configuration.main[0].rule : rule
+      if rule.id == "expire-performance-recovery-checkpoints"
+    ]).expiration[0].days == 7
+    error_message = "The seven-day current-object expiry must apply only to recovery checkpoints."
+  }
+}
+
 run "supports_prefix_rules_without_general_retention" {
   command = plan
 

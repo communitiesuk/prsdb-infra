@@ -3,11 +3,16 @@
 data "aws_caller_identity" "current" {}
 
 locals {
-  nft_restore_task_family  = "prsdb-nft-vpc-restore-performance"
-  nft_restore_dump_version = ".pGtD.bGGLEZEER1T3UHCKDVryr_gpFU"
-  nft_restore_db_host      = split(":", split("/", var.database_url)[0])[0]
-  nft_restore_db_port      = split(":", split("/", var.database_url)[0])[1]
-  nft_restore_db_name      = split("/", var.database_url)[1]
+  nft_restore_task_family              = "prsdb-nft-vpc-restore-performance"
+  nft_restore_dump_version             = ".pGtD.bGGLEZEER1T3UHCKDVryr_gpFU"
+  nft_restore_certificate_key          = "seeding/certificate_template.png"
+  nft_restore_certificate_version      = "Slbxit8aPt6zL27XiKXCsUQGWx.vRNnO"
+  nft_restore_certificate_dump_version = ".pGtD.bGGLEZEER1T3UHCKDVryr_gpFU"
+  nft_restore_certificate_dump_bytes   = "1063214910"
+  nft_restore_certificate_dump_sha256  = "e0b6239d8d0be5a6b35209b34756e436073bd9392bbce2bee26c44ddfede88b0" # pragma: allowlist secret
+  nft_restore_db_host                  = split(":", split("/", var.database_url)[0])[0]
+  nft_restore_db_port                  = split(":", split("/", var.database_url)[0])[1]
+  nft_restore_db_name                  = split("/", var.database_url)[1]
 }
 
 module "nft_restore_log_group" {
@@ -162,6 +167,11 @@ resource "aws_ecs_task_definition" "nft_restore" {
         { name = "NFT_DUMP_VERSION", value = local.nft_restore_dump_version },
         { name = "NFT_DUMP_BYTES", value = "1063214910" },
         { name = "NFT_DUMP_SHA256", value = "e0b6239d8d0be5a6b35209b34756e436073bd9392bbce2bee26c44ddfede88b0" }, # pragma: allowlist secret
+        { name = "NFT_CERTIFICATE_KEY", value = local.nft_restore_certificate_key },
+        { name = "NFT_CERTIFICATE_VERSION", value = local.nft_restore_certificate_version },
+        { name = "NFT_CERTIFICATE_DUMP_VERSION", value = local.nft_restore_certificate_dump_version },
+        { name = "NFT_CERTIFICATE_DUMP_BYTES", value = local.nft_restore_certificate_dump_bytes },
+        { name = "NFT_CERTIFICATE_DUMP_SHA256", value = local.nft_restore_certificate_dump_sha256 },
         { name = "NFT_RESTORE_TASK_FAMILY", value = local.nft_restore_task_family },
         { name = "NFT_APP_CLUSTER", value = "${var.environment_name}-app" },
         { name = "NFT_APP_SERVICE", value = "${var.environment_name}-app" },
@@ -278,6 +288,17 @@ resource "aws_iam_role_policy" "performance_recovery_checkpoints" {
 }
 
 data "aws_iam_policy_document" "performance_test_restore_orchestrator" {
+  statement {
+    actions   = ["s3:GetObjectVersion"]
+    resources = ["arn:aws:s3:::prsdb-uploaded-files-${var.environment_name}/${local.nft_restore_certificate_key}"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "s3:VersionId"
+      values   = [local.nft_restore_certificate_version]
+    }
+  }
+
   # ListSchedules does not support resource-level authorization; constrain this read to NFT's region.
   statement {
     actions   = ["scheduler:ListSchedules"]

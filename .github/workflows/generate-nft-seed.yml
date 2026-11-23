@@ -53,12 +53,47 @@ jobs:
             echo "Certificate metadata preflight failed (AWS error code: $(aws_error_code "$VERSION_ID"))"
             exit 1
           fi
-          if [[ -z "${VERSION_ID//[[:space:]]/}" || "$VERSION_ID" == "None" || "$VERSION_ID" == "null" ]]; then
+          if [[ ! "$VERSION_ID" =~ ^[A-Za-z0-9._/+=-]+$ || "$VERSION_ID" == "None" || "$VERSION_ID" == "null" ]]; then
             echo "Certificate metadata requires an immutable object version"
             exit 1
           fi
           echo "::add-mask::$VERSION_ID"
-          printf 'version-id=%s\n' "$VERSION_ID" >> "$GITHUB_OUTPUT"
+          if [[ ! "$GITHUB_RUN_ID" =~ ^[1-9][0-9]*$ || ! "$GITHUB_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Invalid seed run identity"
+            exit 1
+          fi
+          CERTIFICATE_KEY="seeding/certificate-references/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.png"
+          ENCODED_VERSION=$(jq -rn --arg value "$VERSION_ID" '$value | @uri')
+          if ! COPY_RESPONSE=$(aws s3api copy-object \
+            --bucket prsdb-uploaded-files-nft \
+            --key "$CERTIFICATE_KEY" \
+            --copy-source "prsdb-uploaded-files-nft/seeding/certificate_template.png?versionId=${ENCODED_VERSION}" \
+            --output json 2>&1); then
+            echo "Certificate copy failed (AWS error code: $(aws_error_code "$COPY_RESPONSE"))"
+            exit 1
+          fi
+          COPIED_VERSION=$(jq -er '.VersionId | strings | select(length > 0)' <<< "$COPY_RESPONSE") || {
+            echo "Certificate copy did not return an immutable version"
+            exit 1
+          }
+          if [[ ! "$COPIED_VERSION" =~ ^[A-Za-z0-9._/+=-]+$ || "$COPIED_VERSION" == "null" || "$COPIED_VERSION" == "None" ]]; then
+            echo "Certificate copy did not return an immutable version"
+            exit 1
+          fi
+          echo "::add-mask::$COPIED_VERSION"
+          if ! HEAD_RESPONSE=$(aws s3api head-object \
+            --bucket prsdb-uploaded-files-nft --key "$CERTIFICATE_KEY" \
+            --version-id "$COPIED_VERSION" --output json 2>&1); then
+            echo "Copied certificate validation failed (AWS error code: $(aws_error_code "$HEAD_RESPONSE"))"
+            exit 1
+          fi
+          if ! jq -e --arg version "$COPIED_VERSION" \
+            '.VersionId == $version and (.ContentLength | type == "number" and . > 0)' \
+            <<< "$HEAD_RESPONSE" >/dev/null; then
+            echo "Copied certificate version or size did not match"
+            exit 1
+          fi
+          printf 'key=%s\nversion-id=%s\n' "$CERTIFICATE_KEY" "$COPIED_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Resolve NFT task networking
         id: networking
@@ -96,6 +131,7 @@ jobs:
       - name: Run full-scale NFT seeder and dump
         id: run-task
         env:
+          CERTIFICATE_KEY: ${{ steps.certificate.outputs.key }}
           CERTIFICATE_VERSION_ID: ${{ steps.certificate.outputs.version-id }}
           TASK_NETWORK: ${{ steps.networking.outputs.network-config }}
           MAX_ATTEMPTS: "680"
@@ -222,13 +258,23 @@ jobs:
             echo "Could not create a valid unique seed-task launch identifier"
             exit 1
           fi
-          if ! [[ "$MAX_ATTEMPTS" =~ ^[1-9][0-9]*$ && "$RECONCILE_MAX_ATTEMPTS" =~ ^[1-9][0-9]*$ ]]; then
-            echo "Seed workflow retry limits are invalid"
+          if [[ "$CERTIFICATE_KEY" != "seeding/certificate-references/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.png" ||
+            ! "$CERTIFICATE_VERSION_ID" =~ ^[A-Za-z0-9._/+=-]+$ ||
+            "$CERTIFICATE_VERSION_ID" == "null" || "$CERTIFICATE_VERSION_ID" == "None" ]]; then
+            echo "Seed certificate identity is invalid"
             exit 1
           fi
-
-          OVERRIDES=$(jq -n --arg version "$CERTIFICATE_VERSION_ID" \
-            '{containerOverrides: [{name: "nft-data-seeder", environment: [{name: "NFT_SEED_CERTIFICATE_VERSION_ID", value: $version}]}]}')
+          OVERRIDES=$(jq -n --arg key "$CERTIFICATE_KEY" --arg version "$CERTIFICATE_VERSION_ID" \
+            --arg run "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            '{containerOverrides: [
+              {name: "nft-data-seeder", environment: [
+                {name: "NFT_SEED_CERTIFICATE_OBJECT_KEY", value: $key},
+                {name: "NFT_SEED_CERTIFICATE_VERSION_ID", value: $version}]},
+              {name: "nft-database-dump", environment: [
+                {name: "NFT_SEED_CERTIFICATE_OBJECT_KEY", value: $key},
+                {name: "NFT_SEED_CERTIFICATE_VERSION_ID", value: $version},
+                {name: "NFT_SEED_RUN_ID", value: $run}]}
+            ]}')
           if RUN_TASK_RESPONSE=$(aws ecs run-task \
             --cluster "$CLUSTER" \
             --task-definition "prsdb-seed-data-${ENVIRONMENT}" \
@@ -343,21 +389,88 @@ jobs:
             exit 1
           fi
 
+          report_seed_failure() {
+            local seed_response stop_response
+            if seed_response=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+              --query "tasks[0].containers[?name=='nft-data-seeder'].exitCode | [0]" --output text 2>&1) \
+              && [[ "$seed_response" =~ ^[0-9]{1,3}$ ]]; then
+              echo "Seed container exit code: $seed_response"
+            else
+              echo "Seed container exit code unavailable"
+            fi
+            if stop_response=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+              --query 'tasks[0].stopCode' --output text 2>&1); then
+              case "$stop_response" in
+                TaskFailedToStart|EssentialContainerExited|UserInitiated|ServiceSchedulerInitiated|SpotInterruption|TerminationNotice)
+                  echo "Task stop category: $stop_response"
+                  return ;;
+              esac
+            fi
+            echo "Task stop category unavailable"
+          }
+
           if DUMP_RESPONSE=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
             --query "tasks[0].containers[?name=='nft-database-dump'].exitCode | [0]" --output text 2>&1); then
             DUMP_EXIT_CODE="$(tr -d '[:space:]' <<< "$DUMP_RESPONSE")"
             if [[ ! "$DUMP_EXIT_CODE" =~ ^[0-9]+$ ]]; then
               echo "ECS completion response did not include the nft-database-dump container exit code"
+              report_seed_failure
               exit 1
             fi
             if [[ "$DUMP_EXIT_CODE" != "0" ]]; then
               echo "Seed dump container failed (exit code ${DUMP_EXIT_CODE})"
+              report_seed_failure
               exit 1
             fi
           else
             echo "ECS dump completion check failed (AWS error code: $(aws_error_code "$DUMP_RESPONSE"))"
+            report_seed_failure
             exit 1
           fi
+
+          MANIFEST_VERSION=""
+          LOG_STREAM="dump/nft-database-dump/${TASK_ARN##*/}"
+          for ((attempt = 1; attempt <= 5; attempt++)); do
+            if LOG_RESPONSE=$(aws logs get-log-events --log-group-name "/ecs/nft-seed-data" \
+              --log-stream-name "$LOG_STREAM" --query 'events[].message' --output json 2>&1); then
+              MANIFEST_VERSION=$(jq -er '[.[] | select(type == "string" and startswith("NFT_SEED_MANIFEST_VERSION=")) |
+                ltrimstr("NFT_SEED_MANIFEST_VERSION=")] | if length == 1 then .[0] else empty end' \
+                <<< "$LOG_RESPONSE") || MANIFEST_VERSION=""
+              if [[ "$MANIFEST_VERSION" =~ ^[A-Za-z0-9._/+=-]+$ && "$MANIFEST_VERSION" != "null" &&
+                "$MANIFEST_VERSION" != "None" ]]; then
+                break
+              fi
+            fi
+            MANIFEST_VERSION=""
+            if ((attempt < 5)); then sleep 3; fi
+          done
+          if [[ -z "$MANIFEST_VERSION" ]]; then
+            echo "The exact seed manifest version is unavailable; operator inspection is required"
+            exit 1
+          fi
+          echo "::add-mask::$MANIFEST_VERSION"
+          MANIFEST_KEY="seed-manifests/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.json"
+          MANIFEST_PATH="$RUNNER_TEMP/nft-seed-manifest-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.json"
+          umask 077
+          trap 'rm -f -- "$MANIFEST_PATH"' EXIT
+          if ! MANIFEST_RESPONSE=$(aws s3api get-object --bucket prsdb-seed-data-nft \
+            --key "$MANIFEST_KEY" --version-id "$MANIFEST_VERSION" --output json "$MANIFEST_PATH" 2>&1); then
+            echo "Exact seed manifest retrieval failed (AWS error code: $(aws_error_code "$MANIFEST_RESPONSE"))"
+            exit 1
+          fi
+          if ! jq -e --arg version "$MANIFEST_VERSION" '.VersionId == $version' <<< "$MANIFEST_RESPONSE" >/dev/null ||
+            ! jq -e --arg run "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+              --arg certificate_key "$CERTIFICATE_KEY" --arg certificate_version "$CERTIFICATE_VERSION_ID" \
+              '.runId == $run and .certificate.key == $certificate_key and .certificate.version == $certificate_version and
+               .dump.key == "seed-data.dump" and (.dump.version | type == "string" and
+                 test("^[A-Za-z0-9._/+=-]+$") and . != "null" and . != "None") and
+               (.dump.bytes | type == "number" and . > 0 and floor == .) and
+               (.dump.sha256 | type == "string" and test("^[a-f0-9]{64}$"))' \
+              "$MANIFEST_PATH" >/dev/null; then
+            echo "Seed manifest identity did not match this run and certificate"
+            exit 1
+          fi
+          printf 'manifest-key=%s\nmanifest-version=%s\n' "$MANIFEST_KEY" "$MANIFEST_VERSION" >> "$GITHUB_OUTPUT"
           echo "Seed dump completed"
 
       # If runner loss prevents cleanup, inspect nft-app for startedBy

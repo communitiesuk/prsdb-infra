@@ -4,11 +4,30 @@ const {spawnSync} = require('child_process');
 
 const script = fs.readFileSync(path.join(__dirname,
     '../../terraform/nft/ecs_task_definition/nft_seed/performance_test_restore.sh'), 'utf8');
+const restoreDefinition = fs.readFileSync(path.join(__dirname,
+    '../../terraform/nft/ecs_task_definition/nft_seed/performance_test_restore.tf'), 'utf8');
 // Run only the service-response predicate, never the restore script or its AWS/database commands.
 const serviceGuard = script.match(
     /jq -e --arg app[\s\S]*?'\s+"\$workspace\/services\.json" >\/dev\/null \|\| fail/
 )[0].replace('"$workspace/services.json"', '-');
 const versionGuard = script.split('pg_restore --version\n')[1].split('\nstage=identity')[0];
+
+describe('NFT restore certificate contract', () => {
+    it('keeps the independently pinned certificate binding consistent with the restored dump', () => {
+        const locals = Object.fromEntries([...restoreDefinition.matchAll(/^  ([a-z0-9_]+)\s*=\s*"([^"]+)"/gm)]
+            .map(([, name, value]) => [name, value]));
+        function env(name) {
+            const match = restoreDefinition.match(new RegExp(`name = "${name}", value = (local\\.[a-z0-9_]+|"[^"]+")`));
+            if (!match) throw new Error(`Missing ${name}`);
+            return match[1].startsWith('local.') ? locals[match[1].slice(6)] : match[1].slice(1, -1);
+        }
+        expect(env('NFT_CERTIFICATE_KEY')).toMatch(/^seeding\/(?:certificate_template|certificate-references\/[1-9]\d*-[1-9]\d*)\.png$/);
+        expect(env('NFT_CERTIFICATE_VERSION')).toBeTruthy();
+        for (const field of ['VERSION', 'BYTES', 'SHA256']) {
+            expect(env(`NFT_CERTIFICATE_DUMP_${field}`)).toBe(env(`NFT_DUMP_${field}`));
+        }
+    });
+});
 
 function versionGuardStatus(clientMajorVersion, configuredMajorVersion) {
     const result = spawnSync('bash', ['-c', `set -eu

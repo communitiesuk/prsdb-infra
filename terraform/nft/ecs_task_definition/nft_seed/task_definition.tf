@@ -12,6 +12,10 @@ resource "aws_ecs_task_definition" "nft_seed" {
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
 
+  ephemeral_storage {
+    size_in_gib = 30
+  }
+
   container_definitions = jsonencode([
     {
       name      = "nft-data-seeder"
@@ -119,7 +123,7 @@ resource "aws_ecs_task_definition" "nft_seed" {
       command = [
         "sh",
         "-c",
-        "set -o pipefail && apk add --no-cache aws-cli >/dev/null && pg_dump --format=custom --no-owner --no-acl | aws s3 cp - s3://${module.nft_seed_bucket.bucket}/seed-data.dump",
+        "apk add --no-cache aws-cli python3 >/dev/null && python3 -c \"$(echo '${base64encode(file("${path.module}/multipart_dump.py"))}' | base64 -d)\"",
       ]
       logConfiguration = {
         logDriver = "awslogs"
