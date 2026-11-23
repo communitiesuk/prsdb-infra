@@ -6,8 +6,7 @@
     "testMatch": ["**/test/js/**/*.test.js"]
   },
   "devDependencies": {
-    "jest": "^30.0.4",
-    "rewire": "^9.0.1"
+    "jest": "^30.0.4"
   },
   "overrides": {
     "test-exclude": {

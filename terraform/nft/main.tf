@@ -93,7 +93,6 @@ module "frontdoor" {
   load_balancer_domain_name     = local.load_balancer_domain_name
   cloudfront_certificate_arn    = module.certificates.cloudfront_certificate_arn
   load_balancer_certificate_arn = module.certificates.load_balancer_certificate_arn
-  disable_caching               = true
   url_rewriter_extra_exceptions = ["local"]
   ip_allowlist                  = local.ip_allowlist
   simulator_host                = local.load_balancer_domain_name

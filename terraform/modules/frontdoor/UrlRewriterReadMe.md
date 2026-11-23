@@ -15,8 +15,7 @@ The `/login` path is excluded so that OAuth2 callback URLs (e.g. `/login/oauth2/
 ## Unit tests
 We now have unit tests for this function.
 
-Cloudfront functions cannot be exported as a module, so unit tests have been written using the 'require' syntax.
-The 'rewire' package is used to access the handler function in the url_rewriter.js file.
+CloudFront functions cannot be exported as a module, so the unit tests render the function template and use Node's `vm` module to access its handler.
 
 ## AWS console tests
 

@@ -55,7 +55,7 @@ resource "aws_cloudfront_distribution" "main" {
   default_cache_behavior {
     allowed_methods            = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods             = ["GET", "HEAD", "OPTIONS"]
-    cache_policy_id            = var.disable_caching ? data.aws_cloudfront_cache_policy.caching_disabled[0].id : aws_cloudfront_cache_policy.main.id
+    cache_policy_id            = aws_cloudfront_cache_policy.main.id
     compress                   = true
     origin_request_policy_id   = aws_cloudfront_origin_request_policy.main.id
     response_headers_policy_id = data.aws_cloudfront_response_headers_policy.main.id
@@ -184,12 +184,6 @@ resource "aws_cloudfront_cache_policy" "main" {
     enable_accept_encoding_gzip   = true
     enable_accept_encoding_brotli = true
   }
-}
-
-data "aws_cloudfront_cache_policy" "caching_disabled" {
-  count = var.disable_caching ? 1 : 0
-
-  name = "Managed-CachingDisabled"
 }
 
 data "aws_cloudfront_response_headers_policy" "main" {

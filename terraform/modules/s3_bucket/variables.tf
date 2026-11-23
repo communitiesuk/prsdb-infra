@@ -22,25 +22,33 @@ variable "force_destroy" {
 
 variable "noncurrent_version_expiration_days" {
   type        = number
-  description = "Set to null to skip creating a bucket lifecycle configuration"
+  description = "Set to null to skip the general noncurrent-version lifecycle rule"
   default     = 180
 }
 
-variable "performance_recovery_lifecycle" {
-  type = object({
+variable "prefix_expiration_rules" {
+  type = list(object({
+    id              = string
     prefix          = string
     expiration_days = number
-  })
-  default     = null
-  description = "Optional prefix-only retention rule for private performance recovery checkpoints."
+  }))
+  default     = []
+  description = "Optional object expiration rules scoped to explicit S3 key prefixes."
 
   validation {
-    condition = var.performance_recovery_lifecycle == null ? true : (
-      startswith(var.performance_recovery_lifecycle.prefix, "performance-recovery/") &&
-      var.performance_recovery_lifecycle.expiration_days >= 1 &&
-      floor(var.performance_recovery_lifecycle.expiration_days) == var.performance_recovery_lifecycle.expiration_days
+    condition = (
+      length(distinct([for rule in var.prefix_expiration_rules : rule.id])) == length(var.prefix_expiration_rules) &&
+      alltrue([
+        for rule in var.prefix_expiration_rules :
+        can(regex("^[A-Za-z0-9][A-Za-z0-9-]*$", rule.id)) &&
+        rule.id != "expire-old-versions" &&
+        length(rule.id) <= 255 &&
+        trimspace(rule.prefix) != "" &&
+        rule.expiration_days >= 1 &&
+        floor(rule.expiration_days) == rule.expiration_days
+      ])
     )
-    error_message = "Performance recovery lifecycle rules must use the dedicated prefix and whole positive retention days."
+    error_message = "Prefix lifecycle rules require unique alphanumeric IDs other than expire-old-versions, IDs no longer than 255 characters, non-empty prefixes, and positive whole retention days."
   }
 }
 

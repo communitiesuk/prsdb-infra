@@ -89,6 +89,17 @@ data "aws_iam_policy_document" "nft_seed_run_task" {
   }
 
   statement {
+    actions   = ["ecs:ListTasks"]
+    resources = ["*"]
+
+    condition {
+      test     = "ArnEquals"
+      variable = "ecs:cluster"
+      values   = ["arn:aws:ecs:eu-west-2:${data.aws_caller_identity.current.account_id}:cluster/${var.environment_name}-app"]
+    }
+  }
+
+  statement {
     actions = ["iam:PassRole"]
     resources = [
       var.ecs_task_execution_role_arn,

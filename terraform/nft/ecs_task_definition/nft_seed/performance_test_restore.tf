@@ -296,13 +296,8 @@ data "aws_iam_policy_document" "performance_test_restore_orchestrator" {
       "scheduler:UpdateSchedule",
     ]
     resources = [
-      "arn:aws:scheduler:eu-west-2:${data.aws_caller_identity.current.account_id}:schedule/nft-scheduled-tasks-group/nft-jl-invitation-expiry-email-scheduled-task",
-      "arn:aws:scheduler:eu-west-2:${data.aws_caller_identity.current.account_id}:schedule/nft-scheduled-tasks-group/nft-reconcile-payments-scheduled-task",
-      "arn:aws:scheduler:eu-west-2:${data.aws_caller_identity.current.account_id}:schedule/nft-scheduled-tasks-group/nft-incomplete-property-reminder-scheduled-task",
-      "arn:aws:scheduler:eu-west-2:${data.aws_caller_identity.current.account_id}:schedule/nft-scheduled-tasks-group/nft-delete-incomplete-properties-scheduled-task",
-      "arn:aws:scheduler:eu-west-2:${data.aws_caller_identity.current.account_id}:schedule/nft-scheduled-tasks-group/nft-org-ll-invitation-deletion-scheduled-task",
-      "arn:aws:scheduler:eu-west-2:${data.aws_caller_identity.current.account_id}:schedule/nft-scheduled-tasks-group/nft-jl-invitation-deletion-scheduled-task",
-      "arn:aws:scheduler:eu-west-2:${data.aws_caller_identity.current.account_id}:schedule/nft-scheduled-tasks-group/nft-ngd-address-update-scheduled-task",
+      for task_name in var.scheduled_task_names :
+      "arn:aws:scheduler:eu-west-2:${data.aws_caller_identity.current.account_id}:schedule/${var.environment_name}-scheduled-tasks-group/${var.environment_name}-${task_name}-scheduled-task"
     ]
   }
 

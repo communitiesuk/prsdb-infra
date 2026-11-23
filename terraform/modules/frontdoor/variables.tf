@@ -61,12 +61,6 @@ variable "simulator_host" {
   default     = null
 }
 
-variable "disable_caching" {
-  type        = bool
-  description = "Use CloudFront's managed disabled-cache policy for dynamic traffic"
-  default     = false
-}
-
 variable "simulator_allowed_ips" {
   type        = list(string)
   description = "Static IPv4 CIDRs permitted to call the simulator directly"
