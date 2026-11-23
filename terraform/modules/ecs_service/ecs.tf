@@ -25,12 +25,6 @@ module "webapp_service" {
   }
 }
 
-# TODO PDJB-2101: Remove once every environment, including production, has applied this move
-moved {
-  from = aws_ecs_service.webapp
-  to   = module.webapp_service.aws_ecs_service.main
-}
-
 module "async_worker_service" {
   source = "../fargate_service"
 

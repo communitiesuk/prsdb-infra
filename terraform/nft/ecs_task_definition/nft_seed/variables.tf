@@ -19,6 +19,11 @@ variable "ecs_task_execution_role_arn" {
   type        = string
 }
 
+variable "ecs_task_execution_role_name" {
+  description = "The name of the ecs task execution role"
+  type        = string
+}
+
 variable "webapp_ecs_task_role_arn" {
   description = "The arn of the webapp ecs task role"
   type        = string
@@ -66,7 +71,7 @@ variable "epc_certificate_base_url" {
 }
 
 variable "postgres_major_version" {
-  description = "The major version of the postgres client image used to pg_dump the database. Must match the major version of the NFT RDS postgres engine "
+  description = "The major version of the postgres client images used to dump and restore the database. Must match the major version of the NFT RDS postgres engine"
   type        = string
   default     = "16"
 }
