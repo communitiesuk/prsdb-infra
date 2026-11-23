@@ -23,5 +23,8 @@
   },
   "reconcile-payments": {
     "schedule_expression": "cron(0/15 0-1,6-23 * * ? *)"
+  },
+  "deactivate-inactive-landlords": {
+    "schedule_expression": "cron(30 1 * * ? *)"
   }
 }
