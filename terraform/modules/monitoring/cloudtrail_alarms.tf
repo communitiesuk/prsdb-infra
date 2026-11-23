@@ -153,7 +153,7 @@ resource "aws_cloudwatch_metric_alarm" "organization_changes" {
 
 resource "aws_cloudwatch_metric_alarm" "rds_backup_replication_at_risk" {
   alarm_name          = "rds-backup-replication-at-risk-${var.environment_name}"
-  alarm_description   = "Cross-region RDS backup replication has been stopped, a replicated backup has been deleted, or the replication KMS key has been disabled or scheduled for deletion"
+  alarm_description   = "Cross-region RDS backup replication has been stopped, a replicated backup has been deleted, automated backups have been disabled, or the replication KMS key has been disabled or scheduled for deletion"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   treat_missing_data  = "notBreaching"
   metric_name         = aws_cloudwatch_log_metric_filter.rds_backup_replication_at_risk.name

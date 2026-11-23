@@ -199,6 +199,8 @@ resource "aws_cloudwatch_log_metric_filter" "rds_backup_replication_at_risk" {
   pattern        = <<EOT
     {($.eventName = StopDBInstanceAutomatedBackupsReplication) ||
      ($.eventName = DeleteDBInstanceAutomatedBackup) ||
+     (($.eventName = ModifyDBInstance) &&
+      ($.requestParameters.backupRetentionPeriod = 0)) ||
      ((($.eventName = DisableKey) ||
        ($.eventName = ScheduleKeyDeletion)) &&
       ($.resources[0].ARN = "${var.backup_replication_kms_key_arn}"))}
