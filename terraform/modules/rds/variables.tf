@@ -68,3 +68,8 @@ variable "bastion_group_id" {
   type        = string
   description = "The id of the bastion security group"
 }
+
+variable "cross_region_backup_replication_enabled" {
+  type        = bool
+  description = "Whether to replicate automated backups to eu-west-1 for cross-region point in time recovery"
+}
