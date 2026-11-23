@@ -17,3 +17,8 @@ output "database_identifier" {
   value       = aws_db_instance.main.identifier
   description = "The identifier of the DB instance"
 }
+
+output "backup_replication_kms_key_arn" {
+  value       = aws_kms_key.backup_replication.arn
+  description = "The ARN of the eu-west-1 KMS key used to encrypt replicated automated backups"
+}
