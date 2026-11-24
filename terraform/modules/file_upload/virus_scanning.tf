@@ -50,7 +50,7 @@ data "aws_iam_policy_document" "guardduty_malware_protection_policy" {
       "events:RemoveTargets"
     ]
     resources = [
-      "arn:aws:events:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:rule/DO-NOT-DELETE-AmazonGuardDutyMalwareProtectionS3*"
+      "arn:aws:events:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:rule/DO-NOT-DELETE-AmazonGuardDutyMalwareProtectionS3*"
     ]
     condition {
       test     = "StringLike"
@@ -67,7 +67,7 @@ data "aws_iam_policy_document" "guardduty_malware_protection_policy" {
       "events:ListTargetsByRule"
     ]
     resources = [
-      "arn:aws:events:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:rule/DO-NOT-DELETE-AmazonGuardDutyMalwareProtectionS3*"
+      "arn:aws:events:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:rule/DO-NOT-DELETE-AmazonGuardDutyMalwareProtectionS3*"
     ]
   }
 
@@ -144,7 +144,7 @@ data "aws_iam_policy_document" "guardduty_malware_protection_policy" {
     condition {
       test     = "StringLike"
       variable = "kms:ViaService"
-      values   = ["s3.${data.aws_region.current.name}.amazonaws.com"]
+      values   = ["s3.${data.aws_region.current.region}.amazonaws.com"]
     }
   }
 }

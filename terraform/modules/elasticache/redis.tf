@@ -9,6 +9,7 @@ locals {
 resource "aws_elasticache_replication_group" "main" {
   at_rest_encryption_enabled  = true
   auth_token                  = var.redis_password
+  auth_token_update_strategy  = "ROTATE"
   auto_minor_version_upgrade  = true
   automatic_failover_enabled  = var.highly_available ? true : false
   description                 = "Redis replication group, consisting of a single node, or a primary node and a replica."
