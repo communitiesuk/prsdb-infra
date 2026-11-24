@@ -7,11 +7,7 @@ const yaml = require('js-yaml');
 const repoDir = path.join(__dirname, '../..');
 const workflowFile = path.join(repoDir, '.github/workflows/generate-nft-seed.yml');
 const workflow = yaml.load(fs.readFileSync(workflowFile, 'utf8'));
-const seedIam = fs.readFileSync(
-    path.join(repoDir, 'terraform/nft/ecs_task_definition/nft_seed/iam.tf'), 'utf8'
-);
 const taskArn = 'arn:aws:ecs:eu-west-2:448120078528:task/nft-app/0123456789abcdef0123456789abcdef';
-const startedBy = 'nft-123456789-1';
 
 describe('NFT multipart dump upload', () => {
     function runDumpCli(scenario) {
@@ -186,7 +182,6 @@ const fs = require('node:fs');
 const args = process.argv.slice(2);
 const queryIndex = args.indexOf('--query');
 const query = queryIndex < 0 ? '' : args[queryIndex + 1];
-const desiredStatusIndex = args.indexOf('--desired-status');
 let key;
 if (args[0] === 's3api' && args[1] === 'head-object') {
   key = args.includes('--version-id') ? 'certificateCopiedHead' : 'certificate';
@@ -200,9 +195,9 @@ else if (args[0] === 'ecs' && args[1] === 'describe-services') {
 else if (args[0] === 'ecs' && args[1] === 'describe-tasks') {
   key = query.includes('lastStatus') ? 'status' :
     query.includes('nft-data-seeder') ? 'seedExit' :
+      query.includes('stoppedReason') ? 'stoppedReason' :
       query.includes('stopCode') ? 'stopCode' : 'dump';
 }
-else if (args[0] === 'ecs' && args[1] === 'list-tasks') key = 'listTasks';
 else if (args[0] === 'ecs' && args[1] === 'stop-task') key = 'stop';
 else key = 'unexpected';
 const readJson = (file, fallback) => fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : fallback;
@@ -219,13 +214,8 @@ calls.push({key, query: query || null, cluster: args[args.indexOf('--cluster') +
   overrides: args.includes('--overrides') ? JSON.parse(args[args.indexOf('--overrides') + 1]) : null,
   startedBy: args[args.indexOf('--started-by') + 1] || null,
   clientToken: args[args.indexOf('--client-token') + 1] || null,
-  desiredStatus: desiredStatusIndex < 0 ? null : args[desiredStatusIndex + 1],
   count: args[args.indexOf('--count') + 1] || null});
 fs.writeFileSync(process.env.FAKE_AWS_TRACE, JSON.stringify(calls));
-if (key === 'listTasks' && args.includes('--started-by') && args.includes('--desired-status')) {
-  process.stderr.write('An error occurred (InvalidParameterException) when calling ListTasks: startedBy must be the only filter');
-  process.exit(254);
-}
 const fixtures = JSON.parse(process.env.FAKE_AWS_FIXTURES);
 const entries = fixtures[key] || [];
 const response = entries[Math.min(index, entries.length - 1)] || {stdout: ''};
@@ -272,7 +262,6 @@ function runWorkflowStep(stepId, fixtures, envOverrides = {}) {
                 TASK_NETWORK: '{"awsvpcConfiguration":{"subnets":["network-canary"],"securityGroups":["security-group-canary"],"assignPublicIp":"DISABLED"}}',
                 TASK_ARN: '',
                 MAX_ATTEMPTS: '680',
-                RECONCILE_MAX_ATTEMPTS: '5',
                 FAKE_AWS_FIXTURES: JSON.stringify(fixtures),
                 FAKE_MANIFEST: JSON.stringify({
                     runId: '123456789-1',
@@ -519,15 +508,17 @@ describe('NFT seed workflow task polling', () => {
         expect(failed.stdout).toContain('17');
     });
 
-    it('reports the seed exit code and safe stop category when the dump container did not start', () => {
+    it('reports the seed exit code and stopped reason when the dump container did not start', () => {
         const fixtures = successfulLaunch(['STOPPED'], 'None');
         fixtures.seedExit = [{stdout: '42'}];
         fixtures.stopCode = [{stdout: 'EssentialContainerExited'}];
+        fixtures.stoppedReason = [{stdout: JSON.stringify('Essential container in task exited')}];
         const result = runWorkflowStep('run-task', fixtures);
 
         expect(result.status).toBe(1);
         expect(result.stdout).toContain('Seed container exit code: 42');
         expect(result.stdout).toContain('Task stop category: EssentialContainerExited');
+        expect(result.stdout).toContain('Task stopped reason: "Essential container in task exited"');
         expect(result.stdout).not.toContain('Seed dump completed');
     });
 
@@ -535,12 +526,23 @@ describe('NFT seed workflow task polling', () => {
         const fixtures = successfulLaunch(['STOPPED'], 'None');
         fixtures.seedExit = [{stdout: 'private-payload-canary'}];
         fixtures.stopCode = [{stdout: 'private-payload-canary'}];
+        fixtures.stoppedReason = [{stdout: 'null'}];
         const result = runWorkflowStep('run-task', fixtures);
 
         expect(result.status).toBe(1);
         expect(result.stdout).toContain('Seed container exit code unavailable');
         expect(result.stdout).toContain('Task stop category unavailable');
+        expect(result.stdout).toContain('Task stopped reason unavailable');
         expect(result.stdout).not.toContain('private-payload-canary');
+    });
+
+    it('encodes control characters in the stopped reason as a single log line', () => {
+        const fixtures = successfulLaunch(['STOPPED'], 'None');
+        fixtures.stoppedReason = [{stdout: JSON.stringify('Stopped\n::warning::unexpected')}];
+        const result = runWorkflowStep('run-task', fixtures);
+
+        expect(result.stdout).toContain('Task stopped reason: "Stopped\\n::warning::unexpected"');
+        expect(result.stdout).not.toContain('\n::warning::unexpected');
     });
 });
 
@@ -566,74 +568,21 @@ describe('NFT seed workflow task identity and cleanup', () => {
         expect(result.awsCalls.some(call => call.key === 'runTask')).toBe(false);
     });
 
-    it('reconciles an ambiguous launch after eventual consistency using its unique startedBy', () => {
-        const fixtures = successfulLaunch(['STOPPED']);
-        fixtures.runTask[0] = {
-            exitCode: 255,
-            stderr: 'Could not connect to endpoint; certificate-canary network-canary private-payload-canary',
-        };
-        fixtures.listTasks = [{stdout: '[]'}, {stdout: JSON.stringify([taskArn])}];
-        const result = runWorkflowStep('run-task', fixtures);
-
-        expect(result.status).toBe(0);
-        expect(result.stdout).toContain('Seed dump completed');
-        expect(result.outputs).toContain(`task-arn=${taskArn}`);
-        expect(result.stdout).not.toContain('certificate-canary');
-        expect(result.stdout).not.toContain('network-canary');
-        expect(result.stdout).not.toContain('private-payload-canary');
-        const runCall = result.awsCalls.find(call => call.key === 'runTask');
-        expect(runCall.startedBy).toBe(startedBy);
-        expect(runCall.clientToken).toBe(startedBy);
-        expect(runCall.count).toBe('1');
-        const listCalls = result.awsCalls.filter(call => call.key === 'listTasks');
-        expect(listCalls).toHaveLength(2);
-        expect(listCalls.every(call => call.cluster === 'nft-app' && call.startedBy === startedBy)).toBe(true);
-        expect(listCalls.every(call => call.desiredStatus === null)).toBe(true);
-    });
-
-    it('reports reconciliation permission errors without exposing AWS response text', () => {
+    it('fails with operator guidance when a launch response is ambiguous', () => {
         const fixtures = successfulLaunch();
-        fixtures.runTask[0] = {exitCode: 255, stderr: 'network failure'};
-        fixtures.listTasks = [{
-            exitCode: 254,
-            stderr: 'An error occurred (AccessDeniedException) when calling ListTasks: private-payload-canary',
-        }];
+        fixtures.runTask[0] = {exitCode: 255, stderr: 'network failure private-payload-canary'};
         const result = runWorkflowStep('run-task', fixtures);
-
-        expect(result.status).toBe(1);
-        expect(result.stdout).toContain('list-tasks');
-        expect(result.stdout).toContain('AccessDeniedException');
-        expect(result.stdout).toContain(startedBy);
-        expect(result.stdout).not.toContain('private-payload-canary');
-        expect(result.awsCalls.some(call => call.key === 'stop')).toBe(false);
-    });
-
-    it('fails with operator guidance when reconciliation finds no task', () => {
-        const fixtures = successfulLaunch();
-        fixtures.runTask[0] = {exitCode: 255, stderr: 'network failure'};
-        fixtures.listTasks = [{stdout: '[]'}];
-        const result = runWorkflowStep('run-task', fixtures, {RECONCILE_MAX_ATTEMPTS: '2'});
 
         expect(result.status).toBe(1);
         expect(result.stdout).toContain('nft-123456789-1');
         expect(result.stdout).toMatch(/may have been accepted|ambiguous/i);
         expect(result.stdout).toMatch(/operator|inspect|check/i);
         expect(result.stdout).not.toMatch(/no task was started/i);
-        expect(result.stdout).toMatch(/stopped task.*may not be discoverable|default.*running/i);
+        expect(result.stdout).not.toContain('private-payload-canary');
         expect(result.awsCalls.filter(call => call.key === 'runTask')).toHaveLength(1);
-        expect(outputValue(result.outputs, 'task-arn')).toBe('');
-    });
-
-    it('does not choose or stop a task when reconciliation finds multiple matches', () => {
-        const otherTaskArn = 'arn:aws:ecs:eu-west-2:448120078528:task/nft-app/abcdef0123456789abcdef0123456789';
-        const fixtures = successfulLaunch();
-        fixtures.runTask[0] = {exitCode: 255, stderr: 'network failure'};
-        fixtures.listTasks = [{stdout: JSON.stringify([taskArn, otherTaskArn])}];
-        const result = runWorkflowStep('run-task', fixtures);
-
-        expect(result.status).toBe(1);
-        expect(result.stdout).toMatch(/multiple.*task|more than one/i);
-        expect(result.awsCalls.some(call => call.key === 'stop')).toBe(false);
+        expect(result.awsCalls.find(call => call.key === 'runTask')).toEqual(expect.objectContaining({
+            startedBy: 'nft-123456789-1', clientToken: 'nft-123456789-1', count: '1',
+        }));
         expect(outputValue(result.outputs, 'task-arn')).toBe('');
     });
 
@@ -656,11 +605,29 @@ describe('NFT seed workflow task identity and cleanup', () => {
         });
 
         expect(failedLaunch.status).toBe(1);
-        expect(failedLaunch.stdout).toMatch(/run-task.*failur/i);
+        expect(failedLaunch.stdout).toMatch(/run-task.*task arn/i);
         expect(failedLaunch.stdout).not.toContain('private-payload-canary');
         expect(emptyLaunch.status).toBe(1);
         expect(emptyLaunch.stdout).toMatch(/no task|task arn/i);
         expect(emptyLaunch.stdout).not.toMatch(/no task was started/i);
+    });
+
+    it('records a valid task before failing on a launch response that also contains failures', () => {
+        const result = runWorkflowStep('run-task', {
+            runTask: [{stdout: JSON.stringify({tasks: [{taskArn}], failures: [{reason: 'failure'}]})}],
+        });
+        expect(result.status).toBe(1);
+        expect(outputValue(result.outputs, 'task-arn')).toBe(taskArn);
+        expect(result.awsCalls.some(call => call.key === 'status')).toBe(false);
+    });
+
+    it('does not choose a task from a response containing multiple tasks', () => {
+        const result = runWorkflowStep('run-task', {
+            runTask: [{stdout: JSON.stringify({tasks: [{taskArn}, {taskArn}], failures: []})}],
+        });
+        expect(result.status).toBe(1);
+        expect(outputValue(result.outputs, 'task-arn')).toBe('');
+        expect(result.stdout).toContain('manually inspect');
     });
 
     it('records a validated task before polling and cleanup uses that exact ARN after failure', () => {
@@ -681,8 +648,7 @@ describe('NFT seed workflow task identity and cleanup', () => {
         const invalidArn = 'arn:aws:ecs:eu-west-2:999999999999:task/production-app/0123456789abcdef0123456789abcdef';
         const launch = runWorkflowStep('run-task', {
             runTask: [{stdout: JSON.stringify({tasks: [{taskArn: invalidArn}], failures: []})}],
-            listTasks: [{stdout: '[]'}],
-        }, {RECONCILE_MAX_ATTEMPTS: '1'});
+        });
         const cleanup = runWorkflowStep('cleanup', {stop: [{stdout: '{}'}]}, {TASK_ARN: outputValue(launch.outputs, 'task-arn')});
 
         expect(launch.status).toBe(1);
@@ -711,10 +677,6 @@ describe('NFT seed workflow task identity and cleanup', () => {
 
         expect(cleanup.if).toBe('failure() || cancelled()');
         expect(cleanup.env.TASK_ARN).toMatch(/steps\..*outputs\.task-arn/);
-        expect(seedIam).toMatch(/actions\s*=\s*\["ecs:ListTasks"\][\s\S]*?resources\s*=\s*\["\*"\][\s\S]*?variable\s*=\s*"ecs:cluster"[\s\S]*?values\s*=\s*\["arn:aws:ecs:eu-west-2:\$\{data\.aws_caller_identity\.current\.account_id\}:cluster\/\$\{var\.environment_name\}-app"\]/);
-        const taskStep = workflow.jobs.generate.steps.find(candidate => candidate.id === 'run-task');
-        expect(taskStep.env.MAX_ATTEMPTS).toBe('680');
-        expect(taskStep.env.RECONCILE_MAX_ATTEMPTS).toBe('5');
         expect(fs.readFileSync(workflowFile, 'utf8')).toContain('If runner loss prevents cleanup');
     });
 });

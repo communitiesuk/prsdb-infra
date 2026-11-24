@@ -135,13 +135,11 @@ jobs:
           CERTIFICATE_VERSION_ID: ${{ steps.certificate.outputs.version-id }}
           TASK_NETWORK: ${{ steps.networking.outputs.network-config }}
           MAX_ATTEMPTS: "680"
-          RECONCILE_MAX_ATTEMPTS: "5"
         shell: bash
         run: |
           set -euo pipefail
           CLUSTER="nft-app"
           POLL_INTERVAL_SECONDS=30
-          RECONCILE_INTERVAL_SECONDS=5
 
           aws_error_code() {
             local output="$1"
@@ -170,7 +168,6 @@ jobs:
 
           report_recovery_action() {
             echo "Before retrying, manually inspect cluster ${CLUSTER} for startedBy ${STARTED_BY}."
-            echo "ListTasks with startedBy uses the default RUNNING status filter; a stopped task may not be discoverable."
           }
 
           stop_validated_task() {
@@ -202,57 +199,6 @@ jobs:
             fi
           }
 
-          reconcile_task() {
-            local attempt task_arns task_count candidate
-            for ((attempt = 1; attempt <= RECONCILE_MAX_ATTEMPTS; attempt++)); do
-              if ! task_arns=$(aws ecs list-tasks --cluster "$CLUSTER" --started-by "$STARTED_BY" \
-                --query taskArns --output json 2>&1); then
-                echo "ECS list-tasks for the uniquely tagged launch failed (AWS error code: $(aws_error_code "$task_arns"))"
-                report_recovery_action
-                return 1
-              fi
-              if ! jq -e 'type == "array" and all(.[]; type == "string")' <<< "$task_arns" >/dev/null; then
-                echo "ECS list-tasks returned an invalid response; refusing to select a task"
-                report_recovery_action
-                return 1
-              fi
-              task_count=$(jq 'length' <<< "$task_arns")
-              case "$task_count" in
-                0)
-                  if ((attempt < RECONCILE_MAX_ATTEMPTS)); then
-                    sleep "$RECONCILE_INTERVAL_SECONDS"
-                  fi
-                  ;;
-                1)
-                  candidate=$(jq -r '.[0]' <<< "$task_arns")
-                  if ! valid_task_arn "$candidate"; then
-                    echo "ECS reconciliation returned an ARN outside the exact NFT task scope"
-                    report_recovery_action
-                    return 1
-                  fi
-                  if ! record_task_arn "$candidate"; then
-                    return 1
-                  fi
-                  TASK_ARN="$candidate"
-                  echo "Recovered the uniquely tagged seed task after an ambiguous launch response"
-                  return 0
-                  ;;
-                *)
-                  echo "ECS reconciliation found multiple tasks for this launch; none will be stopped automatically"
-                  report_recovery_action
-                  return 1
-                  ;;
-              esac
-            done
-            echo "The seed launch outcome remains ambiguous after bounded reconciliation"
-            report_recovery_action
-            return 1
-          }
-
-          if [[ "$ENVIRONMENT" != "nft" || "$AWS_REGION" != "eu-west-2" || "$AWS_ACCOUNT_ID" != "448120078528" ]]; then
-            echo "Seed workflow is not configured for the expected NFT account and region"
-            exit 1
-          fi
           STARTED_BY="nft-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           if [[ ! "$STARTED_BY" =~ ^nft-[0-9]+-[0-9]+$ || ${#STARTED_BY} -gt 36 ]]; then
             echo "Could not create a valid unique seed-task launch identifier"
@@ -285,63 +231,23 @@ jobs:
             --overrides "$OVERRIDES" \
             --network-configuration "$TASK_NETWORK" \
             --output json 2>&1); then
-            if ! jq -e 'type == "object" and (.tasks | type == "array") and ((.failures // []) | type == "array")' \
-              <<< "$RUN_TASK_RESPONSE" >/dev/null; then
-              echo "ECS run-task returned an unreadable response; reconciling the uniquely tagged launch"
-              if ! reconcile_task; then
-                exit 1
-              fi
-            else
-              TASK_COUNT=$(jq '.tasks | length' <<< "$RUN_TASK_RESPONSE")
-              FAILURE_COUNT=$(jq '(.failures // []) | length' <<< "$RUN_TASK_RESPONSE")
-              if ((TASK_COUNT > 1)); then
-                echo "ECS run-task returned multiple tasks; none will be selected automatically"
-                report_recovery_action
-                exit 1
-              fi
-              if ((TASK_COUNT == 0)); then
-                if ((FAILURE_COUNT > 0)); then
-                  echo "ECS run-task reported one or more launch failures"
-                  exit 1
-                fi
-                echo "ECS run-task returned no task ARN; reconciling the uniquely tagged launch"
-                if ! reconcile_task; then
-                  exit 1
-                fi
-              else
-                TASK_ARN=$(jq -r '.tasks[0].taskArn // empty' <<< "$RUN_TASK_RESPONSE")
-                if ! valid_task_arn "$TASK_ARN"; then
-                  echo "ECS run-task returned an invalid ARN; refusing to stop it and reconciling by launch identifier"
-                  if ! reconcile_task; then
-                    exit 1
-                  fi
-                else
-                  if ! record_task_arn "$TASK_ARN"; then
-                    exit 1
-                  fi
-                  if ((FAILURE_COUNT > 0)); then
-                    echo "ECS run-task returned a task together with one or more launch failures"
-                    exit 1
-                  fi
-                  echo "Seed task started"
-                fi
-              fi
+            TASK_ARN=$(jq -r 'if (.tasks | type) == "array" and (.tasks | length) == 1
+              then .tasks[0].taskArn // empty else empty end' <<< "$RUN_TASK_RESPONSE") || TASK_ARN=""
+            if ! valid_task_arn "$TASK_ARN"; then
+              echo "ECS run-task did not return a valid single task ARN"
+              report_recovery_action
+              exit 1
             fi
+            record_task_arn "$TASK_ARN" || exit 1
+            if ! jq -e '(.failures // []) | type == "array" and length == 0' <<< "$RUN_TASK_RESPONSE" >/dev/null; then
+              echo "ECS run-task reported launch failures or an invalid response"
+              exit 1
+            fi
+            echo "Seed task started"
           else
             RUN_TASK_ERROR_CODE=$(aws_error_code "$RUN_TASK_RESPONSE")
             echo "ECS run-task failed (AWS error code: ${RUN_TASK_ERROR_CODE})"
-            if is_permanent_aws_error "$RUN_TASK_ERROR_CODE"; then
-              echo "AWS rejected the seed task request; no task ARN was returned"
-              exit 1
-            fi
-            echo "The launch may have been accepted despite the CLI error; reconciling by unique launch identifier"
-            if ! reconcile_task; then
-              exit 1
-            fi
-          fi
-
-          if ! valid_task_arn "$TASK_ARN"; then
-            echo "No validated seed task ARN is available for polling"
+            echo "The launch may have been accepted despite the CLI error."
             report_recovery_action
             exit 1
           fi
@@ -390,13 +296,20 @@ jobs:
           fi
 
           report_seed_failure() {
-            local seed_response stop_response
+            local seed_response stop_response reason_response reason
             if seed_response=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
               --query "tasks[0].containers[?name=='nft-data-seeder'].exitCode | [0]" --output text 2>&1) \
               && [[ "$seed_response" =~ ^[0-9]{1,3}$ ]]; then
               echo "Seed container exit code: $seed_response"
             else
               echo "Seed container exit code unavailable"
+            fi
+            if reason_response=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+              --query 'tasks[0].stoppedReason' --output json 2>&1) &&
+              reason=$(jq -ce 'select(type == "string" and length > 0)' <<< "$reason_response"); then
+              echo "Task stopped reason: $reason"
+            else
+              echo "Task stopped reason unavailable"
             fi
             if stop_response=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
               --query 'tasks[0].stopCode' --output text 2>&1); then
