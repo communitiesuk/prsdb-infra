@@ -32,11 +32,12 @@ provider "aws" {
 }
 
 locals {
-  environment_name = "nft"
-  multi_az         = false
-  application_port = 8080
-  database_port    = 5432
-  redis_port       = 6379
+  environment_name       = "nft"
+  multi_az               = true
+  redis_highly_available = true
+  application_port       = 8080
+  database_port          = 5432
+  redis_port             = 6379
 
   app_host                  = "${local.environment_name}.register-home-to-rent.test.communities.gov.uk"
   search_landlord_host      = "${local.environment_name}.search-landlord-home-information.test.communities.gov.uk"
@@ -47,6 +48,11 @@ locals {
   database_allocated_storage     = 50
 
   scheduled_tasks = jsondecode(file("${path.module}/scheduled_tasks.json"))
+
+  elasticache_cluster_ids = toset([
+    for cluster_index in range(local.redis_highly_available ? 2 : 1) :
+    format("%s-redis-replication-group-%03d", local.environment_name, cluster_index + 1)
+  ])
 
   ip_allowlist = [
     # Softwire
@@ -74,6 +80,8 @@ module "networking" {
   environment_name             = local.environment_name
   number_of_availability_zones = 2
   number_of_isolated_subnets   = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
+  use_regional_nat_gateway     = true
+  retain_zonal_nat_gateway     = true
 
   vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
@@ -101,7 +109,11 @@ module "frontdoor" {
   url_rewriter_extra_exceptions = ["local"]
   ip_allowlist                  = local.ip_allowlist
   simulator_host                = local.load_balancer_domain_name
-  simulator_allowed_ips         = concat(local.ip_allowlist, ["${module.networking.nat_gateway_ip}/32"])
+  simulator_allowed_ips = concat(
+    local.ip_allowlist,
+    module.networking.nat_gateway_ip == null ? [] : ["${module.networking.nat_gateway_ip}/32"]
+  )
+  simulator_regional_nat_gateway_ips = [for ip in module.networking.nat_gateway_ips : "${ip}/32"]
   detectify_ips = [
     "52.17.9.21/32",
     "52.17.98.131/32",
@@ -227,7 +239,7 @@ module "redis" {
   source = "../modules/elasticache"
 
   environment_name               = local.environment_name
-  highly_available               = false
+  highly_available               = local.redis_highly_available
   node_type                      = "cache.t4g.micro"
   redis_password                 = module.secrets.redis_password.result
   redis_port                     = local.redis_port
@@ -242,8 +254,9 @@ module "ecs_service" {
   source = "../modules/ecs_service"
 
   environment_name                = local.environment_name
-  webapp_task_desired_count       = 1
-  async_worker_task_desired_count = 1
+  webapp_task_desired_count       = 2
+  async_worker_task_desired_count = 2
+  availability_zone_rebalancing   = "ENABLED"
   application_port                = local.application_port
   database_port                   = local.database_port
   redis_port                      = local.redis_port
@@ -297,7 +310,7 @@ module "monitoring" {
   alb_target_group_arn_suffix      = module.frontdoor.load_balancer.target_group_arn_suffix
   ecs_cluster_name                 = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
   ecs_service_name                 = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
-  elasticache_cluster_ids          = toset(module.redis.redis_cluster_ids)
+  elasticache_cluster_ids          = local.elasticache_cluster_ids
   database_allocated_storage       = local.database_allocated_storage
   database_identifier              = module.database.database_identifier
   backup_replication_kms_key_arn   = module.database.backup_replication_kms_key_arn

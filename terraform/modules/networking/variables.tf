@@ -24,6 +24,18 @@ variable "number_of_isolated_subnets" {
   description = "Each isolated subnet is located in a different AZ; must be 1 <= x <= number of available AZs"
 }
 
+variable "use_regional_nat_gateway" {
+  description = "Whether to route private subnet traffic through a regional NAT gateway"
+  type        = bool
+  default     = false
+}
+
+variable "retain_zonal_nat_gateway" {
+  description = "Whether to retain the legacy zonal NAT gateway during a regional NAT cutover"
+  type        = bool
+  default     = true
+}
+
 variable "vpc_flow_cloudwatch_log_expiration_days" {
   type        = number
   description = "Number of days to retain VPC flow logs for"
