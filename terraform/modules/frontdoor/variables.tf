@@ -67,6 +67,20 @@ variable "simulator_allowed_ips" {
   default     = []
 }
 
+variable "url_rewriter_extra_exceptions" {
+  type        = list(string)
+  description = "Additional top-level path segments that the URL rewriter should leave unchanged"
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for segment in var.url_rewriter_extra_exceptions :
+      can(regex("^[A-Za-z0-9][A-Za-z0-9_-]*$", segment))
+    ])
+    error_message = "Each URL rewriter exception must start with an alphanumeric character and contain only alphanumeric characters, underscores, or hyphens."
+  }
+}
+
 variable "geolocation_allow_list" {
   type        = list(string)
   description = "List of allowed locations - geo restrictions disabled when set to null"

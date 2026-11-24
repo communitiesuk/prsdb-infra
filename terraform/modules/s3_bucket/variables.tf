@@ -22,8 +22,34 @@ variable "force_destroy" {
 
 variable "noncurrent_version_expiration_days" {
   type        = number
-  description = "Set to null to skip creating a bucket lifecycle configuration"
+  description = "Set to null to skip the general noncurrent-version lifecycle rule"
   default     = 180
+}
+
+variable "prefix_expiration_rules" {
+  type = list(object({
+    id              = string
+    prefix          = string
+    expiration_days = number
+  }))
+  default     = []
+  description = "Optional object expiration rules scoped to explicit S3 key prefixes."
+
+  validation {
+    condition = (
+      length(distinct([for rule in var.prefix_expiration_rules : rule.id])) == length(var.prefix_expiration_rules) &&
+      alltrue([
+        for rule in var.prefix_expiration_rules :
+        can(regex("^[A-Za-z0-9][A-Za-z0-9-]*$", rule.id)) &&
+        rule.id != "expire-old-versions" &&
+        length(rule.id) <= 255 &&
+        trimspace(rule.prefix) != "" &&
+        rule.expiration_days >= 1 &&
+        floor(rule.expiration_days) == rule.expiration_days
+      ])
+    )
+    error_message = "Prefix lifecycle rules require unique alphanumeric IDs other than expire-old-versions, IDs no longer than 255 characters, non-empty prefixes, and positive whole retention days."
+  }
 }
 
 variable "access_s3_log_expiration_days" {

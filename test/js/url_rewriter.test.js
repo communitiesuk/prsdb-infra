@@ -1,15 +1,44 @@
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
-const rewire = require('rewire');
+const vm = require('vm');
 
 const moduleDir = path.join(__dirname, '..', '..', 'terraform', 'modules', 'frontdoor');
 const exceptions = JSON.parse(fs.readFileSync(path.join(moduleDir, 'url_rewriter_exceptions.json'), 'utf8'));
 const template = fs.readFileSync(path.join(moduleDir, 'url_rewriter.js.tftpl'), 'utf8');
-const rendered = template.replace('${jsonencode(exceptions)}', JSON.stringify(exceptions));
-const renderedPath = path.join(os.tmpdir(), 'url_rewriter.rendered.js');
-fs.writeFileSync(renderedPath, rendered);
-const url_rewriter = rewire(renderedPath).__get__('handler');
+
+function renderUrlRewriter(extraExceptions = []) {
+    const mergedExceptions = [...new Set([...exceptions, ...extraExceptions])];
+    const rendered = template.replace('${jsonencode(exceptions)}', JSON.stringify(mergedExceptions));
+
+    return vm.runInNewContext(`${rendered}\nhandler;`);
+}
+
+const url_rewriter = renderUrlRewriter();
+const url_rewriter_with_nft_exceptions = renderUrlRewriter(['local']);
+
+describe('url_rewriter_extra_exceptions validation', () => {
+    const variables = fs.readFileSync(path.join(moduleDir, 'variables.tf'), 'utf8');
+    const validation = variables.split('variable "url_rewriter_extra_exceptions" {')[1].split('\n}')[0];
+
+    it.each([
+        ['local', true],
+        ['Local_1-health', true],
+        ['0', true],
+        ['.', false],
+        ['*', false],
+        ['', false],
+        [' ', false],
+        ['local/epc', false],
+        ['-local', false],
+        ['_local', false],
+        ['local.epc', false],
+    ])('validates exception %j as %s', (segment, valid) => {
+        const pattern = validation.match(/can\(regex\("([^"]+)", segment\)\)/);
+
+        expect(pattern).not.toBeNull();
+        expect(new RegExp(pattern[1]).test(segment)).toBe(valid);
+    });
+});
 
 describe('url_rewriter', () => {
     it('returns the original url for a URL that does not include one of our domain names', () => {
@@ -21,6 +50,48 @@ describe('url_rewriter', () => {
 
         // then
         expect(new_event.headers.host.value + new_event.uri).toBe('www.not-our-service.gov.uk/dashboard');
+    });
+
+    it('does not rewrite NFT local EPC health paths', () => {
+        const event = createRequestEvent(registerHomeToRentHost, '/local/epc/health');
+
+        const new_event = url_rewriter_with_nft_exceptions(event);
+
+        expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/local/epc/health');
+    });
+
+    it('does not rewrite NFT local GOV.UK Pay mock card paths', () => {
+        const event = createRequestEvent(registerHomeToRentHost, '/local/gov-uk-pay/mock-card-page/example');
+
+        const new_event = url_rewriter_with_nft_exceptions(event);
+
+        expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/local/gov-uk-pay/mock-card-page/example');
+    });
+
+    it('keeps /local paths in the normal landlord route when no extra exception is configured', () => {
+        const event = createRequestEvent(registerHomeToRentHost, '/local/epc/health');
+
+        const new_event = url_rewriter(event);
+
+        expect(new_event.headers.host.value + new_event.uri).toBe('https://register-home-to-rent.communities.gov.uk/landlord/local/epc/health');
+    });
+
+    it('does not affect unrelated hosts when NFT local exceptions are configured', () => {
+        const event = createRequestEvent('www.not-our-service.gov.uk', '/local/epc/health');
+
+        const new_event = url_rewriter_with_nft_exceptions(event);
+
+        expect(new_event.headers.host.value + new_event.uri).toBe('www.not-our-service.gov.uk/local/epc/health');
+    });
+
+    it('preserves landlord, local-council, and system-operator routes', () => {
+        const landlord_event = createRequestEvent(registerHomeToRentHost, '/dashboard');
+        const council_event = createRequestEvent(searchLandlordHomeInformationHost, '/dashboard');
+        const operator_event = createRequestEvent(searchLandlordHomeInformationHost, '/system-operator/manage-council-users/1');
+
+        expect(url_rewriter_with_nft_exceptions(landlord_event).uri).toBe('/landlord/dashboard');
+        expect(url_rewriter_with_nft_exceptions(council_event).uri).toBe('/local-council/dashboard');
+        expect(url_rewriter_with_nft_exceptions(operator_event).uri).toBe('/system-operator/manage-council-users/1');
     });
 
     describe('for the register-home-to-rent domain', () => {
