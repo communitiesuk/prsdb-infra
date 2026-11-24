@@ -149,3 +149,28 @@ jobs:
   test-javascript:
     name: Test JavaScript
     uses: ./.github/workflows/test-javascript.yml
+
+  test-s3-bucket:
+    name: Test S3 bucket module
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_critical_alarm_email_address: ''
+      TF_VAR_non_critical_alarm_email_address: ''
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.1
+
+      - name: Terraform init S3 bucket module
+        working-directory: terraform/modules/s3_bucket
+        run: terraform init -backend=false
+
+      - name: Terraform test S3 bucket module
+        working-directory: terraform/modules/s3_bucket
+        run: terraform test

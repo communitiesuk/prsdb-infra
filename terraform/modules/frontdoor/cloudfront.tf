@@ -5,7 +5,7 @@ locals {
   # Single source of truth for the URL rewriter exception path segments. The same list is rendered into url_rewriter.js
   # at deploy time and used to build the CloudFront WAF's "unknown paths" rate-limit allowlist regex below, so the two
   # can never drift.
-  url_rewriter_exceptions = jsondecode(file("${path.module}/url_rewriter_exceptions.json"))
+  url_rewriter_exceptions = distinct(concat(jsondecode(file("${path.module}/url_rewriter_exceptions.json")), var.url_rewriter_extra_exceptions))
 
   # Service segments that the URL rewriter inserts based on the request hostname. Real traffic always reaches the
   # application via either an exception path or one of these segments, so we allow them in the WAF allowlist too.

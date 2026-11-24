@@ -26,6 +26,11 @@ provider "aws" {
   region = "us-east-1"
 }
 
+provider "aws" {
+  alias  = "eu-west-1"
+  region = "eu-west-1"
+}
+
 locals {
   environment_name = "production"
   multi_az         = false
@@ -177,17 +182,22 @@ module "bastion" {
 module "database" {
   source = "../modules/rds"
 
-  environment_name                = local.environment_name
-  database_password               = module.secrets.database_password.result
-  database_port                   = local.database_port
-  allocated_storage               = local.database_allocated_storage
-  backup_retention_period         = 35
-  db_subnet_group_name            = module.networking.db_subnet_group_name
-  instance_class                  = "db.t4g.small"
-  multi_az                        = local.multi_az
-  vpc_id                          = module.networking.vpc.id
-  webapp_task_execution_role_name = module.ecr.webapp_ecs_task_role_name
-  bastion_group_id                = module.bastion.security_group_id
+  providers = {
+    aws.eu-west-1 = aws.eu-west-1
+  }
+
+  environment_name                        = local.environment_name
+  database_password                       = module.secrets.database_password.result
+  database_port                           = local.database_port
+  allocated_storage                       = local.database_allocated_storage
+  backup_retention_period                 = 35
+  db_subnet_group_name                    = module.networking.db_subnet_group_name
+  instance_class                          = "db.t4g.small"
+  multi_az                                = local.multi_az
+  vpc_id                                  = module.networking.vpc.id
+  webapp_task_execution_role_name         = module.ecr.webapp_ecs_task_role_name
+  bastion_group_id                        = module.bastion.security_group_id
+  cross_region_backup_replication_enabled = true
 }
 
 module "redis" {
@@ -263,6 +273,7 @@ module "monitoring" {
   elasticache_cluster_ids          = toset(module.redis.redis_cluster_ids)
   database_allocated_storage       = local.database_allocated_storage
   database_identifier              = module.database.database_identifier
+  backup_replication_kms_key_arn   = module.database.backup_replication_kms_key_arn
   webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
   enable_kms_cloudtrail_events     = var.enable_kms_cloudtrail_events
   backup_vault_kms_key_arns        = var.task_definition_created ? module.backup[0].backup_vault_kms_key_arns : []

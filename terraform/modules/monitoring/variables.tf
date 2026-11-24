@@ -42,6 +42,11 @@ variable "database_allocated_storage" {
   type        = number
 }
 
+variable "backup_replication_kms_key_arn" {
+  description = "ARN of the KMS key encrypting cross-region replicated RDS automated backups"
+  type        = string
+}
+
 variable "elasticache_cluster_ids" {
   description = "IDs of ElastiCache clusters to create alarms for"
   type        = set(string)

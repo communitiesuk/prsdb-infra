@@ -337,6 +337,8 @@ module "nft_seed" {
   database_username            = data.aws_ssm_parameter.database_username.value
   database_password_secret_arn = data.aws_secretsmanager_secret.database_password.arn
   epc_certificate_base_url     = data.aws_ssm_parameter.epc_certificate_base_url.value
+  # Coordinate NFT schedule additions with the webapp's separate fail-closed inventory and its tests.
+  scheduled_task_names = keys(local.scheduled_tasks)
 }
 
 module "one_login_simulator" {

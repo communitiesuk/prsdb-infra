@@ -93,30 +93,56 @@ resource "aws_s3_bucket_ownership_controls" "main" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "main" {
-  count = var.noncurrent_version_expiration_days == null ? 0 : 1
+  count = var.noncurrent_version_expiration_days == null && length(var.prefix_expiration_rules) == 0 ? 0 : 1
 
   depends_on = [aws_s3_bucket_versioning.main]
 
   bucket = aws_s3_bucket.main.id
 
-  rule {
-    id = "expire-old-versions"
+  dynamic "rule" {
+    for_each = var.noncurrent_version_expiration_days == null ? [] : [var.noncurrent_version_expiration_days]
 
-    filter {}
+    content {
+      id = "expire-old-versions"
 
-    abort_incomplete_multipart_upload {
-      days_after_initiation = 14
+      filter {}
+
+      abort_incomplete_multipart_upload {
+        days_after_initiation = 14
+      }
+
+      noncurrent_version_expiration {
+        noncurrent_days = rule.value
+      }
+
+      expiration {
+        expired_object_delete_marker = true
+      }
+
+      status = "Enabled"
     }
+  }
 
-    noncurrent_version_expiration {
-      noncurrent_days = var.noncurrent_version_expiration_days
+  dynamic "rule" {
+    for_each = var.prefix_expiration_rules
+
+    content {
+      id = rule.value.id
+
+      filter {
+        prefix = rule.value.prefix
+      }
+
+      expiration {
+        days = rule.value.expiration_days
+      }
+
+      noncurrent_version_expiration {
+        noncurrent_days = rule.value.expiration_days
+      }
+
+      status = "Enabled"
     }
-
-    expiration {
-      expired_object_delete_marker = true
-    }
-
-    status = "Enabled"
   }
 }
 

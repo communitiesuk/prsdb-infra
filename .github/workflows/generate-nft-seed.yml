@@ -33,6 +33,68 @@ jobs:
           # max_session_duration (see terraform/nft/ecs_task_definition/nft_seed/iam.tf).
           role-duration-seconds: 21600
 
+      - name: Verify the seeded certificate object
+        id: certificate
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws_error_code() {
+            local output="$1"
+            if [[ "$output" =~ An\ error\ occurred\ \(([A-Za-z0-9._-]+)\)\ when\ calling\ [A-Za-z0-9_-]+ ]]; then
+              printf '%s' "${BASH_REMATCH[1]}"
+            else
+              printf '%s' "unavailable"
+            fi
+          }
+          if ! VERSION_ID=$(aws s3api head-object \
+            --bucket prsdb-uploaded-files-nft \
+            --key seeding/certificate_template.png \
+            --query VersionId --output text 2>&1); then
+            echo "Certificate metadata preflight failed (AWS error code: $(aws_error_code "$VERSION_ID"))"
+            exit 1
+          fi
+          if [[ ! "$VERSION_ID" =~ ^[A-Za-z0-9._/+=-]+$ || "$VERSION_ID" == "None" || "$VERSION_ID" == "null" ]]; then
+            echo "Certificate metadata requires an immutable object version"
+            exit 1
+          fi
+          echo "::add-mask::$VERSION_ID"
+          if [[ ! "$GITHUB_RUN_ID" =~ ^[1-9][0-9]*$ || ! "$GITHUB_RUN_ATTEMPT" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Invalid seed run identity"
+            exit 1
+          fi
+          CERTIFICATE_KEY="seeding/certificate-references/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.png"
+          ENCODED_VERSION=$(jq -rn --arg value "$VERSION_ID" '$value | @uri')
+          if ! COPY_RESPONSE=$(aws s3api copy-object \
+            --bucket prsdb-uploaded-files-nft \
+            --key "$CERTIFICATE_KEY" \
+            --copy-source "prsdb-uploaded-files-nft/seeding/certificate_template.png?versionId=${ENCODED_VERSION}" \
+            --output json 2>&1); then
+            echo "Certificate copy failed (AWS error code: $(aws_error_code "$COPY_RESPONSE"))"
+            exit 1
+          fi
+          COPIED_VERSION=$(jq -er '.VersionId | strings | select(length > 0)' <<< "$COPY_RESPONSE") || {
+            echo "Certificate copy did not return an immutable version"
+            exit 1
+          }
+          if [[ ! "$COPIED_VERSION" =~ ^[A-Za-z0-9._/+=-]+$ || "$COPIED_VERSION" == "null" || "$COPIED_VERSION" == "None" ]]; then
+            echo "Certificate copy did not return an immutable version"
+            exit 1
+          fi
+          echo "::add-mask::$COPIED_VERSION"
+          if ! HEAD_RESPONSE=$(aws s3api head-object \
+            --bucket prsdb-uploaded-files-nft --key "$CERTIFICATE_KEY" \
+            --version-id "$COPIED_VERSION" --output json 2>&1); then
+            echo "Copied certificate validation failed (AWS error code: $(aws_error_code "$HEAD_RESPONSE"))"
+            exit 1
+          fi
+          if ! jq -e --arg version "$COPIED_VERSION" \
+            '.VersionId == $version and (.ContentLength | type == "number" and . > 0)' \
+            <<< "$HEAD_RESPONSE" >/dev/null; then
+            echo "Copied certificate version or size did not match"
+            exit 1
+          fi
+          printf 'key=%s\nversion-id=%s\n' "$CERTIFICATE_KEY" "$COPIED_VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Resolve NFT task networking
         id: networking
         shell: bash
@@ -40,68 +102,320 @@ jobs:
           set -euo pipefail
           SERVICE="${ENVIRONMENT}-app"
           CLUSTER="${ENVIRONMENT}-app"
-          SUBNETS=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.subnets' --output json)
-          SECURITY_GROUPS=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.securityGroups' --output json)
-          echo "network-config={\"awsvpcConfiguration\":{\"subnets\":$SUBNETS,\"securityGroups\":$SECURITY_GROUPS,\"assignPublicIp\":\"DISABLED\"}}" >> "$GITHUB_OUTPUT"
+          aws_error_code() {
+            local output="$1"
+            if [[ "$output" =~ An\ error\ occurred\ \(([A-Za-z0-9._-]+)\)\ when\ calling\ [A-Za-z0-9_-]+ ]]; then
+              printf '%s' "${BASH_REMATCH[1]}"
+            else
+              printf '%s' "unavailable"
+            fi
+          }
+          if SUBNETS_RESPONSE=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.subnets' --output json 2>&1); then
+            SUBNETS="$SUBNETS_RESPONSE"
+          else
+            echo "NFT subnet preflight failed (AWS error code: $(aws_error_code "$SUBNETS_RESPONSE"))"
+            exit 1
+          fi
+          if SECURITY_GROUPS_RESPONSE=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.securityGroups' --output json 2>&1); then
+            SECURITY_GROUPS="$SECURITY_GROUPS_RESPONSE"
+          else
+            echo "NFT security-group preflight failed (AWS error code: $(aws_error_code "$SECURITY_GROUPS_RESPONSE"))"
+            exit 1
+          fi
+          NETWORK_CONFIG=$(jq -cen --argjson subnets "$SUBNETS" --argjson groups "$SECURITY_GROUPS" \
+            'select(($subnets | type == "array" and length > 0) and ($groups | type == "array" and length > 0)) |
+             {awsvpcConfiguration: {subnets: $subnets, securityGroups: $groups, assignPublicIp: "DISABLED"}}')
+          echo "::add-mask::$NETWORK_CONFIG"
+          printf 'network-config=%s\n' "$NETWORK_CONFIG" >> "$GITHUB_OUTPUT"
 
       - name: Run full-scale NFT seeder and dump
         id: run-task
+        env:
+          CERTIFICATE_KEY: ${{ steps.certificate.outputs.key }}
+          CERTIFICATE_VERSION_ID: ${{ steps.certificate.outputs.version-id }}
+          TASK_NETWORK: ${{ steps.networking.outputs.network-config }}
+          MAX_ATTEMPTS: "680"
         shell: bash
         run: |
           set -euo pipefail
-          TASK_ARN=$(aws ecs run-task \
-            --cluster "${ENVIRONMENT}-app" \
+          CLUSTER="nft-app"
+          POLL_INTERVAL_SECONDS=30
+
+          aws_error_code() {
+            local output="$1"
+            if [[ "$output" =~ An\ error\ occurred\ \(([A-Za-z0-9._-]+)\)\ when\ calling\ [A-Za-z0-9_-]+ ]]; then
+              printf '%s' "${BASH_REMATCH[1]}"
+            else
+              printf '%s' "unavailable"
+            fi
+          }
+
+          is_permanent_aws_error() {
+            case "$1" in
+              AccessDenied|AccessDeniedException|UnauthorizedOperation|AuthFailure|ExpiredToken|ExpiredTokenException|InvalidClientTokenId|UnrecognizedClientException|InvalidParameterException|ValidationException|ClusterNotFoundException|ResourceNotFoundException|ClientException|UnsupportedFeatureException)
+                return 0 ;;
+              *)
+                return 1 ;;
+            esac
+          }
+
+          valid_task_arn() {
+            local candidate="$1"
+            local expected_prefix="arn:aws:ecs:${AWS_REGION}:${AWS_ACCOUNT_ID}:task/${CLUSTER}/"
+            [[ "$candidate" == "$expected_prefix"* ]] || return 1
+            [[ "${candidate#"$expected_prefix"}" =~ ^[[:xdigit:]]{32}$ ]]
+          }
+
+          report_recovery_action() {
+            echo "Before retrying, manually inspect cluster ${CLUSTER} for startedBy ${STARTED_BY}."
+          }
+
+          stop_validated_task() {
+            local candidate="$1"
+            if ! valid_task_arn "$candidate"; then
+              echo "Refusing to stop a task without a validated NFT task ARN"
+              return 1
+            fi
+            local response
+            if ! response=$(aws ecs stop-task --cluster "$CLUSTER" --task "$candidate" \
+              --reason "Workflow run cancelled or failed" --output json 2>&1); then
+              echo "ECS stop-task failed (AWS error code: $(aws_error_code "$response"))"
+              return 1
+            fi
+            echo "Seed task cleanup completed"
+          }
+
+          record_task_arn() {
+            local candidate="$1"
+            if ! valid_task_arn "$candidate"; then
+              echo "Refusing to record a task without a validated NFT task ARN"
+              return 1
+            fi
+            echo "::add-mask::$candidate"
+            if ! printf 'task-arn=%s\n' "$candidate" >> "$GITHUB_OUTPUT"; then
+              echo "Could not record the validated task ARN; attempting immediate cleanup"
+              stop_validated_task "$candidate" || echo "Immediate task cleanup also failed"
+              return 1
+            fi
+          }
+
+          STARTED_BY="nft-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          if [[ ! "$STARTED_BY" =~ ^nft-[0-9]+-[0-9]+$ || ${#STARTED_BY} -gt 36 ]]; then
+            echo "Could not create a valid unique seed-task launch identifier"
+            exit 1
+          fi
+          if [[ "$CERTIFICATE_KEY" != "seeding/certificate-references/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.png" ||
+            ! "$CERTIFICATE_VERSION_ID" =~ ^[A-Za-z0-9._/+=-]+$ ||
+            "$CERTIFICATE_VERSION_ID" == "null" || "$CERTIFICATE_VERSION_ID" == "None" ]]; then
+            echo "Seed certificate identity is invalid"
+            exit 1
+          fi
+          OVERRIDES=$(jq -n --arg key "$CERTIFICATE_KEY" --arg version "$CERTIFICATE_VERSION_ID" \
+            --arg run "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            '{containerOverrides: [
+              {name: "nft-data-seeder", environment: [
+                {name: "NFT_SEED_CERTIFICATE_OBJECT_KEY", value: $key},
+                {name: "NFT_SEED_CERTIFICATE_VERSION_ID", value: $version}]},
+              {name: "nft-database-dump", environment: [
+                {name: "NFT_SEED_CERTIFICATE_OBJECT_KEY", value: $key},
+                {name: "NFT_SEED_CERTIFICATE_VERSION_ID", value: $version},
+                {name: "NFT_SEED_RUN_ID", value: $run}]}
+            ]}')
+          if RUN_TASK_RESPONSE=$(aws ecs run-task \
+            --cluster "$CLUSTER" \
             --task-definition "prsdb-seed-data-${ENVIRONMENT}" \
             --launch-type FARGATE \
-            --network-configuration '${{ steps.networking.outputs.network-config }}' \
-            --query 'tasks[0].taskArn' \
-            --output text)
-          echo "Started $TASK_ARN"
-          # Recorded as a step output (not just a shell var) so the cleanup step below can still
-          # find and stop the task if this step is cancelled or fails partway through polling.
-          echo "task-arn=$TASK_ARN" >> "$GITHUB_OUTPUT"
-
-          # `aws ecs wait tasks-stopped` times out after 10 minutes (6s x 100 attempts), which
-          # isn't long enough for a full-scale seed + dump run, so poll manually instead.
-          # GitHub-hosted runners are hard-capped at 360 minutes (see the job's timeout-minutes),
-          # so this can't wait longer than that - if seeding genuinely needs longer, this workflow
-          # will need to move to a self-hosted runner or decouple the wait from the trigger.
-          POLL_INTERVAL_SECONDS=30
-          MAX_ATTEMPTS=680 # ~5h40, leaving a buffer under the job's 355 minute timeout
-          STATUS=""
-          for ((i = 0; i < MAX_ATTEMPTS; i++)); do
-            # Don't let a transient AWS API error (throttling, network blip) kill a run that's
-            # hours in - log it and retry on the next poll instead of exiting immediately.
-            if ! STATUS=$(aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" --query 'tasks[0].lastStatus' --output text); then
-              echo "describe-tasks failed, will retry"
-              sleep "$POLL_INTERVAL_SECONDS"
-              continue
+            --count 1 \
+            --started-by "$STARTED_BY" \
+            --client-token "$STARTED_BY" \
+            --overrides "$OVERRIDES" \
+            --network-configuration "$TASK_NETWORK" \
+            --output json 2>&1); then
+            TASK_ARN=$(jq -r 'if (.tasks | type) == "array" and (.tasks | length) == 1
+              then .tasks[0].taskArn // empty else empty end' <<< "$RUN_TASK_RESPONSE") || TASK_ARN=""
+            if ! valid_task_arn "$TASK_ARN"; then
+              echo "ECS run-task did not return a valid single task ARN"
+              report_recovery_action
+              exit 1
             fi
-            echo "Task status: $STATUS"
-            if [ "$STATUS" = "STOPPED" ]; then
-              break
+            record_task_arn "$TASK_ARN" || exit 1
+            if ! jq -e '(.failures // []) | type == "array" and length == 0' <<< "$RUN_TASK_RESPONSE" >/dev/null; then
+              echo "ECS run-task reported launch failures or an invalid response"
+              exit 1
+            fi
+            echo "Seed task started"
+          else
+            RUN_TASK_ERROR_CODE=$(aws_error_code "$RUN_TASK_RESPONSE")
+            echo "ECS run-task failed (AWS error code: ${RUN_TASK_ERROR_CODE})"
+            echo "The launch may have been accepted despite the CLI error."
+            report_recovery_action
+            exit 1
+          fi
+
+          # 680 polls retain the existing ~5h40 wait, with a buffer under the 355-minute job timeout.
+          STATUS_STOPPED=false
+          LAST_POLL_CATEGORY="status unavailable"
+          for ((attempt = 1; attempt <= MAX_ATTEMPTS; attempt++)); do
+            if STATUS_RESPONSE=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+              --query 'tasks[0].lastStatus' --output text 2>&1); then
+              STATUS="$(tr -d '[:space:]' <<< "$STATUS_RESPONSE")"
+              case "$STATUS" in
+                PROVISIONING|PENDING|ACTIVATING|RUNNING|DEACTIVATING|STOPPING|DEPROVISIONING)
+                  echo "Task status: $STATUS"
+                  LAST_POLL_CATEGORY="task still active" ;;
+                STOPPED)
+                  echo "Task status: STOPPED"
+                  STATUS_STOPPED=true
+                  break ;;
+                ""|None|null|NULL)
+                  echo "ECS task status unavailable on poll ${attempt}/${MAX_ATTEMPTS}; retrying"
+                  LAST_POLL_CATEGORY="status unavailable" ;;
+                *)
+                  echo "ECS describe-tasks returned an unrecognized status; refusing to treat it as success"
+                  exit 1 ;;
+              esac
+            else
+              DESCRIBE_ERROR_CODE=$(aws_error_code "$STATUS_RESPONSE")
+              if is_permanent_aws_error "$DESCRIBE_ERROR_CODE"; then
+                echo "ECS describe-tasks failed (AWS error code: ${DESCRIBE_ERROR_CODE})"
+                exit 1
+              fi
+              echo "ECS describe-tasks failed (AWS error code: ${DESCRIBE_ERROR_CODE}); retrying"
+              LAST_POLL_CATEGORY="AWS API error"
             fi
             sleep "$POLL_INTERVAL_SECONDS"
           done
 
-          if [ "$STATUS" != "STOPPED" ]; then
-            echo "Timed out waiting for task to stop after $((MAX_ATTEMPTS * POLL_INTERVAL_SECONDS / 60)) minutes"
+          if [[ "$STATUS_STOPPED" != true ]]; then
+            if [[ "$LAST_POLL_CATEGORY" == "status unavailable" ]]; then
+              echo "ECS task status remained unavailable after ${MAX_ATTEMPTS} polls"
+            else
+              echo "Timed out waiting for task to stop after $((MAX_ATTEMPTS * POLL_INTERVAL_SECONDS / 60)) minutes"
+            fi
             exit 1
           fi
 
-          aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" \
-            --query 'tasks[0].containers[].{name:name,exitCode:exitCode,reason:reason}' --output table
-          test "$(aws ecs describe-tasks --cluster "${ENVIRONMENT}-app" --tasks "$TASK_ARN" --query 'tasks[0].containers[?name==`nft-database-dump`].exitCode | [0]' --output text)" = "0"
+          report_seed_failure() {
+            local seed_response stop_response reason_response reason
+            if seed_response=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+              --query "tasks[0].containers[?name=='nft-data-seeder'].exitCode | [0]" --output text 2>&1) \
+              && [[ "$seed_response" =~ ^[0-9]{1,3}$ ]]; then
+              echo "Seed container exit code: $seed_response"
+            else
+              echo "Seed container exit code unavailable"
+            fi
+            if reason_response=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+              --query 'tasks[0].stoppedReason' --output json 2>&1) &&
+              reason=$(jq -ce 'select(type == "string" and length > 0)' <<< "$reason_response"); then
+              echo "Task stopped reason: $reason"
+            else
+              echo "Task stopped reason unavailable"
+            fi
+            if stop_response=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+              --query 'tasks[0].stopCode' --output text 2>&1); then
+              case "$stop_response" in
+                TaskFailedToStart|EssentialContainerExited|UserInitiated|ServiceSchedulerInitiated|SpotInterruption|TerminationNotice)
+                  echo "Task stop category: $stop_response"
+                  return ;;
+              esac
+            fi
+            echo "Task stop category unavailable"
+          }
 
+          if DUMP_RESPONSE=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+            --query "tasks[0].containers[?name=='nft-database-dump'].exitCode | [0]" --output text 2>&1); then
+            DUMP_EXIT_CODE="$(tr -d '[:space:]' <<< "$DUMP_RESPONSE")"
+            if [[ ! "$DUMP_EXIT_CODE" =~ ^[0-9]+$ ]]; then
+              echo "ECS completion response did not include the nft-database-dump container exit code"
+              report_seed_failure
+              exit 1
+            fi
+            if [[ "$DUMP_EXIT_CODE" != "0" ]]; then
+              echo "Seed dump container failed (exit code ${DUMP_EXIT_CODE})"
+              report_seed_failure
+              exit 1
+            fi
+          else
+            echo "ECS dump completion check failed (AWS error code: $(aws_error_code "$DUMP_RESPONSE"))"
+            report_seed_failure
+            exit 1
+          fi
+
+          MANIFEST_VERSION=""
+          LOG_STREAM="dump/nft-database-dump/${TASK_ARN##*/}"
+          for ((attempt = 1; attempt <= 5; attempt++)); do
+            if LOG_RESPONSE=$(aws logs get-log-events --log-group-name "/ecs/nft-seed-data" \
+              --log-stream-name "$LOG_STREAM" --query 'events[].message' --output json 2>&1); then
+              MANIFEST_VERSION=$(jq -er '[.[] | select(type == "string" and startswith("NFT_SEED_MANIFEST_VERSION=")) |
+                ltrimstr("NFT_SEED_MANIFEST_VERSION=")] | if length == 1 then .[0] else empty end' \
+                <<< "$LOG_RESPONSE") || MANIFEST_VERSION=""
+              if [[ "$MANIFEST_VERSION" =~ ^[A-Za-z0-9._/+=-]+$ && "$MANIFEST_VERSION" != "null" &&
+                "$MANIFEST_VERSION" != "None" ]]; then
+                break
+              fi
+            fi
+            MANIFEST_VERSION=""
+            if ((attempt < 5)); then sleep 3; fi
+          done
+          if [[ -z "$MANIFEST_VERSION" ]]; then
+            echo "The exact seed manifest version is unavailable; operator inspection is required"
+            exit 1
+          fi
+          echo "::add-mask::$MANIFEST_VERSION"
+          MANIFEST_KEY="seed-manifests/${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.json"
+          MANIFEST_PATH="$RUNNER_TEMP/nft-seed-manifest-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.json"
+          umask 077
+          trap 'rm -f -- "$MANIFEST_PATH"' EXIT
+          if ! MANIFEST_RESPONSE=$(aws s3api get-object --bucket prsdb-seed-data-nft \
+            --key "$MANIFEST_KEY" --version-id "$MANIFEST_VERSION" --output json "$MANIFEST_PATH" 2>&1); then
+            echo "Exact seed manifest retrieval failed (AWS error code: $(aws_error_code "$MANIFEST_RESPONSE"))"
+            exit 1
+          fi
+          if ! jq -e --arg version "$MANIFEST_VERSION" '.VersionId == $version' <<< "$MANIFEST_RESPONSE" >/dev/null ||
+            ! jq -e --arg run "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+              --arg certificate_key "$CERTIFICATE_KEY" --arg certificate_version "$CERTIFICATE_VERSION_ID" \
+              '.runId == $run and .certificate.key == $certificate_key and .certificate.version == $certificate_version and
+               .dump.key == "seed-data.dump" and (.dump.version | type == "string" and
+                 test("^[A-Za-z0-9._/+=-]+$") and . != "null" and . != "None") and
+               (.dump.bytes | type == "number" and . > 0 and floor == .) and
+               (.dump.sha256 | type == "string" and test("^[a-f0-9]{64}$"))' \
+              "$MANIFEST_PATH" >/dev/null; then
+            echo "Seed manifest identity did not match this run and certificate"
+            exit 1
+          fi
+          printf 'manifest-key=%s\nmanifest-version=%s\n' "$MANIFEST_KEY" "$MANIFEST_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Seed dump completed"
+
+      # If runner loss prevents cleanup, inspect nft-app for startedBy
+      # nft-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT} before retrying.
       - name: Stop ECS task if workflow was cancelled or failed
+        id: cleanup
         if: failure() || cancelled()
+        env:
+          TASK_ARN: ${{ steps.run-task.outputs.task-arn }}
         shell: bash
         run: |
           set -euo pipefail
-          TASK_ARN="${{ steps.run-task.outputs.task-arn }}"
-          if [ -z "$TASK_ARN" ]; then
-            echo "No task was started, nothing to stop"
+          CLUSTER="nft-app"
+          STARTED_BY="nft-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          if [[ -z "$TASK_ARN" ]]; then
+            echo "No validated seed task ARN is available; no stop request was sent."
+            echo "If launch may have been accepted, inspect cluster ${CLUSTER} for startedBy ${STARTED_BY} before retrying."
             exit 0
           fi
-          echo "Stopping $TASK_ARN"
-          aws ecs stop-task --cluster "${ENVIRONMENT}-app" --task "$TASK_ARN" --reason "Workflow run cancelled or failed"
+          EXPECTED_PREFIX="arn:aws:ecs:${AWS_REGION}:${AWS_ACCOUNT_ID}:task/${CLUSTER}/"
+          if [[ "$TASK_ARN" != "$EXPECTED_PREFIX"* || ! "${TASK_ARN#"$EXPECTED_PREFIX"}" =~ ^[[:xdigit:]]{32}$ ]]; then
+            echo "Refusing to stop a task without a validated NFT task ARN"
+            exit 1
+          fi
+          echo "::add-mask::$TASK_ARN"
+          echo "Stopping the seed task"
+          if ! STOP_RESPONSE=$(aws ecs stop-task --cluster "$CLUSTER" --task "$TASK_ARN" \
+            --reason "Workflow run cancelled or failed" --output json 2>&1); then
+            if [[ "$STOP_RESPONSE" =~ An\ error\ occurred\ \(([A-Za-z0-9._-]+)\)\ when\ calling\ [A-Za-z0-9_-]+ ]]; then
+              echo "ECS stop-task failed (AWS error code: ${BASH_REMATCH[1]})"
+            else
+              echo "ECS stop-task failed (AWS error code: unavailable)"
+            fi
+            exit 1
+          fi

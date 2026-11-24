@@ -9,6 +9,18 @@ variable "environment_name" {
   type        = string
 }
 
+variable "scheduled_task_names" {
+  description = "Names of the scheduled tasks defined by the parent NFT task-definition module"
+  type        = list(string)
+
+  validation {
+    condition = alltrue([
+      for name in var.scheduled_task_names : can(regex("^[0-9A-Za-z._-]{1,64}$", name))
+    ])
+    error_message = "Each scheduled task name must be 1-64 characters and contain only letters, numbers, periods, underscores, or hyphens."
+  }
+}
+
 variable "image_name" {
   description = "name of the docker image to run for the seeder container"
   type        = string

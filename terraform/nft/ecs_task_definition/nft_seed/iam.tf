@@ -4,7 +4,10 @@ data "aws_iam_policy_document" "nft_seed_task_s3" {
       "s3:AbortMultipartUpload",
       "s3:PutObject",
     ]
-    resources = ["${module.nft_seed_bucket.bucket_arn}/*"]
+    resources = [
+      "${module.nft_seed_bucket.bucket_arn}/seed-data.dump",
+      "${module.nft_seed_bucket.bucket_arn}/seed-manifests/*",
+    ]
   }
 
   statement {
@@ -16,9 +19,30 @@ data "aws_iam_policy_document" "nft_seed_task_s3" {
     actions = [
       "kms:Encrypt",
       "kms:GenerateDataKey",
+      "kms:Decrypt",
     ]
     resources = [aws_kms_key.nft_seed.arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["s3.eu-west-2.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "kms:EncryptionContext:aws:s3:arn"
+      values = [
+        module.nft_seed_bucket.bucket_arn,
+        "${module.nft_seed_bucket.bucket_arn}/seed-data.dump",
+        "${module.nft_seed_bucket.bucket_arn}/seed-manifests/*",
+      ]
+    }
   }
+}
+
+data "aws_kms_key" "uploaded_files" {
+  key_id = "alias/uploaded-files-encryption-${var.environment_name}"
 }
 
 resource "aws_iam_policy" "nft_seed_task_s3" {
@@ -65,6 +89,67 @@ resource "aws_iam_role_policy_attachment" "nft_seed_restore" {
 }
 
 data "aws_iam_policy_document" "nft_seed_run_task" {
+  statement {
+    actions   = ["s3:GetObject", "s3:GetObjectVersion"]
+    resources = ["arn:aws:s3:::prsdb-uploaded-files-${var.environment_name}/seeding/certificate_template.png"]
+  }
+
+  statement {
+    actions   = ["s3:PutObject", "s3:GetObjectVersion"]
+    resources = ["arn:aws:s3:::prsdb-uploaded-files-${var.environment_name}/seeding/certificate-references/*"]
+  }
+
+  statement {
+    actions   = ["kms:Decrypt", "kms:Encrypt", "kms:GenerateDataKey"]
+    resources = [data.aws_kms_key.uploaded_files.arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["s3.eu-west-2.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "kms:EncryptionContext:aws:s3:arn"
+      values = [
+        "arn:aws:s3:::prsdb-uploaded-files-${var.environment_name}",
+        "arn:aws:s3:::prsdb-uploaded-files-${var.environment_name}/seeding/certificate_template.png",
+        "arn:aws:s3:::prsdb-uploaded-files-${var.environment_name}/seeding/certificate-references/*",
+      ]
+    }
+  }
+
+  statement {
+    actions   = ["logs:GetLogEvents"]
+    resources = ["${aws_cloudwatch_log_group.nft_seed.arn}:log-stream:dump/nft-database-dump/*"]
+  }
+
+  statement {
+    actions   = ["s3:GetObjectVersion"]
+    resources = ["${module.nft_seed_bucket.bucket_arn}/seed-manifests/*"]
+  }
+
+  statement {
+    actions   = ["kms:Decrypt"]
+    resources = [aws_kms_key.nft_seed.arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["s3.eu-west-2.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "kms:EncryptionContext:aws:s3:arn"
+      values = [
+        module.nft_seed_bucket.bucket_arn,
+        "${module.nft_seed_bucket.bucket_arn}/seed-manifests/*",
+      ]
+    }
+  }
+
   statement {
     actions   = ["ecs:RunTask"]
     resources = ["arn:aws:ecs:eu-west-2:*:task-definition/prsdb-seed-data-${var.environment_name}:*"]
