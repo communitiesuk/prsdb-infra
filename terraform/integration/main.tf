@@ -103,6 +103,10 @@ module "frontdoor" {
     "13.126.5.12/32",
     "3.7.157.159/32",
     "3.7.173.162/32",
+    # AWS Continuum (eu-west-2)
+    "13.42.228.66/32",
+    "16.60.62.58/32",
+    "35.176.240.10/32",
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   use_aws_shield_advanced        = true
