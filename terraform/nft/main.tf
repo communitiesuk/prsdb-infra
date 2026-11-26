@@ -181,6 +181,12 @@ module "github_actions_access" {
   enable_one_login_simulator_mirror_access = true
 }
 
+module "read_only_investigator" {
+  source = "../modules/read_only_investigator"
+
+  environment_name = local.environment_name
+}
+
 module "secrets" {
   source = "../modules/secrets"
 

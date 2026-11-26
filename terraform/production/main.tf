@@ -154,6 +154,12 @@ module "github_actions_access" {
   ecr_describe_images_policy_arn = module.ecr.describe_ecr_images_policy_arn
 }
 
+module "read_only_investigator" {
+  source = "../modules/read_only_investigator"
+
+  environment_name = local.environment_name
+}
+
 module "secrets" {
   source = "../modules/secrets"
 

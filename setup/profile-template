@@ -26,3 +26,23 @@ sso_session = mhclg-sso
 sso_account_id = <prod account id>
 sso_role_name = developer_role
 region = eu-west-2
+
+[profile mhclg-int-investigator]
+source_profile = mhclg-int
+role_arn = arn:aws:iam::<int account id>:role/integration-read-only-investigator
+region = eu-west-2
+
+[profile mhclg-test-investigator]
+source_profile = mhclg-test
+role_arn = arn:aws:iam::<test account id>:role/test-read-only-investigator
+region = eu-west-2
+
+[profile mhclg-nft-investigator]
+source_profile = mhclg-nft
+role_arn = arn:aws:iam::<staging account id>:role/nft-read-only-investigator
+region = eu-west-2
+
+[profile mhclg-prod-investigator]
+source_profile = mhclg-prod
+role_arn = arn:aws:iam::<prod account id>:role/production-read-only-investigator
+region = eu-west-2
