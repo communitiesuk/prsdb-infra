@@ -67,6 +67,13 @@ resource "aws_secretsmanager_secret" "gov_uk_pay_api_key" {
   kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
 }
 
+resource "aws_secretsmanager_secret" "gov_uk_pay_moto_api_key" {
+  name                    = "tf-${var.environment_name}-prsdb-gov-uk-pay-moto-api-key"
+  description             = "API key for the GOV.UK Pay MOTO account"
+  recovery_window_in_days = 0
+  kms_key_id              = aws_kms_key.prsdb_webapp_secrets.arn
+}
+
 resource "aws_secretsmanager_secret" "epc_register_client_secret" {
   name                    = "tf-${var.environment_name}-prsdb-epc-client-secret"
   description             = "Client secret for the EPC register client secret"
