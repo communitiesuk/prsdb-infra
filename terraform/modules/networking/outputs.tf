@@ -4,8 +4,13 @@ output "vpc" {
 }
 
 output "nat_gateway_ip" {
-  value       = aws_eip.nat_gateway.public_ip
-  description = "The IP address of the NAT gateway"
+  value       = try(aws_eip.nat_gateway[0].public_ip, null)
+  description = "The IP address of the legacy zonal NAT gateway, when present"
+}
+
+output "nat_gateway_ips" {
+  value       = var.use_regional_nat_gateway ? aws_eip.regional_nat_gateway[*].public_ip : [aws_eip.nat_gateway[0].public_ip]
+  description = "The IP addresses used by the NAT gateway"
 }
 
 output "vpc_endpoint_security_group_id" {

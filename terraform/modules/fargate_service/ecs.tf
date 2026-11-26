@@ -8,6 +8,7 @@ resource "aws_ecs_service" "main" {
   force_new_deployment               = true
   health_check_grace_period_seconds  = var.health_check_grace_period_seconds
   launch_type                        = "FARGATE"
+  availability_zone_rebalancing      = var.availability_zone_rebalancing
   scheduling_strategy                = "REPLICA"
   task_definition                    = var.task_definition_family # Task family name - gets the latest ACTIVE revision
 
