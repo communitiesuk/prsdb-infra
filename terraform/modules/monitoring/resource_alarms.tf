@@ -97,43 +97,22 @@ resource "aws_cloudwatch_metric_alarm" "rds_storage" {
   ]
 }
 
-resource "aws_cloudwatch_metric_alarm" "elasticache_cpu_usage" {
-  for_each = var.elasticache_cluster_ids
+resource "aws_cloudwatch_metric_alarm" "elasticache_throttled_commands" {
+  for_each = var.elasticache_serverless_cache_names
 
-  alarm_name          = "${each.value}-cpu-usage"
-  alarm_description   = "ElastiCache CPU utilization has been >90% for over a minute"
-  comparison_operator = "GreaterThanThreshold"
-  metric_name         = "CPUUtilization"
+  alarm_name          = "${each.value}-throttled-commands"
+  alarm_description   = "ElastiCache Serverless has throttled one or more commands in a minute"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  metric_name         = "ThrottledCmds"
   namespace           = "AWS/ElastiCache"
   evaluation_periods  = 1
   period              = 60
-  threshold           = 90
-  statistic           = "Average"
+  threshold           = 1
+  statistic           = "Sum"
+  treat_missing_data  = "notBreaching"
 
   dimensions = {
-    CacheClusterId = each.value
-  }
-
-  alarm_actions = [
-    aws_sns_topic.non_critical_alarm_sns_topic.arn,
-  ]
-}
-
-resource "aws_cloudwatch_metric_alarm" "elasticache_memory_usage" {
-  for_each = var.elasticache_cluster_ids
-
-  alarm_name          = "${each.value}-memory-usage"
-  alarm_description   = "ElastiCache memory usage has been >90% for over a minute"
-  comparison_operator = "GreaterThanThreshold"
-  metric_name         = "DatabaseMemoryUsagePercentage"
-  namespace           = "AWS/ElastiCache"
-  evaluation_periods  = 1
-  period              = 60
-  threshold           = 90
-  statistic           = "Average"
-
-  dimensions = {
-    CacheClusterId = each.value
+    clusterId = each.value
   }
 
   alarm_actions = [

@@ -8,54 +8,22 @@ variable "environment_name" {
 }
 
 variable "redis_password" {
-  description = "password for elasticache"
+  description = "Password for the Valkey user"
   type        = string
   sensitive   = true
 }
 
-variable "highly_available" {
-  type        = bool
-  description = "Whether or not to make redis highly available (whether to have replicas or not)."
-}
-
-variable "node_type" {
-  type        = string
-  description = "The type of node for the redis elasticache."
-}
-
-variable "redis_port" {
-  type        = number
-  description = "The network port redis runs on"
-}
-
-variable "redis_subnet_group_name" {
-  type        = string
-  description = "The name of the subnet group associated with the VPC that redis needs to be in."
+variable "redis_subnet_ids" {
+  type        = list(string)
+  description = "IDs of the isolated subnets for the serverless cache endpoint."
 }
 
 variable "snapshot_retention_limit" {
   type        = number
-  description = "The number of days the automatic cache cluster snapshots are retained before being deleted. If 0 then backups are turned off"
-}
-
-variable "backup_window" {
-  type        = string
-  description = "Backup window for redis."
-  default     = "02:30-03:30"
-}
-
-variable "maintenance_window" {
-  type        = string
-  description = "Maintenance window for redis."
-  default     = "sun:23:00-mon:01:30"
+  description = "The number of days automatic serverless cache snapshots are retained before being deleted. If 0 then backups are turned off"
 }
 
 variable "vpc_id" {
   type        = string
   description = "The ID of the VPC to be associated with"
-}
-
-variable "cloudwatch_log_expiration_days" {
-  type        = number
-  description = "Number of days to retain cloudwatch logs for"
 }

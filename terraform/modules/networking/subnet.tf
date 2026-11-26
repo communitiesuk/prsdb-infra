@@ -54,8 +54,3 @@ resource "aws_db_subnet_group" "main" {
   name       = "${var.environment_name}-db-subnet-group"
   subnet_ids = aws_subnet.isolated_subnet[*].id
 }
-
-resource "aws_elasticache_subnet_group" "main" {
-  name       = "${var.environment_name}-redis-subnet-group"
-  subnet_ids = aws_subnet.isolated_subnet[*].id
-}

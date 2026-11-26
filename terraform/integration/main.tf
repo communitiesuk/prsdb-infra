@@ -214,15 +214,11 @@ module "database" {
 module "redis" {
   source = "../modules/elasticache"
 
-  environment_name               = local.environment_name
-  highly_available               = false
-  node_type                      = "cache.t4g.micro"
-  redis_password                 = module.secrets.redis_password.result
-  redis_port                     = local.redis_port
-  redis_subnet_group_name        = module.networking.redis_subnet_group_name
-  snapshot_retention_limit       = 7
-  vpc_id                         = module.networking.vpc.id
-  cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
+  environment_name         = local.environment_name
+  redis_password           = module.secrets.redis_password.result
+  redis_subnet_ids         = module.networking.isolated_subnets[*].id
+  snapshot_retention_limit = 7
+  vpc_id                   = module.networking.vpc.id
 }
 
 module "ecs_service" {
@@ -259,21 +255,21 @@ module "monitoring" {
     aws.us-east-1 = aws.us-east-1
   }
 
-  environment_name                 = local.environment_name
-  cloudwatch_log_expiration_days   = local.cloudwatch_log_expiration_days
-  critical_alarm_email_address     = var.critical_alarm_email_address
-  non_critical_alarm_email_address = var.non_critical_alarm_email_address
-  alb_name                         = module.frontdoor.load_balancer.name
-  alb_arn_suffix                   = module.frontdoor.load_balancer.arn_suffix
-  alb_target_group_arn_suffix      = module.frontdoor.load_balancer.target_group_arn_suffix
-  ecs_cluster_name                 = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
-  ecs_service_name                 = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
-  elasticache_cluster_ids          = toset(module.redis.redis_cluster_ids)
-  database_allocated_storage       = local.database_allocated_storage
-  database_identifier              = module.database.database_identifier
-  backup_replication_kms_key_arn   = module.database.backup_replication_kms_key_arn
-  webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
-  enable_kms_cloudtrail_events     = var.enable_kms_cloudtrail_events
+  environment_name                   = local.environment_name
+  cloudwatch_log_expiration_days     = local.cloudwatch_log_expiration_days
+  critical_alarm_email_address       = var.critical_alarm_email_address
+  non_critical_alarm_email_address   = var.non_critical_alarm_email_address
+  alb_name                           = module.frontdoor.load_balancer.name
+  alb_arn_suffix                     = module.frontdoor.load_balancer.arn_suffix
+  alb_target_group_arn_suffix        = module.frontdoor.load_balancer.target_group_arn_suffix
+  ecs_cluster_name                   = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
+  ecs_service_name                   = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
+  elasticache_serverless_cache_names = toset([module.redis.serverless_cache_name])
+  database_allocated_storage         = local.database_allocated_storage
+  database_identifier                = module.database.database_identifier
+  backup_replication_kms_key_arn     = module.database.backup_replication_kms_key_arn
+  webapp_ecs_task_role_name          = module.ecr.webapp_ecs_task_role_name
+  enable_kms_cloudtrail_events       = var.enable_kms_cloudtrail_events
 }
 
 module "email_queue" {
