@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~>5.0"
+      version = "~> 6.24"
     }
   }
 }
@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "terraform_state_read_only" {
     ]
     resources = [
       # Access secrets managed by Terraform
-      "arn:aws:secretsmanager:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:secret:tf-*",
+      "arn:aws:secretsmanager:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:secret:tf-*",
     ]
   }
 
