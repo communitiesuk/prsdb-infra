@@ -33,7 +33,7 @@ variable "use_regional_nat_gateway" {
 variable "retain_zonal_nat_gateway" {
   description = "Whether to retain the legacy zonal NAT gateway during a regional NAT cutover"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "vpc_flow_cloudwatch_log_expiration_days" {
