@@ -79,13 +79,13 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_usage" {
 
 resource "aws_cloudwatch_metric_alarm" "rds_storage" {
   alarm_name          = "${var.database_identifier}-storage"
-  alarm_description   = "RDS Database storage space has been >90% full for over a minute"
+  alarm_description   = "RDS Database free storage has been below 10% of the initial allocation for over a minute"
   comparison_operator = "LessThanThreshold"
   metric_name         = "FreeStorageSpace"
   namespace           = "AWS/RDS"
   evaluation_periods  = 1
   period              = 60
-  threshold           = var.database_allocated_storage * 0.1
+  threshold           = var.database_allocated_storage * 0.1 * 1024 * 1024 * 1024
   statistic           = "Minimum"
 
   dimensions = {
