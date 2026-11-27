@@ -47,8 +47,8 @@ variable "backup_replication_kms_key_arn" {
   type        = string
 }
 
-variable "elasticache_cluster_ids" {
-  description = "IDs of ElastiCache clusters to create alarms for"
+variable "elasticache_serverless_cache_names" {
+  description = "Names of ElastiCache Serverless caches to create alarms for"
   type        = set(string)
 }
 

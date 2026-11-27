@@ -3,7 +3,7 @@ output "redis_security_group_id" {
   description = "ID for the security group for redis"
 }
 
-output "redis_cluster_ids" {
-  value       = aws_elasticache_replication_group.main.member_clusters
-  description = "IDs of the redis clusters"
+output "serverless_cache_name" {
+  value       = aws_elasticache_serverless_cache.main.name
+  description = "Name of the Valkey Serverless cache, used for CloudWatch dimensions"
 }

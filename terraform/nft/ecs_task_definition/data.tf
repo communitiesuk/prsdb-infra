@@ -58,6 +58,10 @@ data "aws_ssm_parameter" "redis_port" {
   name = "${local.environment_name}-prsdb-redis-port"
 }
 
+data "aws_ssm_parameter" "redis_username" {
+  name = "${local.environment_name}-prsdb-redis-username"
+}
+
 # CloudWatch metric dimension identifiers read by the System Operator dashboard.
 data "aws_ssm_parameter" "ecs_cluster_name" {
   name = "${local.environment_name}-prsdb-ecs-cluster-name"

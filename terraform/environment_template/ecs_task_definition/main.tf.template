@@ -76,6 +76,18 @@ locals {
       value = data.aws_ssm_parameter.redis_cluster_id.value
     },
     {
+      name  = "CLOUDWATCH_ELASTICACHE_METRIC"
+      value = "ElastiCacheProcessingUnits"
+    },
+    {
+      name  = "CLOUDWATCH_ELASTICACHE_DIMENSION"
+      value = "clusterId"
+    },
+    {
+      name  = "CLOUDWATCH_ELASTICACHE_STATISTIC"
+      value = "SUM"
+    },
+    {
       name  = "CLOUDFRONT_DISTRIBUTION_ID"
       value = data.aws_ssm_parameter.cloudfront_distribution_id.value
     },
@@ -124,6 +136,10 @@ locals {
     {
       name  = "ELASTICACHE_PORT"
       value = data.aws_ssm_parameter.redis_port.value
+    },
+    {
+      name  = "ELASTICACHE_USERNAME"
+      value = data.aws_ssm_parameter.redis_username.value
     },
     {
       name  = "EPC_REGISTER_CLIENT_ID"
