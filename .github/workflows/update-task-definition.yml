@@ -92,10 +92,32 @@ jobs:
         with:
           terraform_version: 1.9.1
 
+      - name: Acquire shared NFT infrastructure lock
+        if: inputs.environment == 'nft'
+        env:
+          LOCK_OWNER: task-definition-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          item=$(jq -cn --arg owner "$LOCK_OWNER" '{LockID:{S:"nft-performance-operation"},Owner:{S:$owner}}')
+          aws dynamodb put-item --table-name tfstate-lock-nft --item "$item" \
+            --condition-expression 'attribute_not_exists(LockID)'
+
       - name: Terraform Init
         run: terraform init -input=false
         working-directory: "terraform/${{ inputs.environment }}/ecs_task_definition"
 
       - name: Terraform apply
+        id: terraform_apply
         run: terraform apply -auto-approve -input=false
         working-directory: "terraform/${{ inputs.environment }}/ecs_task_definition"
+
+      - name: Release shared NFT infrastructure lock
+        if: inputs.environment == 'nft' && steps.terraform_apply.outcome == 'success'
+        env:
+          LOCK_OWNER: task-definition-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          values=$(jq -cn --arg owner "$LOCK_OWNER" '{":owner":{S:$owner}}')
+          aws dynamodb delete-item --table-name tfstate-lock-nft \
+            --key '{"LockID":{"S":"nft-performance-operation"}}' \
+            --condition-expression '#owner = :owner' \
+            --expression-attribute-names '{"#owner":"Owner"}' \
+            --expression-attribute-values "$values"

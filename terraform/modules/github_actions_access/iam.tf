@@ -325,6 +325,34 @@ data "aws_iam_policy_document" "performance_runner_access" {
   count = var.enable_performance_runner_access ? 1 : 0
 
   statement {
+    effect    = "Allow"
+    actions   = ["rds:DescribeDBInstances"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["rds:ModifyDBInstance"]
+    resources = ["arn:aws:rds:eu-west-2:${data.aws_caller_identity.current.account_id}:db:${var.environment_name}-database"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem",
+    ]
+    resources = ["arn:aws:dynamodb:eu-west-2:${data.aws_caller_identity.current.account_id}:table/tfstate-lock-${var.environment_name}"]
+
+    condition {
+      test     = "ForAllValues:StringEquals"
+      variable = "dynamodb:LeadingKeys"
+      values   = ["nft-performance-operation"]
+    }
+  }
+
+  statement {
     effect = "Allow"
     actions = [
       "wafv2:GetIPSet",

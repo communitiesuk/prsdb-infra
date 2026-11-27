@@ -42,6 +42,12 @@ variable "database_allocated_storage" {
   type        = number
 }
 
+variable "database_storage_autoscaling_enabled" {
+  description = "Whether to alert when the RDS storage autoscaling ceiling is approached."
+  type        = bool
+  default     = false
+}
+
 variable "backup_replication_kms_key_arn" {
   description = "ARN of the KMS key encrypting cross-region replicated RDS automated backups"
   type        = string

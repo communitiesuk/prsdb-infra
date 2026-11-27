@@ -23,6 +23,12 @@ variable "allocated_storage" {
   description = "The allocated DB storage in gibibytes."
 }
 
+variable "max_allocated_storage" {
+  type        = number
+  description = "The maximum DB storage in gibibytes for storage autoscaling."
+  default     = null
+}
+
 variable "backup_retention_period" {
   type        = number
   description = "The number of days to retain db backups for. If 0 then the database will not be backed up"

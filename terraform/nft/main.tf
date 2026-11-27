@@ -44,7 +44,7 @@ locals {
   load_balancer_domain_name = "${local.environment_name}.lb.register-home-to-rent.test.communities.gov.uk"
 
   cloudwatch_log_expiration_days = 60
-  database_allocated_storage     = 50
+  database_allocated_storage     = 100
 
   scheduled_tasks = jsondecode(file("${path.module}/scheduled_tasks.json"))
 
@@ -223,6 +223,7 @@ module "database" {
   database_password                       = module.secrets.database_password.result
   database_port                           = local.database_port
   allocated_storage                       = local.database_allocated_storage
+  max_allocated_storage                   = 500
   backup_retention_period                 = 7
   db_subnet_group_name                    = module.networking.db_subnet_group_name
   instance_class                          = "db.t4g.small"
@@ -295,21 +296,22 @@ module "monitoring" {
     aws.us-east-1 = aws.us-east-1
   }
 
-  environment_name                   = local.environment_name
-  cloudwatch_log_expiration_days     = local.cloudwatch_log_expiration_days
-  critical_alarm_email_address       = var.critical_alarm_email_address
-  non_critical_alarm_email_address   = var.non_critical_alarm_email_address
-  alb_name                           = module.frontdoor.load_balancer.name
-  alb_arn_suffix                     = module.frontdoor.load_balancer.arn_suffix
-  alb_target_group_arn_suffix        = module.frontdoor.load_balancer.target_group_arn_suffix
-  ecs_cluster_name                   = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
-  ecs_service_name                   = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
-  elasticache_serverless_cache_names = toset([module.redis.serverless_cache_name])
-  database_allocated_storage         = local.database_allocated_storage
-  database_identifier                = module.database.database_identifier
-  backup_replication_kms_key_arn     = module.database.backup_replication_kms_key_arn
-  webapp_ecs_task_role_name          = module.ecr.webapp_ecs_task_role_name
-  enable_kms_cloudtrail_events       = var.enable_kms_cloudtrail_events
+  environment_name                     = local.environment_name
+  cloudwatch_log_expiration_days       = local.cloudwatch_log_expiration_days
+  critical_alarm_email_address         = var.critical_alarm_email_address
+  non_critical_alarm_email_address     = var.non_critical_alarm_email_address
+  alb_name                             = module.frontdoor.load_balancer.name
+  alb_arn_suffix                       = module.frontdoor.load_balancer.arn_suffix
+  alb_target_group_arn_suffix          = module.frontdoor.load_balancer.target_group_arn_suffix
+  ecs_cluster_name                     = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
+  ecs_service_name                     = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
+  elasticache_serverless_cache_names   = toset([module.redis.serverless_cache_name])
+  database_allocated_storage           = local.database_allocated_storage
+  database_storage_autoscaling_enabled = true
+  database_identifier                  = module.database.database_identifier
+  backup_replication_kms_key_arn       = module.database.backup_replication_kms_key_arn
+  webapp_ecs_task_role_name            = module.ecr.webapp_ecs_task_role_name
+  enable_kms_cloudtrail_events         = var.enable_kms_cloudtrail_events
 }
 
 module "email_queue" {

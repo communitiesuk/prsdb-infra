@@ -35,7 +35,7 @@ jobs:
         run: |
           IMAGE_TAG=$(aws ecr describe-images --repository-name ${{ inputs.environment }}-webapp --query 'sort_by(imageDetails, &imagePushedAt)[-1].imageTags[0]' --output text)
           IMAGE_URI="${{ inputs.aws-account-id }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ inputs.environment }}-webapp:${IMAGE_TAG}"
-          echo "image-uri=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "image-uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
   update-task-definition:
     name: Update ECS task definition
@@ -60,7 +60,16 @@ jobs:
           role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/github-actions-terraform-admin
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Acquire shared NFT infrastructure lock
+        env:
+          LOCK_OWNER: simulator-refresh-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          item=$(jq -cn --arg owner "$LOCK_OWNER" '{LockID:{S:"nft-performance-operation"},Owner:{S:$owner}}')
+          aws dynamodb put-item --table-name tfstate-lock-nft --item "$item" \
+            --condition-expression 'attribute_not_exists(LockID)'
+
       - name: Refresh One Login simulator service
+        id: refresh
         run: |
           aws ecs update-service \
             --cluster nft-app \
@@ -70,3 +79,15 @@ jobs:
           aws ecs wait services-stable \
             --cluster nft-app \
             --services nft-one-login-simulator
+
+      - name: Release shared NFT infrastructure lock
+        if: steps.refresh.outcome == 'success'
+        env:
+          LOCK_OWNER: simulator-refresh-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          values=$(jq -cn --arg owner "$LOCK_OWNER" '{":owner":{S:$owner}}')
+          aws dynamodb delete-item --table-name tfstate-lock-nft \
+            --key '{"LockID":{"S":"nft-performance-operation"}}' \
+            --condition-expression '#owner = :owner' \
+            --expression-attribute-names '{"#owner":"Owner"}' \
+            --expression-attribute-values "$values"

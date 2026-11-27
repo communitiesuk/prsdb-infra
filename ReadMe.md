@@ -122,6 +122,56 @@ For setting up environments to be able to run a terraform plan, you'll need to d
 
 Place this in your relevant pre-production terraform folder. We do not apply terraform directly on Prod.
 
+### NFT infrastructure and performance-test lock
+
+NFT infrastructure applies and performance tests use the `nft-performance-operation`
+item in `tfstate-lock-nft` as a cooperative lock. GitHub Actions acquires it before
+an NFT infrastructure apply. For a local NFT apply, use
+`bash scripts/apply-nft-with-lock.sh` from the repository root after initializing
+the NFT Terraform root. For the separate task-definition root, initialize it and
+use `bash scripts/apply-nft-with-lock.sh --task-definitions`; provide its
+CI-equivalent variables, including `TF_VAR_image_name`, before planning or applying.
+Do not run an unwrapped `terraform apply`, alter the NFT
+database in the console, or change it through another API while a test or apply
+is active: these do not participate in the lock.
+
+The lock is not automatically released after failure or interruption. An operator
+must identify its owner, inspect the associated workflow and the NFT database's
+status and pending modifications, and complete or verify recovery before
+conditionally removing the owner's lock item. Coordinate with the test and
+deployment owners before doing so; never delete the separate Terraform state lock.
+The webapp performance-test recovery instructions describe the test recovery.
+With NFT credentials, inspect the lock with:
+
+```shell
+aws dynamodb get-item --region eu-west-2 --table-name tfstate-lock-nft \
+  --consistent-read --key '{"LockID":{"S":"nft-performance-operation"}}'
+```
+
+Only after verifying recovery, set `LOCK_OWNER` to the exact inspected `Owner.S`
+and release that owner's lock:
+
+```shell
+values=$(jq -cn --arg owner "$LOCK_OWNER" '{":owner":{S:$owner}}')
+aws dynamodb delete-item --region eu-west-2 --table-name tfstate-lock-nft \
+  --key '{"LockID":{"S":"nft-performance-operation"}}' \
+  --condition-expression '#owner = :owner' \
+  --expression-attribute-names '{"#owner":"Owner"}' \
+  --expression-attribute-values "$values"
+```
+
+During rollout, pause NFT performance runs until both the infrastructure and
+webapp lock participants are released: older orchestrator versions do not take
+this lock. Resume only after verifying the released workflows and permissions.
+
+Terraform configures production and NFT RDS with 100 GiB gp3 and a 500 GiB
+autoscaling ceiling.
+Storage cannot be reduced in place. The free-space alarm uses 10% of the initial
+allocation, not the current autoscaled size; an RDS event warns when the ceiling
+is approached. Confirm production RDS class/version availability, pending changes,
+maintenance timing, backup readiness, and a Reserved Instance or Database Savings
+Plan decision with the TL/TA before releasing the production size change.
+
 ## Accessing deployed infrastructure
 
 ### Connecting to the database

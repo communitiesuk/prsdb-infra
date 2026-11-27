@@ -12,6 +12,7 @@ resource "aws_db_instance" "main" {
   engine_version                  = "16.8"
   final_snapshot_identifier       = "${var.environment_name}-database-final-snapshot"
   instance_class                  = var.instance_class
+  max_allocated_storage           = var.max_allocated_storage
   maintenance_window              = var.maintenance_window
   multi_az                        = var.multi_az
   password                        = var.database_password
