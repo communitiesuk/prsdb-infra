@@ -347,9 +347,9 @@ Changing `backup_retention_days` stops the current continuous backup and starts 
 Continuous backups need the bucket's Amazon EventBridge notifications to stay on; if they are turned off, backups stop without any job failing.
 Two non-critical alarms watch the backups:
 - `<environment>-backup-failure`: a backup job failed or completed with issues, or a continuous backup stopped
-- `s3-backup-at-risk-<environment>`: a backup vault, plan, selection or recovery point was deleted, a backup vault KMS key was disabled or scheduled for deletion (except in NFT, where CloudTrail does not log KMS events), or the safe bucket's notification settings changed
+- `s3-backup-at-risk-<environment>`: a backup vault, plan, selection or recovery point was deleted, a backup vault's access policy was changed or deleted, a backup vault KMS key was disabled or scheduled for deletion (except in NFT, where CloudTrail does not log KMS events), or the safe bucket's notification settings changed
 
-Terraform changes that delete a backup plan or selection, or change the bucket's notifications, also trigger these alarms once.
+Terraform changes that delete a backup plan or selection, or change the vault's access policy or the bucket's notifications, also trigger these alarms once.
 
 ### Restoring the safe bucket
 
