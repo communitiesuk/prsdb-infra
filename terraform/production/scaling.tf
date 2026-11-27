@@ -1,6 +1,6 @@
 resource "aws_appautoscaling_target" "webapp" {
   count              = var.task_definition_created ? 1 : 0
-  max_capacity       = 15
+  max_capacity       = local.webapp_scaling_max_capacity
   min_capacity       = 2
   resource_id        = "service/${module.ecs_service[0].ecs_cluster_name}/${module.ecs_service[0].ecs_service_name}"
   scalable_dimension = "ecs:service:DesiredCount"
@@ -32,6 +32,8 @@ resource "aws_appautoscaling_policy" "webapp_cpu" {
 }
 
 locals {
+  webapp_scaling_max_capacity = 15
+
   deadline_scaling_actions = merge(
     { for region, date in var.regional_deadlines : "${region}-raise" => {
       date         = formatdate("YYYY-MM-DD", timeadd("${date}T00:00:00Z", "-24h"))
@@ -58,6 +60,6 @@ resource "aws_appautoscaling_scheduled_action" "deadline" {
 
   scalable_target_action {
     min_capacity = each.value.min_capacity
-    max_capacity = 15
+    max_capacity = local.webapp_scaling_max_capacity
   }
 }
