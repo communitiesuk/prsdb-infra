@@ -19,48 +19,22 @@ resource "aws_cloudwatch_metric_alarm" "webapp_at_max_capacity" {
   alarm_actions = [aws_sns_topic.non_critical_alarm_sns_topic.arn]
 }
 
-resource "aws_cloudwatch_metric_alarm" "webapp_running_below_desired" {
-  count               = var.webapp_scaling_max_capacity == null ? 0 : 1
-  alarm_name          = "${var.ecs_service_name}-running-below-desired"
-  alarm_description   = "Webapp running task count has been below desired for 5 minutes"
-  comparison_operator = "GreaterThanThreshold"
+resource "aws_cloudwatch_metric_alarm" "webapp_running_below_minimum" {
+  count               = var.webapp_scaling_min_capacity == null ? 0 : 1
+  alarm_name          = "${var.ecs_service_name}-running-below-minimum"
+  alarm_description   = "Webapp running task count has been below the configured minimum for 5 minutes"
+  comparison_operator = "LessThanThreshold"
+  metric_name         = "RunningTaskCount"
+  namespace           = "ECS/ContainerInsights"
   evaluation_periods  = 5
-  threshold           = 0
+  period              = 60
+  threshold           = var.webapp_scaling_min_capacity
+  statistic           = "Minimum"
   treat_missing_data  = "breaching"
 
-  metric_query {
-    id          = "shortfall"
-    expression  = "desired - FILL(running, 0)"
-    label       = "Desired tasks not running"
-    return_data = true
-  }
-
-  metric_query {
-    id = "desired"
-    metric {
-      metric_name = "DesiredTaskCount"
-      namespace   = "ECS/ContainerInsights"
-      period      = 60
-      stat        = "Maximum"
-      dimensions = {
-        ClusterName = var.ecs_cluster_name
-        ServiceName = var.ecs_service_name
-      }
-    }
-  }
-
-  metric_query {
-    id = "running"
-    metric {
-      metric_name = "RunningTaskCount"
-      namespace   = "ECS/ContainerInsights"
-      period      = 60
-      stat        = "Minimum"
-      dimensions = {
-        ClusterName = var.ecs_cluster_name
-        ServiceName = var.ecs_service_name
-      }
-    }
+  dimensions = {
+    ClusterName = var.ecs_cluster_name
+    ServiceName = var.ecs_service_name
   }
 
   alarm_actions = [aws_sns_topic.critical_alarm_sns_topic.arn]

@@ -82,3 +82,8 @@ variable "webapp_scaling_max_capacity" {
   type        = number
   default     = null
 }
+variable "webapp_scaling_min_capacity" {
+  description = "Configured minimum webapp task count for scaling alarms, or null when autoscaling is disabled"
+  type        = number
+  default     = null
+}

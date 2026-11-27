@@ -193,6 +193,8 @@ jobs:
           terraform -chdir=terraform/modules/ecs_service test
           terraform -chdir=terraform/modules/fargate_service init -backend=false
           terraform -chdir=terraform/modules/fargate_service test
+          terraform -chdir=terraform/modules/monitoring init -backend=false
+          terraform -chdir=terraform/modules/monitoring test
 
       - name: Test scaling configuration
         run: |

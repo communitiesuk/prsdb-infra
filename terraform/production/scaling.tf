@@ -32,25 +32,13 @@ resource "aws_appautoscaling_policy" "webapp_cpu" {
 }
 
 locals {
-  registration_deadlines = {
-    west_midlands        = "2027-03-14"
-    east_of_england      = "2027-04-14"
-    east_midlands        = "2027-05-14"
-    south_east           = "2027-06-14"
-    yorkshire_and_humber = "2027-07-14"
-    north_west           = "2027-08-14"
-    north_east           = "2027-09-14"
-    london               = "2027-10-14"
-    south_west           = "2027-11-14"
-  }
-
   deadline_scaling_actions = merge(
-    { for region, date in local.registration_deadlines : "${region}-raise" => {
+    { for region, date in var.regional_deadlines : "${region}-raise" => {
       date         = formatdate("YYYY-MM-DD", timeadd("${date}T00:00:00Z", "-24h"))
       time         = "07:00:00"
       min_capacity = 6
     } },
-    { for region, date in local.registration_deadlines : "${region}-restore" => {
+    { for region, date in var.regional_deadlines : "${region}-restore" => {
       date         = formatdate("YYYY-MM-DD", timeadd("${date}T00:00:00Z", "24h"))
       time         = "01:00:00"
       min_capacity = 2

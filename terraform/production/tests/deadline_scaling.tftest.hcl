@@ -93,3 +93,37 @@ run "scheduled_actions" {
     error_message = "Production scaling must use the approved capacity, CPU target and cooldowns."
   }
 }
+
+run "configured_deadlines" {
+  command = plan
+
+  variables {
+    task_definition_created = true
+    regional_deadlines      = { custom_region = "2028-01-14" }
+  }
+
+  override_module {
+    target = module.redis
+    outputs = {
+      redis_cluster_ids       = ["production-redis-001"]
+      redis_security_group_id = "sg-12345678"
+    }
+  }
+
+  assert {
+    condition = (length(aws_appautoscaling_scheduled_action.deadline) == 2 &&
+      aws_appautoscaling_scheduled_action.deadline["custom_region-raise"].schedule == "at(2028-01-13T07:00:00)" &&
+    aws_appautoscaling_scheduled_action.deadline["custom_region-restore"].schedule == "at(2028-01-15T01:00:00)")
+    error_message = "Custom regional deadlines must generate their own paired one-time actions."
+  }
+}
+
+run "invalid_deadline" {
+  command = plan
+
+  variables {
+    regional_deadlines = { custom_region = "not-a-date" }
+  }
+
+  expect_failures = [var.regional_deadlines]
+}
