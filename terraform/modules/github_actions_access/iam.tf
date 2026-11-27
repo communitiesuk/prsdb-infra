@@ -325,6 +325,36 @@ data "aws_iam_policy_document" "performance_runner_access" {
   count = var.enable_performance_runner_access ? 1 : 0
 
   statement {
+    effect    = "Allow"
+    actions   = ["application-autoscaling:DescribeScalableTargets"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestedRegion"
+      values   = ["eu-west-2"]
+    }
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["application-autoscaling:RegisterScalableTarget"]
+    resources = [var.performance_runner_scalable_target_arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "application-autoscaling:service-namespace"
+      values   = ["ecs"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "application-autoscaling:scalable-dimension"
+      values   = ["ecs:service:DesiredCount"]
+    }
+  }
+
+  statement {
     effect = "Allow"
     actions = [
       "wafv2:GetIPSet",

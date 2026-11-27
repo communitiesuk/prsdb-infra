@@ -77,3 +77,8 @@ variable "enable_kms_cloudtrail_events" {
   description = "Whether to log KMS  events to CloudTrail"
   default     = true
 }
+variable "webapp_scaling_max_capacity" {
+  description = "Maximum webapp task count for scaling alarms, or null when autoscaling is disabled"
+  type        = number
+  default     = null
+}
