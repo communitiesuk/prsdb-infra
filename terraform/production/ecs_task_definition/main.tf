@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~>5.0"
+      version = "~> 6.24"
     }
   }
 
@@ -203,6 +203,10 @@ locals {
     {
       name      = "GOV_UK_PAY_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_api_key.arn
+    },
+    {
+      name      = "GOV_UK_PAY_MOTO_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_moto_api_key.arn
     },
   ]
   os_api_secrets = [

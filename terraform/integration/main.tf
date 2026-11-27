@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~>5.0"
+      version = "~> 6.24"
     }
   }
 
@@ -103,6 +103,10 @@ module "frontdoor" {
     "13.126.5.12/32",
     "3.7.157.159/32",
     "3.7.173.162/32",
+    # AWS Continuum (eu-west-2)
+    "13.42.228.66/32",
+    "16.60.62.58/32",
+    "35.176.240.10/32",
   ]
   cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
   use_aws_shield_advanced        = true
@@ -151,6 +155,12 @@ module "github_actions_access" {
   webapp_ecs_task_role_arn       = module.ecr.webapp_ecs_task_role_arn
   task_definition_created        = var.task_definition_created
   ecr_describe_images_policy_arn = module.ecr.describe_ecr_images_policy_arn
+}
+
+module "read_only_investigator" {
+  source = "../modules/read_only_investigator"
+
+  environment_name = local.environment_name
 }
 
 module "secrets" {

@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "cloudtrail_cloudwatch_policy_document" {
     condition {
       test     = "StringEquals"
       variable = "kms:ViaService"
-      values   = ["logs.${data.aws_region.current.name}.amazonaws.com"]
+      values   = ["logs.${data.aws_region.current.region}.amazonaws.com"]
     }
   }
 }

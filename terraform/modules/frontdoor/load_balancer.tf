@@ -71,6 +71,19 @@ resource "aws_vpc_security_group_ingress_rule" "simulator_load_balancer_https_in
   security_group_id = aws_security_group.simulator_load_balancer[0].id
 }
 
+resource "aws_vpc_security_group_ingress_rule" "simulator_regional_nat_https_ingress" {
+  for_each = var.simulator_host != null ? {
+    for index, cidr in var.simulator_regional_nat_gateway_ips : tostring(index) => cidr
+  } : {}
+
+  description       = "Allow HTTPS ingress to the simulator from regional NAT gateways"
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+  cidr_ipv4         = each.value
+  security_group_id = aws_security_group.simulator_load_balancer[0].id
+}
+
 resource "aws_lb_target_group" "main" {
   name                          = var.environment_name
   port                          = var.application_port

@@ -668,7 +668,7 @@ resource "aws_wafv2_ip_set" "simulator_allowed_ips" {
   name               = "waf-simulator-allowed-ip-set-${var.environment_name}"
   scope              = "REGIONAL"
   ip_address_version = "IPV4"
-  addresses          = var.simulator_allowed_ips
+  addresses          = concat(var.simulator_allowed_ips, var.simulator_regional_nat_gateway_ips)
 }
 
 resource "aws_wafv2_ip_set" "performance_runner_regional" {

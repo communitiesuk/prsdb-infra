@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~>5.0"
+      version = "~> 6.24"
     }
   }
 
@@ -131,6 +131,12 @@ module "github_actions_access" {
   webapp_ecs_task_role_arn       = module.ecr.webapp_ecs_task_role_arn
   task_definition_created        = var.task_definition_created
   ecr_describe_images_policy_arn = module.ecr.describe_ecr_images_policy_arn
+}
+
+module "read_only_investigator" {
+  source = "../modules/read_only_investigator"
+
+  environment_name = local.environment_name
 }
 
 module "secrets" {

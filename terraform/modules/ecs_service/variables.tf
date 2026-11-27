@@ -17,6 +17,16 @@ variable "async_worker_task_desired_count" {
   type        = number
 }
 
+variable "availability_zone_rebalancing" {
+  description = "ECS availability-zone rebalancing mode"
+  type        = string
+  default     = null
+  validation {
+    condition     = var.availability_zone_rebalancing == null ? true : contains(["ENABLED", "DISABLED"], var.availability_zone_rebalancing)
+    error_message = "Availability zone rebalancing must be ENABLED or DISABLED."
+  }
+}
+
 variable "allow_exec" {
   description = "whether to enable AWS ECS Exec on the instance"
   type        = bool

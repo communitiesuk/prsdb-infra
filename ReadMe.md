@@ -70,6 +70,24 @@ Create an access key in the AWS portal on the Security credentials page (just be
 
 You should now be able to start an `aws-vault exec` session using the instructions from the section above.
 
+### Using the read-only investigator role
+Each environment has a `<environment name>-read-only-investigator` role for investigating issues.
+It can read resource metadata, CloudWatch logs and metrics, Performance Insights, and dead letter queue messages.
+It cannot make changes, read secret or SecureString parameter values, download S3 objects, receive messages from other queues, or open sessions to the bastion, database or Redis.
+
+The role is assumed from the SSO developer role. Add a profile for each environment to your `~/.aws/config` (see `setup/profile-template`), for example:
+
+```shell
+[profile mhclg-int-investigator]
+source_profile = mhclg-int
+role_arn = arn:aws:iam::<int account id>:role/integration-read-only-investigator
+region = eu-west-2
+```
+
+Then run `aws-vault exec mhclg-int-investigator -- <your preferred shell>`. Sessions last at most one hour because the role is assumed from another role.
+
+Receiving a dead letter queue message hides it for the queue's visibility timeout, so pass `--visibility-timeout 0` to `aws sqs receive-message`.
+
 ## Setting up secret detection
 
 This repository uses a pre-commit hook to detect secrets before they are committed. To set this up, first make sure that Python 3 is installed on your machine.

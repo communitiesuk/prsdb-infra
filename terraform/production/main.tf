@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~>5.0"
+      version = "~> 6.24"
     }
   }
 
@@ -33,7 +33,7 @@ provider "aws" {
 
 locals {
   environment_name = "production"
-  multi_az         = false
+  multi_az         = true
   application_port = 8080
   database_port    = 5432
   redis_port       = 6379
@@ -80,6 +80,8 @@ module "networking" {
   environment_name             = local.environment_name
   number_of_availability_zones = 2
   number_of_isolated_subnets   = 2 # RDS requires there to be 2 subnets in different AZs even when multi-AZ is disabled
+  use_regional_nat_gateway     = true
+  retain_zonal_nat_gateway     = true
 
   vpc_flow_cloudwatch_log_expiration_days = local.cloudwatch_log_expiration_days
 }
@@ -152,6 +154,12 @@ module "github_actions_access" {
   ecr_describe_images_policy_arn = module.ecr.describe_ecr_images_policy_arn
 }
 
+module "read_only_investigator" {
+  source = "../modules/read_only_investigator"
+
+  environment_name = local.environment_name
+}
+
 module "secrets" {
   source = "../modules/secrets"
 
@@ -219,8 +227,9 @@ module "ecs_service" {
   source = "../modules/ecs_service"
 
   environment_name                = local.environment_name
-  webapp_task_desired_count       = 1
-  async_worker_task_desired_count = 1
+  webapp_task_desired_count       = 2
+  async_worker_task_desired_count = 2
+  availability_zone_rebalancing   = "ENABLED"
   application_port                = local.application_port
   database_port                   = local.database_port
   redis_port                      = local.redis_port

@@ -67,6 +67,12 @@ variable "simulator_allowed_ips" {
   default     = []
 }
 
+variable "simulator_regional_nat_gateway_ips" {
+  type        = list(string)
+  description = "IPv4 CIDRs for the regional NAT gateway EIPs permitted to call the simulator"
+  default     = []
+}
+
 variable "url_rewriter_extra_exceptions" {
   type        = list(string)
   description = "Additional top-level path segments that the URL rewriter should leave unchanged"
