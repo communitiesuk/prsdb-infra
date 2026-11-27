@@ -77,6 +77,13 @@ resource "aws_s3_bucket_versioning" "main" {
   }
 }
 
+resource "aws_s3_bucket_notification" "main" {
+  count = var.eventbridge_notifications_enabled ? 1 : 0
+
+  bucket      = aws_s3_bucket.main.id
+  eventbridge = true
+}
+
 resource "aws_s3_bucket_ownership_controls" "main" {
   bucket = aws_s3_bucket.main.bucket
 

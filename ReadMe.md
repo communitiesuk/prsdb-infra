@@ -343,6 +343,37 @@ URLs and IP addresses can contain sensitive information; access remains governed
 Load balancer access logging is best-effort, not a complete audit trail of every request, and an empty log group can also mean there has been no traffic.
 See [Access logs for your Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html) and [CloudWatch Logs for your Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-cloudwatch-logs.html) for the logged fields and delivery details.
 
+## Safe bucket backups
+
+AWS Backup backs up the safe bucket, which holds uploaded files that have passed virus scanning (`prsdb-uploaded-files-<environment>`), to the `prsdb-backup-vault-<environment>` backup vault in `eu-west-2`.
+A continuous backup lets the bucket be restored to any point in time within the retention period: 35 days in production and 7 days in integration, test, and NFT.
+Objects that have been in a backup vault for 60 days move to AWS Backup's lower-cost storage tier.
+
+The backups are configured by the `backup` module and can be switched off per environment with `point_in_time_recovery_enabled` in `terraform/<environment>/main.tf`.
+Switching them off stops new backups; existing recovery points are kept until they expire.
+The backup vault's access policy stops anyone deleting recovery points or shortening their retention, so they are only removed when they expire.
+Changing `backup_retention_days` stops the current continuous backup and starts a new full one, which also triggers the `<environment>-backup-failure` alarm once.
+
+Continuous backups need the bucket's Amazon EventBridge notifications to stay on; if they are turned off, backups stop without any job failing.
+Two non-critical alarms watch the backups:
+- `<environment>-backup-failure`: a backup job failed or completed with issues, or a continuous backup stopped
+- `s3-backup-at-risk-<environment>`: a backup vault, plan, selection or recovery point was deleted, a backup vault's access policy was changed or deleted, a backup vault KMS key was disabled or scheduled for deletion (except in NFT, where CloudTrail does not log KMS events), or the safe bucket's notification settings changed
+
+Terraform changes that delete a backup plan or selection, or change the vault's access policy or the bucket's notifications, also trigger these alarms once.
+
+### Restoring the safe bucket
+
+1. In the AWS Backup console in `eu-west-2`, open **Protected resources** and select `arn:aws:s3:::prsdb-uploaded-files-<environment>`.
+2. Select the continuous recovery point, choose **Restore**, and pick the date and time to restore to.
+3. Restore the whole bucket, or up to 5 specific objects or prefixes.
+4. Restore to a new bucket, then copy the objects you need into the safe bucket. Restores never overwrite or delete objects, and any destination bucket must have versioning enabled.
+5. Leave **Restore ACLs** off: the bucket enforces bucket owner object ownership, so it does not use ACLs.
+6. For encryption, choose the `alias/uploaded-files-encryption-<environment>` KMS key.
+7. Choose the `prsdb-AWSBackup-role-<environment>` IAM role, start the restore, and follow its progress under **Jobs** > **Restore jobs**.
+
+Restored objects are stored in S3 Standard with new version IDs and creation dates.
+Delete any bucket created for a restore once it is no longer needed, as it is not managed by Terraform.
+
 ## Creating a new scheduled task
 
 To create a new scheduled task, you need to add an object to the relevant scheduled_tasks json files located in `terraform/<environment name>/scheduled_tasks.json`. The format of the object is as follows:

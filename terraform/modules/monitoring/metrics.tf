@@ -244,3 +244,76 @@ resource "aws_cloudwatch_log_metric_filter" "ecs_task_failed_elb_health_checks" 
     value     = "1"
   }
 }
+
+locals {
+  s3_backup_at_risk_metric_name = "s3-backup-at-risk-${var.environment_name}"
+}
+
+resource "aws_cloudwatch_log_metric_filter" "s3_backup_resources_deleted" {
+  log_group_name = module.cloudtrail_cloudwatch_group.name
+  name           = "s3-backup-resources-deleted-${var.environment_name}"
+  pattern        = <<EOT
+    {($.eventSource = "backup.amazonaws.com") &&
+     ($.eventType = "AwsApiCall") &&
+     ($.userIdentity.type != "AWSService") &&
+     (($.eventName = "DeleteBackupVault") ||
+      ($.eventName = "DeleteBackupPlan") ||
+      ($.eventName = "DeleteBackupSelection") ||
+      ($.eventName = "DeleteRecoveryPoint"))}
+  EOT
+
+  metric_transformation {
+    name      = local.s3_backup_at_risk_metric_name
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+}
+
+resource "aws_cloudwatch_log_metric_filter" "s3_backup_vault_key_disabled" {
+  log_group_name = module.cloudtrail_cloudwatch_group.name
+  name           = "s3-backup-vault-key-disabled-${var.environment_name}"
+  pattern        = <<EOT
+    {(($.eventName = DisableKey) ||
+      ($.eventName = ScheduleKeyDeletion)) &&
+     (${join(" || ", [for arn in var.backup_vault_kms_key_arns : "($.resources[0].ARN = \"${arn}\")"])})}
+  EOT
+
+  metric_transformation {
+    name      = local.s3_backup_at_risk_metric_name
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+}
+
+resource "aws_cloudwatch_log_metric_filter" "s3_backup_vault_policy_changed" {
+  log_group_name = module.cloudtrail_cloudwatch_group.name
+  name           = "s3-backup-vault-policy-changed-${var.environment_name}"
+  pattern        = <<EOT
+    {($.eventSource = "backup.amazonaws.com") &&
+     (($.eventName = "PutBackupVaultAccessPolicy") ||
+      ($.eventName = "DeleteBackupVaultAccessPolicy"))}
+  EOT
+
+  metric_transformation {
+    name      = local.s3_backup_at_risk_metric_name
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+}
+
+resource "aws_cloudwatch_log_metric_filter" "s3_backup_bucket_notifications_changed" {
+  log_group_name = module.cloudtrail_cloudwatch_group.name
+  name           = "s3-backup-bucket-notifications-changed-${var.environment_name}"
+  pattern        = <<EOT
+    {(($.eventName = PutBucketNotification) ||
+      ($.eventName = PutBucketNotificationConfiguration)) &&
+     (${join(" || ", [for name in var.backed_up_s3_bucket_names : "($.requestParameters.bucketName = \"${name}\")"])}) &&
+     ($.userIdentity.sessionContext.sessionIssuer.arn != "${var.backup_role_arn}")}
+  EOT
+
+  metric_transformation {
+    name      = local.s3_backup_at_risk_metric_name
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+}

@@ -29,6 +29,9 @@ variables {
   alb_arn_suffix                   = "app/nft/1234567890123456"
   alb_target_group_arn_suffix      = "targetgroup/nft/1234567890123456"
   webapp_ecs_task_role_name        = "nft-webapp"
+  backup_vault_kms_key_arns        = ["arn:aws:kms:eu-west-2:123456789012:key/12345678-1234-1234-1234-123456789012"]
+  backup_role_arn                  = "arn:aws:iam::123456789012:role/prsdb-AWSBackup-role-nft"
+  backed_up_s3_bucket_names        = ["prsdb-uploaded-files-nft"]
 }
 
 run "configured_minimum" {

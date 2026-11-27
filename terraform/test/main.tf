@@ -247,6 +247,16 @@ module "file_upload" {
   critical_alarm_sns_topic_arn     = module.monitoring.critical_alarm_sns_topic_arn
 }
 
+module "backup" {
+  source = "../modules/backup"
+
+  environment_name                 = local.environment_name
+  s3_bucket_arns                   = [module.file_upload.safe_bucket_arn]
+  backup_retention_days            = 7
+  point_in_time_recovery_enabled   = true
+  non_critical_alarm_sns_topic_arn = module.monitoring.non_critical_alarm_sns_topic_arn
+}
+
 module "monitoring" {
   source = "../modules/monitoring"
 
@@ -269,6 +279,9 @@ module "monitoring" {
   backup_replication_kms_key_arn   = module.database.backup_replication_kms_key_arn
   webapp_ecs_task_role_name        = module.ecr.webapp_ecs_task_role_name
   enable_kms_cloudtrail_events     = var.enable_kms_cloudtrail_events
+  backup_vault_kms_key_arns        = module.backup.backup_vault_kms_key_arns
+  backup_role_arn                  = module.backup.backup_role_arn
+  backed_up_s3_bucket_names        = [module.file_upload.safe_bucket_name]
 }
 
 module "email_queue" {
