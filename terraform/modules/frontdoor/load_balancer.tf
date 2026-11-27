@@ -91,6 +91,7 @@ resource "aws_lb_target_group" "main" {
   vpc_id                        = var.vpc_id
   target_type                   = "ip"
   load_balancing_algorithm_type = "least_outstanding_requests"
+  deregistration_delay          = 60
 
   health_check {
     path                = "/healthcheck"
@@ -98,6 +99,7 @@ resource "aws_lb_target_group" "main" {
     healthy_threshold   = 2
     unhealthy_threshold = 5
     timeout             = 10
+    interval            = 15
   }
 }
 

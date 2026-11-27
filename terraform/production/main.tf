@@ -268,6 +268,8 @@ module "monitoring" {
   alb_target_group_arn_suffix      = module.frontdoor.load_balancer.target_group_arn_suffix
   ecs_cluster_name                 = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
   ecs_service_name                 = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
+  webapp_scaling_min_capacity      = 2
+  webapp_scaling_max_capacity      = local.webapp_scaling_max_capacity
   elasticache_cluster_ids          = toset(module.redis.redis_cluster_ids)
   database_allocated_storage       = local.database_allocated_storage
   database_identifier              = module.database.database_identifier

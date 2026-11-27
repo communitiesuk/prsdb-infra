@@ -1,3 +1,45 @@
+resource "aws_cloudwatch_metric_alarm" "webapp_at_max_capacity" {
+  count               = var.webapp_scaling_max_capacity == null ? 0 : 1
+  alarm_name          = "${var.ecs_service_name}-at-max-capacity"
+  alarm_description   = "Webapp desired task count has been at maximum for over 10 minutes"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  metric_name         = "DesiredTaskCount"
+  namespace           = "ECS/ContainerInsights"
+  evaluation_periods  = 11
+  period              = 60
+  threshold           = var.webapp_scaling_max_capacity
+  statistic           = "Minimum"
+  treat_missing_data  = "missing"
+
+  dimensions = {
+    ClusterName = var.ecs_cluster_name
+    ServiceName = var.ecs_service_name
+  }
+
+  alarm_actions = [aws_sns_topic.non_critical_alarm_sns_topic.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "webapp_running_below_minimum" {
+  count               = var.webapp_scaling_min_capacity == null ? 0 : 1
+  alarm_name          = "${var.ecs_service_name}-running-below-minimum"
+  alarm_description   = "Webapp running task count has been below the configured minimum for 5 minutes"
+  comparison_operator = "LessThanThreshold"
+  metric_name         = "RunningTaskCount"
+  namespace           = "ECS/ContainerInsights"
+  evaluation_periods  = 5
+  period              = 60
+  threshold           = var.webapp_scaling_min_capacity
+  statistic           = "Minimum"
+  treat_missing_data  = "breaching"
+
+  dimensions = {
+    ClusterName = var.ecs_cluster_name
+    ServiceName = var.ecs_service_name
+  }
+
+  alarm_actions = [aws_sns_topic.critical_alarm_sns_topic.arn]
+}
+
 resource "aws_cloudwatch_metric_alarm" "ecs_cpu_usage" {
   alarm_name          = "${var.ecs_service_name}-cpu-usage"
   alarm_description   = "ECS CPU utilization has been >90% for over a minute"

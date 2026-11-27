@@ -192,6 +192,16 @@ The terraform will applied when your PR is merged.
 
 If there are problems, it may be necessary to make updates manually from the terminal using `terrform apply`, but we should aim to apply terraform via the git pipeline where possible.
 
+### Webapp service scaling
+
+Production and NFT webapp services use CPU target tracking. NFT's minimum, maximum and CPU target are configurable with `webapp_scaling_min_capacity`, `webapp_scaling_max_capacity` and `webapp_scaling_cpu_target`. Production's maximum of 15 is provisional: rerun the performance load test and review the result before applying to Production.
+
+The shared webapp service ignores changes to `desired_count` in all environments, including Integration and Test, so Terraform does not reconcile their webapp desired counts. Terraform continues to manage the async worker's desired count.
+
+Production has paired one-time Europe/London actions around the dates in `regional_deadlines`, which defaults to the 2027 regional registration deadlines. These raise the minimum to 6 at 07:00 the day before each deadline and restore it to 2 at 01:00 the day after. Terraform deliberately ignores changes to the Production minimum so an apply during a deadline window does not undo the schedule; change the minimum explicitly if an operational correction is required. The running-below-minimum alarm uses the configured baseline minimum of 2, not the temporarily raised minimum during these windows.
+
+The shared ECS task module sets the container stop timeout for webapp and worker tasks. The `ecs_task_definition` directories are separate Terraform roots and states for integration, test, NFT and Production: review and deploy their plans separately from the environment infrastructure plans.
+
 ### Running tests
 We have javascript testing setup, initially this is for testing cloudfront functions.
 
