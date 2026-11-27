@@ -174,6 +174,7 @@ module "github_actions_access" {
   performance_runner_regional_ip_set_arn   = module.frontdoor.performance_runner_regional_ip_set_arn
   performance_runner_security_group_arn    = var.task_definition_created ? module.frontdoor.load_balancer.simulator_security_group_arn : null
   performance_runner_service_arn           = var.task_definition_created ? module.one_login_simulator[0].service_arn : null
+  performance_runner_scalable_target_arn   = var.task_definition_created ? aws_appautoscaling_target.webapp[0].arn : null
   enable_performance_runner_access         = var.task_definition_created
   one_login_simulator_repository_arn       = module.ecr.one_login_simulator_repository_arn
   enable_one_login_simulator_mirror_access = true
@@ -319,6 +320,8 @@ module "monitoring" {
   alb_target_group_arn_suffix      = module.frontdoor.load_balancer.target_group_arn_suffix
   ecs_cluster_name                 = var.task_definition_created ? module.ecs_service[0].ecs_cluster_name : ""
   ecs_service_name                 = var.task_definition_created ? module.ecs_service[0].ecs_service_name : ""
+  webapp_scaling_min_capacity      = var.webapp_scaling_min_capacity
+  webapp_scaling_max_capacity      = var.webapp_scaling_max_capacity
   elasticache_cluster_ids          = toset(module.redis.redis_cluster_ids)
   database_allocated_storage       = local.database_allocated_storage
   database_identifier              = module.database.database_identifier

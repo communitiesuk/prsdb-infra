@@ -88,6 +88,12 @@ variable "performance_runner_service_arn" {
   default     = null
 }
 
+variable "performance_runner_scalable_target_arn" {
+  description = "ARN of the NFT webapp scalable target"
+  type        = string
+  default     = null
+}
+
 variable "enable_performance_runner_access" {
   description = "Whether to create the NFT performance runner network access role"
   type        = bool

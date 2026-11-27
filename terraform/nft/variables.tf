@@ -23,6 +23,36 @@ variable "one_login_simulator_desired_count" {
   }
 }
 
+variable "webapp_scaling_min_capacity" {
+  description = "Minimum NFT webapp task count"
+  type        = number
+  default     = 2
+  validation {
+    condition     = var.webapp_scaling_min_capacity >= 1 && floor(var.webapp_scaling_min_capacity) == var.webapp_scaling_min_capacity
+    error_message = "The minimum task count must be a positive integer."
+  }
+}
+
+variable "webapp_scaling_max_capacity" {
+  description = "Maximum NFT webapp task count"
+  type        = number
+  default     = 15
+  validation {
+    condition     = var.webapp_scaling_max_capacity >= 1 && floor(var.webapp_scaling_max_capacity) == var.webapp_scaling_max_capacity
+    error_message = "The maximum task count must be a positive integer."
+  }
+}
+
+variable "webapp_scaling_cpu_target" {
+  description = "Target average NFT webapp CPU utilization percentage"
+  type        = number
+  default     = 60
+  validation {
+    condition     = var.webapp_scaling_cpu_target > 0 && var.webapp_scaling_cpu_target <= 100
+    error_message = "The CPU target must be greater than zero and at most 100."
+  }
+}
+
 variable "critical_alarm_email_address" {
   description = "Email address to receive critical CloudWatch alarm notifications"
   type        = string
