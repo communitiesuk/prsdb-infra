@@ -204,6 +204,10 @@ locals {
       name      = "GOV_UK_PAY_API_KEY"
       valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_api_key.arn
     },
+    {
+      name      = "GOV_UK_PAY_MOTO_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.gov_uk_pay_moto_api_key.arn
+    },
   ]
   os_api_secrets = [
     {

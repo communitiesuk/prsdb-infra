@@ -99,6 +99,10 @@ data "aws_secretsmanager_secret" "gov_uk_pay_api_key" {
   name = "tf-${local.environment_name}-prsdb-gov-uk-pay-api-key"
 }
 
+data "aws_secretsmanager_secret" "gov_uk_pay_moto_api_key" {
+  name = "tf-${local.environment_name}-prsdb-gov-uk-pay-moto-api-key"
+}
+
 data "aws_ssm_parameter" "quarantine_bucket" {
   count = var.file_upload_buckets_created ? 1 : 0
   name  = "${local.environment_name}-prsdb-quarantine-bucket"
